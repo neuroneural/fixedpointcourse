@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="920" viewBox="0 0 720 920">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#222"/>
+    </marker>
+    <style>
+      .box { stroke:#222; stroke-width:3; rx:12; ry:12; }
+      .flow { stroke:#222; stroke-width:3.5; fill:none; marker-end:url(#arrow); }
+      .skip { stroke:#586e75; stroke-width:3; fill:none; marker-end:url(#arrow); }
+      .label { font-family: 'Times New Roman', serif; fill:#111; }
+      .small { font-size:22px; }
+      .mid { font-size:30px; }
+      .big { font-size:36px; }
+      .note { font-family: 'Lato', Arial, sans-serif; fill:#586e75; font-size:22px; }
+    </style>
+  </defs>
+
+  <rect x="170" y="28" width="380" height="78" fill="#a8bcc3" class="box"/>
+  <text x="360" y="78" text-anchor="middle" class="label big">X'' output</text>
+
+  <line x1="360" y1="190" x2="360" y2="106" class="flow"/>
+  <rect x="255" y="190" width="210" height="58" fill="#f0db86" class="box"/>
+  <text x="360" y="228" text-anchor="middle" class="label mid">Add</text>
+
+  <line x1="360" y1="286" x2="360" y2="248" class="flow"/>
+  <rect x="145" y="286" width="430" height="90" fill="#e6cf75" class="box"/>
+  <text x="360" y="332" text-anchor="middle" class="label big">Row-wise FFN</text>
+  <text x="360" y="362" text-anchor="middle" class="label small">(W2 phi(W1 X'^T))^T</text>
+
+  <line x1="360" y1="436" x2="360" y2="376" class="flow"/>
+  <rect x="255" y="436" width="210" height="58" fill="#efe1a0" class="box"/>
+  <text x="360" y="474" text-anchor="middle" class="label mid">LayerNorm</text>
+
+  <line x1="360" y1="542" x2="360" y2="494" class="flow"/>
+  <rect x="255" y="542" width="210" height="58" fill="#f0db86" class="box"/>
+  <text x="360" y="580" text-anchor="middle" class="label mid">Add</text>
+
+  <line x1="360" y1="648" x2="360" y2="600" class="flow"/>
+  <rect x="98" y="648" width="524" height="96" fill="#d88b76" class="box"/>
+  <text x="360" y="694" text-anchor="middle" class="label big">Self-Attention</text>
+  <text x="360" y="724" text-anchor="middle" class="label small">A = softmax((QK^T + M)/sqrt(d_k)), Z = AV</text>
+
+  <line x1="360" y1="804" x2="360" y2="744" class="flow"/>
+  <rect x="255" y="804" width="210" height="58" fill="#efe1a0" class="box"/>
+  <text x="360" y="842" text-anchor="middle" class="label mid">LayerNorm</text>
+
+  <line x1="360" y1="892" x2="360" y2="862" class="flow"/>
+  <rect x="170" y="892" width="380" height="26" fill="#a8bcc3" class="box"/>
+  <text x="360" y="913" text-anchor="middle" class="label small">X input sequence</text>
+
+  <path d="M170 905 H76 V571 H255" class="skip"/>
+  <text x="84" y="564" class="note">skip</text>
+
+  <path d="M465 571 H646 V219 H465" class="skip"/>
+  <text x="600" y="408" class="note">skip</text>
+
+  <text x="440" y="470" class="note">pre-norm layout</text>
+</svg>
