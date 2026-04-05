@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>Fixed Points, Feedback, and Adaptive Computation</title>
+  <meta name="description" content="A 6-lecture graduate course on iterative, stateful, and adaptive computation in deep learning — covering recurrence, fixed-point methods, adaptive depth, introspective architectures, memory, and meta-learning.">
+  <meta name="author" content="Sergey Plis">
+
+  <!-- Same fonts as aml.css theme -->
+  <link rel="stylesheet" href="dist/theme/fonts/league-gothic/league-gothic.css">
+  <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet">
+
+  <style>
+    /* ── Solarized Light palette (matching aml.css exactly) ── */
+    :root {
+      --bg:          #fdf6e3;
+      --main-color:  #657b83;
+      --head-color:  #586e75;
+      --link-color:  #268bd2;
+      --link-hover:  #78b9e6;
+      --border:      rgba(101,123,131,0.18);
+      --border-hl:   rgba(38,139,210,0.4);
+      --card-bg:     rgba(238,232,213,0.55);   /* #eee8d5 @ 55% */
+      --card-hover:  rgba(238,232,213,0.90);
+      --muted:       #93a1a1;
+      --accent:      #268bd2;
+      --radius:      6px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--main-color);
+      font-family: "Lato", sans-serif;
+      font-size: 18px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Page shell ── */
+    body {
+      position: relative; /* needed for corner logos */
+    }
+
+    /* ── Corner logos — fixed to viewport corners ── */
+    .corner-logo {
+      position: fixed;
+      top: 18px;
+      z-index: 10;
+      opacity: 0.88;
+    }
+    .corner-logo img {
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+    .corner-logo-left  { left:  18px; }
+    .corner-logo-left  img { width: 130px; }
+    .corner-logo-right { right: 18px; }
+    .corner-logo-right img { width: 300px; }
+
+    /* ── Outer wrapper ── */
+    .slide-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 28px 32px 48px;
+    }
+
+    .inner {
+      width: 100%;
+      max-width: 860px;
+    }
+
+    /* ── Hero — centered title block ── */
+    .hero {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .hero h1 {
+      font-family: "League Gothic", Impact, sans-serif;
+      font-weight: normal;
+      font-size: clamp(2.6rem, 6vw, 4.2rem);
+      line-height: 1.08;
+      letter-spacing: normal;
+      text-transform: uppercase;
+      color: var(--head-color);
+      margin-bottom: 16px;
+    }
+
+    .hero-sub {
+      font-family: "Lato", sans-serif;
+      font-size: 1rem;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 660px;
+      margin: 0 auto 24px;
+    }
+
+    .presenter-line {
+      font-size: 0.95rem;
+      color: var(--main-color);
+    }
+
+    .presenter-line strong {
+      font-weight: 700;
+      color: var(--head-color);
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── Lecture list ── */
+    .lecture-list {
+      display: grid;
+      gap: 10px;
+      list-style: none;
+    }
+
+    /* ── Individual card ── */
+    .lecture-card {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--main-color);
+      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      overflow: hidden;
+    }
+
+    .lecture-card:hover {
+      background: var(--card-hover);
+      border-color: var(--border-hl);
+      box-shadow: 0 4px 18px rgba(38,139,210,0.12);
+      color: var(--main-color);
+    }
+
+    /* left colour tab */
+    .card-tab {
+      width: 4px;
+      align-self: stretch;
+      flex-shrink: 0;
+      background: var(--tab-color, var(--accent));
+      border-radius: var(--radius) 0 0 var(--radius);
+    }
+
+    .card-body {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* number badge — styled like a reveal slide number */
+    .lec-num {
+      flex-shrink: 0;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--tab-color, var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-family: "League Gothic", Impact, sans-serif;
+      font-size: 1.1rem;
+      line-height: 1;
+      color: var(--tab-color, var(--accent));
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      background: transparent;
+    }
+
+    .lec-text { flex: 1; min-width: 0; }
+
+    .lec-title {
+      font-family: "Lato", sans-serif;
+      font-size: 0.97rem;
+      font-weight: 700;
+      color: var(--head-color);
+      margin-bottom: 3px;
+      line-height: 1.3;
+    }
+
+    .lec-desc {
+      font-size: 0.8rem;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* arrow — styled in the link blue */
+    .lec-arrow {
+      flex-shrink: 0;
+      font-size: 1.1rem;
+      color: var(--link-color);
+      padding-right: 4px;
+      opacity: 0;
+      transform: translateX(-6px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .lecture-card:hover .lec-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ── Divider rule ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 36px 0 20px;
+    }
+
+    /* ── Footer ── */
+    .footer-note {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-top: 8px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 560px) {
+      .corner-logo { display: none; }
+      .card-body { padding: 12px 14px; }
+      .lec-desc { display: none; }
+      .slide-page { padding-top: 32px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Corner logos — top-left and top-right -->
+  <div class="corner-logo corner-logo-left">
+    <img src="figures/neuroneural_logo.png" alt="Neuroneural Lab">
+  </div>
+  <div class="corner-logo corner-logo-right">
+    <img src="figures/TReNDS_logo_light.png" alt="TReNDS Center">
+  </div>
+
+  <div class="slide-page">
+    <div class="inner">
+
+      <!-- Hero: centered title -->
+      <header class="hero">
+        <h1>Fixed Points, Feedback,<br>and Adaptive Computation</h1>
+        <p class="hero-sub">
+          Replacing fixed-depth ballistic computation with iterative, stateful processes —
+          so that models can allocate effort, check intermediate results, and generalise as
+          <em>processes</em> rather than fixed input–output maps.
+        </p>
+        <p class="presenter-line">A 6-lecture graduate course &nbsp;·&nbsp; <strong>Sergey Plis</strong></p>
+      </header>
+
+      <!-- Lecture list -->
+      <p class="section-label">Course Lectures</p>
+
+      <nav aria-label="Course lectures">
+        <ul class="lecture-list">
+
+          <li>
+            <a href="lecture1.html" class="lecture-card" id="lec1"
+               style="--tab-color: #268bd2;">
+              <div class="card-tab"></div>
+              <div class="card-body">
+                <div class="lec-num">L1</div>
+                <div class="lec-text">
+                  <div class="lec-title">Architectures, Recurrence, and Automatic Differentiation</div>
+                  <div class="lec-desc">FFNNs, RNNs, Transformers as fixed-depth graphs. RNNs as dynamical systems. Forward &amp; reverse-mode automatic differentiation.</div>
+                </div>
+                <span class="lec-arrow">→</span>
+              </div>
+            </a>
+          </li>
+
+          <li>
+            <a href="lecture2.html" class="lecture-card" id="lec2"
+               style="--tab-color: #2aa198;">
+              <div class="card-tab"></div>
+              <div class="card-body">
+                <div class="lec-num">L2</div>
+                <div class="lec-text">
+                  <div class="lec-title">Fixed-Point Computation and Implicit Differentiation</div>
+                  <div class="lec-desc">Banach fixed-point theorem, contraction mappings, implicit function theorem. Almeida–Pineda / RBP through modern Deep Equilibrium Models.</div>
+                </div>
+                <span class="lec-arrow">→</span>
+              </div>
+            </a>
+          </li>
+
+          <li>
+            <a href="lecture3.html" class="lecture-card" id="lec3"
+               style="--tab-color: #859900;">
+              <div class="card-tab"></div>
+              <div class="card-body">
+                <div class="lec-num">L3</div>
+                <div class="lec-text">
+                  <div class="lec-title">Adaptive Computation: Halting, Routing, and Dynamic Depth</div>
+                  <div class="lec-desc">ACT, Universal Transformers, Depth-Adaptive Transformers, Mixture-of-Depths — learning how much computation to spend per input or token.</div>
+                </div>
+                <span class="lec-arrow">→</span>
+              </div>
+            </a>
+          </li>
+
+          <li>
+            <a href="lecture4.html" class="lecture-card" id="lec4"
+               style="--tab-color: #cb4b16;">
+              <div class="card-tab"></div>
+              <div class="card-body">
+                <div class="lec-num">L4</div>
+                <div class="lec-text">
+                  <div class="lec-title">Iterative Refinement and Introspective Computation</div>
+                  <div class="lec-desc">Networks that look at their own internal state and refine it — Slot Attention, MIND, SELF-Transformer (FPSA), Continuous Thought Machines.</div>
+                </div>
+                <span class="lec-arrow">→</span>
+              </div>
+            </a>
+          </li>
+
+          <li>
+            <a href="lecture5.html" class="lecture-card" id="lec5"
+               style="--tab-color: #b58900;">
+              <div class="card-tab"></div>
+              <div class="card-body">
+                <div class="lec-num">L5</div>
+                <div class="lec-text">
+                  <div class="lec-title">Memory, State Tracking, and Long-Horizon Reasoning</div>
+                  <div class="lec-desc">Neural Turing Machines, Titans (test-time memorisation), ultra-long context, and inductive biases of RNNs vs. Transformers for state tracking.</div>
+                </div>
+                <span class="lec-arrow">→</span>
+              </div>
+            </a>
+          </li>
+
+          <li>
+            <a href="lecture6.html" class="lecture-card" id="lec6"
+               style="--tab-color: #6c71c4;">
+              <div class="card-tab"></div>
+              <div class="card-body">
+                <div class="lec-num">L6</div>
+                <div class="lec-text">
+                  <div class="lec-title">Test-Time Learning, Self-Modification, and Nested Learners</div>
+                  <div class="lec-desc">MAML, TTT layers, Nested Learning — models that learn their own update rules, turning the optimisation process into a learnable, differentiable component.</div>
+                </div>
+                <span class="lec-arrow">→</span>
+              </div>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+
+      <hr>
+      <p class="footer-note">
+        Each lecture opens as a Reveal.js slide deck &nbsp;·&nbsp;
+        Fixed Points, Feedback, and Adaptive Computation &nbsp;·&nbsp; Sergey M Plis
+      </p>
+
+    </div>
+  </div>
+</body>
+
+</html>

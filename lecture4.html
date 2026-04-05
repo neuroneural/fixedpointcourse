@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <link href="css/fontawesome-free-6.2.1-web/css/all.css" rel="stylesheet">
+
+  <script src="lib/colorbrewer.v1.min.js" charset="utf-8"></script>
+  <script src="lib/colorStringStandalone.js" charset="utf-8"></script>
+  <script type="text/javascript" src="lib/jquery-2.2.4.min.js"></script>
+  <!-- Load d3.js -->
+  <script src="https://d3js.org/d3.v7.js"></script>
+
+  <title>Continuous Thought Machines</title>
+
+  <meta name="description" content="A presentation about Continuous Thought Machines">
+  <meta name="author" content="Sergey M Plis">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+
+
+  <link rel="stylesheet" href="dist/reset.css">
+  <link rel="stylesheet" href="dist/reveal.css">
+  <!-- Code syntax highlighting -->
+  <link rel="stylesheet" href="plugin/highlight/atom-one-light.css" id="highlight-theme">
+  <!-- <link rel="stylesheet" href="lib/css/zenburn.css"> -->
+  <link rel="stylesheet" href="css/custom.css">
+  <link rel="stylesheet" href="dist/theme/aml.css" id="theme">
+  <style>
+    /* Lecture Theme Accent: subtle horizontal streak on slide titles */
+    .reveal h2, .reveal h3 {
+      border-top: 3px solid #cb4b16;
+      padding-top: 0.3em;
+      display: inline-block;
+    }
+  </style>
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.scss';
+    document.getElementsByTagName('head')[0].appendChild(link);
+  </script>
+
+
+</head>
+
+
+<body>
+  <div class="reveal">
+    <!-- In between the <div="reveal"> and the <div class="slides">-->
+    <!-- <header style="position: absolute; top: 10px; left: 100px; z-index: 500; font-size:100px;background-color: rgba(0,0,0,0); text-align: center !important"></header>  -->
+    <!-- In between the <div="reveal"> and the <div class="slides">-->
+    <!-- Any section element inside of this container is displayed as a slide #93a1a1 -->
+    <div class="slides">
+      <section>
+        <section>
+          <!-- Lecture eyebrow -->
+          <div style="font-family: 'Lato', sans-serif; font-size: 18px; font-weight: 700;
+                      letter-spacing: 0.15em; text-transform: uppercase;
+                      color: #cb4b16; margin-bottom: 10px;">
+            Lecture 4 &nbsp;·&nbsp; Fixed Points, Feedback, and Adaptive Computation
+          </div>
+          <!-- Accent rule -->
+          <div style="width: 60px; height: 3px; background: #cb4b16; margin: 0 auto 28px;"></div>
+
+          <h2 style="color: #cb4b16; margin-bottom: 24px;">
+            Iterative Refinement<br>and Introspective Computation
+          </h2>
+
+          <div style="font-size: 22px; font-style: italic; color: #657b83;
+                      max-width: 680px; margin: 0 auto 36px; line-height: 1.55;">
+            Networks that look at their own internal state, refine it iteratively, and decide
+            how much further "thinking" to do. Where L3 asked <em>how much computation?</em>,
+            L4 asks <em>what should that computation be doing — and who decides?</em>
+          </div>
+
+          <div style="font-size: 18px; color: #93a1a1; margin-bottom: 8px;">
+            presented by
+          </div>
+          <div style="font-size: 28px; color: #586e75; font-weight: bold; margin-bottom: 28px;">
+            Sergey Plis
+          </div>
+
+          <p>
+            <img style="border:0; box-shadow: 0px 0px 0px;" height="160"
+                 src="figures/neuroneural_rubiks.svg" alt="Neuroneural">
+          </p>
+        </section>
+      </section>
+      <!-- ============================================================ -->
+      <!-- COURSE ARC MAP                                               -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>Course Arc</h2>
+          <blockquote class="left" style="font-size:22px;background-color:#eee8d5;width:100%;border-radius:8px;padding:20px;line-height:1.4;margin-bottom:30px;box-sizing:border-box;">
+            The unifying theme of this course is replacing fixed-depth feed-forward computation with iterative, stateful computation — whether via recurrence, equilibrium solving, adaptive depth, explicit memory, or learned test-time updates — so that models can allocate effort where it is needed.
+          </blockquote>
+          <div style="display:flex;flex-direction:column;gap:10px;max-width:800px;margin:0 auto;font-family:'Lato',sans-serif;">
+            <div  style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L1</span>
+              <span style="font-size:22px;color:#93a1a1;">Preliminaries</span>
+            </div>
+            <div  style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L2</span>
+              <span style="font-size:22px;color:#93a1a1;">Fixed points</span>
+            </div>
+            <div  style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L3</span>
+              <span style="font-size:22px;color:#93a1a1;">Adaptive depth</span>
+            </div>
+            <div  style="display:flex;align-items:center;background:#fdf6e3;padding:0 20px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.1);border-left:8px solid #cb4b16;transform:scale(1.05);font-weight:bold;height:60px;">
+              <span style="font-family:monospace;font-size:22px;color:#cb4b16;width:80px;">L4</span>
+              <span style="font-size:24px;color:#586e75;">Introspection</span>
+            </div>
+            <div  style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L5</span>
+              <span style="font-size:22px;color:#93a1a1;">Memory</span>
+            </div>
+            <div  style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L6</span>
+              <span style="font-size:22px;color:#93a1a1;">Learned update rules</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+
+      <section>
+        <section>
+          <h1>Motivation</h1>
+        </section>
+        <section data-background="figures/hunt.gif" data-background-size="cover">
+          <h2 style="color: #ffffff; text-shadow: 3px 3px 5px rgba(0,0,0,0.8); margin-top: -100px;">animal brain is highly dynamic and time dependent</h2>
+        </section>
+        <section>
+          <h3>The Abstraction of Time in Modern AI</h3>
+          <ul style="margin-top: 40px; font-size: 36px;">
+            <li class="fragment" style="margin-bottom: 30px;">NNs abstract away temporal dynamics</li>
+            <li class="fragment" style="margin-bottom: 30px;">Firing rate → single static value</li>
+            <li class="fragment" style="margin-bottom: 30px;">Efficiency over biological realism</li>
+          </ul>
+        </section>
+        <section >
+          <h3>Bridging the Cognitive Gap</h3>
+          <ul style="margin-top: 40px; font-size: 36px;">
+            <li class="fragment" style="margin-bottom: 30px;">Brains rely on STDP and oscillations</li>
+            <li class="fragment" style="margin-bottom: 30px;">Missing temporal components → gap with human cognition</li>
+            <li class="fragment" style="margin-bottom: 30px;"><strong>Time must be central to AI</strong></li>
+          </ul>
+        </section>
+        <section>
+          <h3>let's build a neural network model that is as dynamic</h3>
+          <ul style="margin-top: 40px; font-size: 36px;">
+            <li class="fragment" style="margin-bottom: 30px;">Neuron-level temporal processing</li>
+            <li class="fragment" style="margin-bottom: 30px;">Neural synchronization as latent representation</li>
+            <li class="fragment" style="margin-bottom: 30px;">Capture essential temporal dynamics</li>
+            <li class="fragment" style="margin-bottom: 30px;">Sequential thought on any data modality</li>
+            <li class="fragment" style="margin-bottom: 30px;">Computationally tractable</li>
+          </ul>
+        </section>
+        <section data-background="figures/house_generate.gif" data-background-size="cover">
+          <h3 style="color: #ffffff; text-shadow: 3px 3px 5px rgba(0,0,0,0.8);">we had something similar</h3>
+          <h2 style="color: #ffffff; text-shadow: 3px 3px 5px rgba(0,0,0,0.8);">Recurrent Neural Networks</h2>
+
+          <div class="slide-footer" style="color: #000000;">
+            Wojna Z, Gorban AN, Lee DS, Murphy K, Yu Q, Li Y, Ibarz J. Attention-based extraction of structured information from street view imagery. In 2017 14th IAPR international conference on document analysis and recognition (ICDAR) 2017 Nov 9 (Vol. 1, pp. 844-850). IEEE.
+          </div>
+        </section>
+
+        <section data-background="figures/draw.gif" data-background-size="contain">
+          <div class="slide-footer" style="color: #000000; margin-top: 200px">
+            Gregor K, Danihelka I, Graves A, Rezende D, Wierstra D. Draw: A recurrent neural network for image generation. InInternational conference on machine learning 2015 Jun 1 (pp. 1462-1471). PMLR.
+          </div>
+        </section>
+
+        <section data-background-video="figures/maze_example3.mp4" data-background-video-loop data-background-size="contain">
+
+        </section>
+
+        <section>
+          <h3>the biological inspiration</h3>
+          <div class="center">
+            <img width="100%" src="figures/brain.png" alt="Brain">
+          </div>
+        </section>
+        <section>
+          <h3>CTM vs LSTM: neural dynamics</h3>
+          <row>
+            <col50>
+              <div style="text-align:center; font-size:22px; margin-bottom:10px;">LSTM — static, disorganized</div>
+              <img width="100%" src="figures/dynamics_lstm.png" alt="LSTM dynamics">
+            </col50>
+            <col50>
+              <div style="text-align:center; font-size:22px; margin-bottom:10px;">CTM — rich, structured</div>
+              <img width="100%" src="figures/dynamics_atm.png" alt="CTM dynamics">
+            </col50>
+          </row>
+        </section>
+        <section data-background="figures/LSTM3-chain.png" data-background-size="contain">
+        </section>
+      </section>
+      <section>
+        <section>
+          <h1>Methods</h1>
+        </section>
+
+        <!-- Slide 0: Architecture animation video -->
+        <section data-background-video="figures/blog_arch_video.webm" data-background-video-loop data-background-size="contain">
+        </section>
+
+        <!-- Slide 1: Full architecture diagram -->
+        <section>
+          <img width="100%" src="figures/architecture.jpeg" alt="CTM Architecture Figure 3">
+        </section>
+
+        <!-- Reusable arch thumbnail style -->
+        <!-- Slides 2–11: one per yellow circle ①–⑩ -->
+
+        <!-- ① Synapse Model -->
+        <section>
+          <img src="figures/architecture.jpeg" style="position:absolute; top:-150px; right:-100px; width:38%; opacity:0.85; border:0;">
+          <h3>① Synapse Model</h3>
+          <div style="text-align:left; width:100%; font-size:40px; margin-top:20px;">
+            \[ \mathbf{a}^t = f_{\theta_{syn}}\!\left(\text{concat}(\mathbf{z}^t,\, \mathbf{o}^t)\right) \in \mathbb{R}^D \]
+            <ul style="margin-top:20px; font-size:34px;">
+              <li class="fragment roll-in">A <strong>U-NET-style MLP</strong> shared across all neurons</li>
+              <li class="fragment roll-in">Takes current latent state \(\mathbf{z}^t\) and attention output \(\mathbf{o}^t\)</li>
+              <li class="fragment roll-in">Produces <strong>pre-activations</strong> \(\mathbf{a}^t\) — one per neuron</li>
+              <li class="fragment roll-in">Drives the recurrent dynamics at each internal tick</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ② Pre-activation History -->
+        <section>
+          <img src="figures/architecture.jpeg" style="position:absolute; top:-150px; right:-200px; width:38%; opacity:0.85; border:0;">
+          <h3>② Pre-activation History</h3>
+          <div style="text-align:left; width:100%; font-size:40px; margin-top:20px;">
+            \[ \mathbf{A}^t = \begin{bmatrix} \mathbf{a}^{t-M+1} & \mathbf{a}^{t-M+2} & \cdots & \mathbf{a}^t \end{bmatrix} \in \mathbb{R}^{D \times M} \]
+            <ul style="margin-top:20px; font-size:34px;">
+              <li class="fragment roll-in">A rolling window of the last \(M\) pre-activations</li>
+              <li class="fragment roll-in">Each row is the history for one neuron</li>
+              <li class="fragment roll-in">\(M \approx 10\text{–}100\) — learnable initial history \(\mathbf{a}^{t=1}\)</li>
+              <li class="fragment roll-in">Gives neurons memory of their recent inputs</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ③ Neuron-Level Models (NLMs) -->
+        <section>
+          <img src="figures/architecture.jpeg" style="position:absolute; top:-150px; right:-200px; width:38%; opacity:0.85; border:0;">
+          <h3>③ Neuron-Level Models (NLMs)</h3>
+          <div style="text-align:left; width:100%; font-size:40px; margin-top:20px;">
+            \[ \mathbf{z}^{t+1}_d = g_{\theta_d}\!\left(\mathbf{A}^t_d\right) \]
+            <ul style="margin-top:20px; font-size:38px;">
+              <li class="fragment roll-in">Every neuron \(d\) has its <strong>own private weights</strong> \(\theta_d\)</li>
+              <li class="fragment roll-in">Depth-1 MLP of width \(d_{hidden}\) — a mid-level abstraction</li>
+              <li class="fragment roll-in">Processes the neuron's own pre-activation history \(\mathbf{A}^t_d\)</li>
+              <li class="fragment roll-in">Replaces the static ReLU with a <strong>learnable temporal function</strong></li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ④ Post-activations -->
+        <section>
+          <img src="figures/architecture.jpeg" style="position:absolute; top:-150px; right:-200px; width:38%; opacity:0.85; border:0;">
+          <h3>④ Post-activations</h3>
+          <div style="text-align:left; width:100%; font-size:40px; margin-top:20px;">
+            \[ \mathbf{z}^{t+1} \in \mathbb{R}^D \]
+            <ul style="margin-top:20px; font-size:38px;">
+              <li class="fragment roll-in">Output of all NLMs stacked into one vector</li>
+              <li class="fragment roll-in">Concatenated with attention output \(\mathbf{o}^t\) to form input to synapse model at tick \(t+1\)</li>
+              <li class="fragment roll-in">This is the <strong>latent state</strong> that evolves tick-by-tick</li>
+              <li class="fragment roll-in">Fully decoupled from input data dimensions</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ⑤ Post-activation History -->
+        <section>
+          <img src="figures/architecture.jpeg" style="position:absolute; top:-150px; right:-200px; width:38%; opacity:0.85; border:0;">
+          <h3>⑤ Post-activation History</h3>
+          <div style="text-align:left; width:100%; font-size:40px; margin-top:20px;">
+            \[ \mathbf{Z}^t = \begin{bmatrix} \mathbf{z}^1 & \mathbf{z}^2 & \cdots & \mathbf{z}^t \end{bmatrix} \in \mathbb{R}^{D \times t} \]
+            <ul style="margin-top:20px; font-size:36px;">
+              <li class="fragment roll-in">The <strong>full trajectory</strong> of the network's latent state</li>
+              <li class="fragment roll-in">Grows at each tick — unbounded in length</li>
+              <li class="fragment roll-in">Captures the temporal dynamics across the entire thought process</li>
+              <li class="fragment roll-in">This matrix is the raw material for neural synchronization</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ⑥ Neural Synchronization -->
+        <section>
+          <img src="figures/architecture.jpeg" style="position:absolute; top:-150px; right:-200px; width:38%; opacity:0.85; border:0;">
+          <h3>⑥ Neural Synchronization</h3>
+          <div style="text-align:left; width:100%; font-size:40px; margin-top:20px;">
+            \[ \mathbf{S}^t = \mathbf{Z}^t \cdot (\mathbf{Z}^t)^\top \in \mathbb{R}^{D \times D} \]
+            <ul style="margin-top:20px; font-size:34px;">
+              <li class="fragment roll-in">Inner product of neuron trajectory histories</li>
+              <li class="fragment roll-in">\(S^t_{ij}\) measures how <strong>synchronised</strong> neurons \(i\) and \(j\) are over time</li>
+              <li class="fragment roll-in">Inspired by biological <strong>neural synchrony</strong> as a coding mechanism</li>
+              <li class="fragment roll-in">The central representation — replaces a static vector</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ⑦ Neuron Pairing / Sub-sampling -->
+        <section>
+          <img src="figures/architecture.jpeg" style="position:absolute; top:-50px; right:-200px; width:38%; opacity:0.85; border:0;">
+          <h3>⑦ Neuron Pairing &amp; Scaling</h3>
+          <div style="text-align:left; width:100%; font-size:40px; margin-top:10px;">
+            \[ \mathbf{S}^t_{ij} = \frac{(\mathbf{Z}^t_i)^\top \cdot \text{diag}(\mathbf{R}^t_{ij}) \cdot \mathbf{Z}^t_j}{\sqrt{\textstyle\sum_{\tau=1}^{t} [\mathbf{R}^t_{ij}]_\tau}} \]
+            <ul style="margin-top:14px; font-size:34px;">
+              <li class="fragment roll-in">\(\mathbf{S}^t\) scales \(O(D^2)\) — too large to use fully</li>
+              <li class="fragment roll-in">Randomly sample \((i,j)\) pairs → compact \(\mathbf{S}^t_{out}\) and \(\mathbf{S}^t_{action}\)</li>
+              <li class="fragment roll-in">Learnable decay \(r_{ij} \geq 0\) controls influence of past ticks</li>
+              <li class="fragment roll-in">Higher \(r_{ij}\) = more recent ticks emphasized</li>
+            </ul>
+            <div class="fragment" style="margin-top:16px; font-size:32px;">
+              \[ \mathbf{R}^t_{ij} = \bigl[\exp(-r_{ij}(t-1))\;\; \exp(-r_{ij}(t-2))\;\; \cdots \;\; \exp(0)\bigr]^\top \in \mathbb{R}^t \]
+            </div>
+          </div>
+        </section>
+
+        <!-- ⑧ Latent Representations -->
+        <section>
+          <img src="figures/architecture.jpeg" style="position:absolute; top:-150px; right:-200px; width:38%; opacity:0.85; border:0;">
+          <h3>⑧ Latent Representations</h3>
+          <div style="text-align:left; width:100%; font-size:40px; margin-top:20px;">
+            \[ \mathbf{y}^t = \mathbf{W}_{out} \cdot \mathbf{S}^t_{out}, \qquad \mathbf{q}^t = \mathbf{W}_{in} \cdot \mathbf{S}^t_{action} \]
+            <ul style="margin-top:20px; font-size:36px;">
+              <li class="fragment roll-in">Two sub-sampled synchronization matrices, projected linearly</li>
+              <li class="fragment roll-in">\(\mathbf{y}^t\) — used to make <strong>output predictions</strong></li>
+              <li class="fragment roll-in">\(\mathbf{q}^t\) — used as <strong>attention query</strong> to observe data</li>
+              <li class="fragment roll-in">Both are derived entirely from neural dynamics — no direct state readout</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ⑨ Outputs -->
+        <section>
+          <img src="figures/architecture.jpeg" style="position:absolute; top:-150px; right:-200px; width:38%; opacity:0.85; border:0;">
+          <h3>⑨ Outputs at Each Tick</h3>
+          <div style="text-align:left; width:100%; font-size:40px; margin-top:20px;">
+            \[ \mathbf{y}^t \in \mathbb{R}^C \]
+            <ul style="margin-top:20px; font-size:38px;">
+              <li class="fragment roll-in">Prediction vector produced at <strong>every internal tick</strong> \(t\)</li>
+              <li class="fragment roll-in">\(C\) = number of classes (e.g., probabilities after softmax)</li>
+              <li class="fragment roll-in">The model can change its mind as it "thinks" longer</li>
+              <li class="fragment roll-in">Valid predictions at <em>every</em> tick — an external <strong>certainty threshold</strong> selects when to read off</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ⑩ Attention Output -->
+        <section>
+          <img src="figures/architecture.jpeg" style="position:absolute; top:-150px; right:-200px; width:38%; opacity:0.85; border:0;">
+          <h3>⑩ Attention Output</h3>
+          <div style="text-align:left; width:100%; font-size:40px; margin-top:20px;">
+            <div style="margin-left:-100px;">
+              \[ \mathbf{o}^t = \text{Attention}\!\left(Q = \mathbf{q}^t,\; KV = \text{FeatureExtractor}(\text{data})\right) \in \mathbb{R}^{d_{out}} \]
+            </div>
+            <ul style="margin-top:20px; font-size:36px;">
+              <li class="fragment roll-in">Standard cross-attention — the model queries the data</li>
+              <li class="fragment roll-in">Query \(\mathbf{q}^t\) is derived from neural synchronization (it "knows what to look for")</li>
+              <li class="fragment roll-in">Keys/values from a ResNet or other feature extractor</li>
+              <li class="fragment roll-in">\(\mathbf{o}^t\) concatenated with \(\mathbf{z}^{t+1}\) → feeds into the synapse model at next tick</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Loss Function -->
+        <section>
+          <img src="figures/architecture.jpeg" style="position:absolute; top:-150px; right:-270px; width:38%; opacity:0.85; border:0;">
+          <h3>Loss: Optimizing Across Internal Ticks</h3>
+          <div style="text-align:left; width:100%; font-size:40px; margin-top:20px;">
+            \[ L = \frac{L^{t_1} + L^{t_2}}{2}, \quad t_1 = \arg\min(\mathcal{L}), \quad t_2 = \arg\max(\mathcal{C}) \]
+            <ul style="margin-top:20px; font-size:36px;">
+              <li class="fragment roll-in">Loss computed at <strong>two selected ticks</strong> per forward pass</li>
+              <li class="fragment roll-in">\(t_1\): tick with <strong>minimum loss</strong> — best prediction</li>
+              <li class="fragment roll-in">\(t_2\): tick with <strong>maximum certainty</strong> \(\mathcal{C} = 1 - H(\mathbf{y}^t)\) — most confident</li>
+              <li class="fragment roll-in">Implements <strong>native adaptive computation</strong> without explicit restrictions on which tick to use</li>
+            </ul>
+          </div>
+        </section>
+
+        <section data-background-video="figures/blog_arch_video.webm" data-background-video-loop data-background-size="contain">
+        </section>
+        
+      </section>
+
+      <section>
+        <section>
+          <h1>Results</h1>
+        </section>
+
+        <!-- Slide 1: Neural dynamics (stacked: dynamics_atm top, UMAP video bottom) -->
+        <section>
+          <h3>Rich dynamics of neurons</h3>
+          <row>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">Neuron activity over time — each subplot is one neuron</div>
+              <img width="100%" src="figures/dynamics_atm.png" alt="CTM neural dynamics">
+            </col50>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">Neural activity in 2D UMAP projection — size ∝ magnitude, blue/red = sign</div>
+              <video width="100%" autoplay muted loop playsinline src="figures/umap.mp4"></video>
+            </col50>
+          </row>
+        </section>
+
+        <!-- Slide 2: Thinking about mazes -->
+        <section data-background-video="figures/maze-solve.mp4" data-background-size="contain">
+          <div style="display:flex; align-items:center; height:100vh; gap:8px; overflow:hidden;">
+            <h3 style="writing-mode:vertical-rl; transform:rotate(180deg); font-size:72px; margin:0; white-space:nowrap; flex-shrink:0;">Thinking about mazes</h3>
+          </div>
+        </section>
+
+        <!-- Slide 3: Generalization -->
+        <section>
+          <h3>Generalization: small → large mazes</h3>
+          <row style="margin-top:-150px;">
+            <col50 style="margin-right:-30px;">
+              <video width="100%" autoplay muted loop playsinline src="figures/gen-1.mp4"></video>
+            </col50>
+            <col50>
+              <video width="100%" autoplay muted loop playsinline src="figures/gen-2.mp4"></video>
+            </col50>
+          </row>
+          <row style="margin-top:-20px;">
+            <col50 style="margin-right:-30px;">
+              <video width="100%" autoplay muted loop playsinline src="figures/gen-3.mp4"></video>
+            </col50>
+            <col50>
+              <video width="100%" autoplay muted loop playsinline src="figures/gen-4.mp4"></video>
+            </col50>
+          </row>
+          <ul style="font-size:26px; margin-top:16px;">
+            <li class="fragment roll-in">Trained on <strong>39×39 mazes</strong>, paths up to length 100</li>
+            <li class="fragment roll-in">Tested on <strong>99×99 mazes</strong> — paths ~6× longer</li>
+            <li class="fragment roll-in">Generalizes zero-shot — <em>no retraining</em></li>
+            <li class="fragment roll-in">Internal world model built on-the-fly, <strong>no positional encodings</strong></li>
+          </ul>
+        </section>
+
+        <!-- Slide 4: Accuracy vs thinking time -->
+        <section>
+          <h3>More thinking → better answers</h3>
+          <row>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">Accuracy vs internal ticks (thinking time)</div>
+              <img width="100%" src="figures/accuracy_vs_thinking_time.svg" alt="Accuracy vs thinking time">
+            </col50>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">Accuracy vs maze path length</div>
+              <img width="100%" src="figures/accuracy_vs_pathlength.svg" alt="Accuracy vs path length">
+            </col50>
+          </row>
+          <ul style="font-size:28px; margin-top:20px;">
+            <li class="fragment roll-in">More internal ticks → higher accuracy</li>
+            <li class="fragment roll-in">Harder mazes (longer paths) benefit most from more ticks</li>
+            <li class="fragment roll-in">Compute budget is a <strong>knob at inference time</strong></li>
+          </ul>
+        </section>
+
+        <!-- Slide 5: ImageNet - Thinking about images -->
+        <section data-vertical-align-top>
+          <h3>Thinking about images</h3>
+          <row>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">Attention weights + certainty over internal ticks</div>
+              <video width="100%" autoplay muted loop playsinline src="figures/imagenet_3415.mp4"></video>
+            </col50>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">Top-5 accuracy per internal tick</div>
+              <img width="100%" src="figures/accuracy_types_5.svg" alt="Accuracy per tick">
+              <div style="font-size:18px; margin-top:6px;">Accuracy at certainty thresholds 0.5 / 0.8</div>
+              <img width="48%" src="figures/steps_versus_correct_0.5.png" alt="Threshold 0.5">
+              <img width="48%" src="figures/steps_versus_correct_0.8.png" alt="Threshold 0.8">
+            </col50>
+          </row>
+        </section>
+
+        <!-- Slide 6: Calibration -->
+        <section>
+          <h3>Well-calibrated uncertainty</h3>
+          <row>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">Calibration on CIFAR-10</div>
+              <img width="100%" src="figures/calibration.svg" alt="Calibration">
+            </col50>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">Calibration on ImageNet</div>
+              <img width="100%" src="figures/imagenet_calibration.svg" alt="ImageNet calibration">
+            </col50>
+          </row>
+          <ul style="font-size:28px; margin-top:20px;">
+            <li class="fragment roll-in">CTM certainty correlates with actual correctness</li>
+            <li class="fragment roll-in">Better calibrated than LSTM baseline</li>
+            <li class="fragment roll-in">Certainty \(\mathcal{C}^t = 1 - H(\mathbf{y}^t)\) is a reliable confidence signal</li>
+          </ul>
+        </section>
+
+        <!-- Slide 7: Parity -->
+        <section style="padding:0;">
+          <div style="display:flex; align-items:center; height:100vh; gap:8px; overflow:hidden;">
+            <h3 style="writing-mode:vertical-rl; transform:rotate(180deg); font-size:48px; margin:0; white-space:nowrap; flex-shrink:0;">Sequential reasoning: cumulative parity</h3>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; padding:10px 0;">
+              <div style="position:relative; width:92%;">
+                <video width="100%" autoplay muted loop playsinline src="figures/parity_activations.mp4" style="display:block;"></video>
+                <div style="position:absolute; top:8px; left:0; right:0; text-align:center; font-size:18px; background:rgba(0,0,0,0.45); color:#fff; padding:4px 8px;">8 attention heads tracking parity — argmax trajectory overlaid on input sequence</div>
+              </div>
+              <ul style="font-size:26px; margin-top:14px; width:92%;">
+                <li class="fragment roll-in">8 attention heads coordinate across the sequence</li>
+                <li class="fragment roll-in">Attention argmax traces a <strong>structured reasoning path</strong></li>
+                <li class="fragment roll-in">Generalizes to <strong>longer sequences than seen during training</strong></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 8: Adaptive compute / wait times -->
+        <section>
+          <h3>Emergent adaptive compute</h3>
+          <row>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">Mean wait times (internal ticks) per sequence index</div>
+              <img width="100%" src="figures/mean_wait_times.svg" alt="Wait times">
+            </col50>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">Wait time vs gap between sorted items</div>
+              <img width="100%" src="figures/wait_use_case_2.svg" alt="Wait time vs delta">
+            </col50>
+          </row>
+          <ul style="font-size:28px; margin-top:20px;">
+            <li class="fragment roll-in">CTM uses <strong>more ticks for harder inputs</strong> — not programmed, emergent</li>
+            <li class="fragment roll-in">Sorting: larger gaps between items → more internal compute</li>
+            <li class="fragment roll-in">Arises naturally from the two-tick loss function</li>
+          </ul>
+        </section>
+
+        <!-- Slide 9: Reaction times vs humans -->
+        <section>
+          <h3>CTM reaction times correlate with humans</h3>
+          <row>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">CTM reaction times vs human reaction times (CIFAR-10H)</div>
+              <img width="100%" src="figures/reaction_times_CTM.svg" alt="CTM reaction times">
+            </col50>
+            <col50>
+              <div style="font-size:18px; margin-bottom:4px;">LSTM pseudo reaction times — no correlation</div>
+              <img width="100%" src="figures/reaction_times_lstm.svg" alt="LSTM reaction times">
+            </col50>
+          </row>
+          <ul style="font-size:28px; margin-top:20px;">
+            <li class="fragment roll-in">CTM: hard images for humans → more ticks needed</li>
+            <li class="fragment roll-in">LSTM: no relationship with human reaction times</li>
+            <li class="fragment roll-in">CTM's temporal dynamics <strong>align with biological cognition</strong></li>
+          </ul>
+        </section>
+
+        <!-- Slide 10: Interactive maze demo -->
+        <section>
+          <h3 style="margin-bottom: 10px;">Live demo: solve a maze</h3>
+          <iframe src="https://pub.sakana.ai/ctm/#maze-demo"
+                  style="width:100%; height:80vh; border:none; border-radius:8px;"
+                  allow="autoplay">
+          </iframe>
+        </section>
+
+      </section>
+
+      <section>
+        <h2>Takeaways</h2>
+        <ul style="font-size:34px; line-height:1.6;">
+          <li class="fragment roll-in"><strong>Neurons have history</strong> — each neuron sees its own pre-activation trajectory, not just the current state</li>
+          <li class="fragment roll-in"><strong>Synchronization is the representation</strong> — the model's "thought" lives in how neurons correlate over time, not in a fixed hidden vector</li>
+          <li class="fragment roll-in"><strong>More thinking = better answers</strong> — accuracy improves with internal ticks; compute is a knob at inference time</li>
+          <li class="fragment roll-in"><strong>Adaptive compute emerges naturally</strong> — harder inputs get more ticks without any explicit pressure to do so</li>
+          <li class="fragment roll-in"><strong>Generalizes beyond training</strong> — maze-solving transfers from 39×39 to 99×99 without retraining, no positional encodings</li>
+          <li class="fragment roll-in"><strong>Alignment with biology</strong> — CTM reaction times track human psychophysics; LSTM does not</li>
+        </ul>
+      </section>
+
+      <section>
+        <h1>thank you!</h1>
+      </section>
+    </div>
+
+  </div>
+
+  <script src="dist/reveal.js"></script>
+
+  <link rel="stylesheet" href="plugin/highlight/atom-one-light.css">
+  <script src="plugin/highlight/highlight.js"></script>
+  <script src="plugin/math/math.js"></script>
+  <script src="plugin/chalkboard/plugin.js"></script>
+  <script src="plugin/notes/notes.js"></script>
+  <script src="plugin/zoom/zoom.js"></script>
+  <script src="plugin/fullscreen/fullscreen.js"></script>
+  <script src="plugin/verticator/verticator.js"></script>
+  <script src="plugin/verticator/verticator.js"></script>
+  <link rel="stylesheet" href="plugin/verticator/verticator.css">
+  <script src="plugin/menu/menu.js"></script>
+
+  <script>
+    // Full list of configuration options available at:
+    // https://github.com/hakimel/reveal.js#configuration
+
+    Reveal.initialize({
+      // history: true,
+      hash: true,
+      margin: 0.01,
+      minScale: 0.01,
+      maxScale: 1.23,
+      center: true,
+
+      controls: false,
+      keyboard: true,
+
+      overview: true,
+      transition: 'slide', // Transition style: none/fade/slide/convex/concave/zoom
+      transitionSpeed: 'fast', // Transition speed: default/fast/slow
+      menu: {
+        themes: false,
+        openSlideNumber: true,
+        openButton: false,
+      },
+
+      chalkboard: {
+        boardmarkerWidth: 1,
+        chalkWidth: 2,
+        chalkEffect: 1,
+        toggleNotesButton: false,
+        toggleChalkboardButton: false,
+        slideWidth: Reveal.width,
+        slideHeight: Reveal.height,
+        // src: "chalkboards/chalkboard_em2.json",
+        readOnly: false,
+        theme: "blackboard",
+        eraser: { src: "plugin/chalkboard/img/sponge.png", radius: 30 },
+      },
+
+      math: {
+        mathjax: 'https://cdn.jsdelivr.net/gh/mathjax/mathjax@2.7.8/MathJax.js',
+        config: 'TeX-AMS_SVG-full',
+        // pass other options into `MathJax.Hub.Config()`
+        TeX: {
+          Macros: {
+            RR: '\\mathbb{R}',
+            PP: '\\mathbb{P}',
+            EE: '\\mathbb{E}',
+            NN: '\\mathbb{N}',
+            vth: '\\vec{\\theta}',
+            loss: '{\\cal l}',
+            hclass: '{\\cal H}',
+            CD: '{\\cal D}',
+            def: '\\stackrel{\\text{def}}{=}',
+            pag: ['\\text{pa}_{{\\cal G}^{#1}}(#2)}', 2],
+            vec: ['\\boldsymbol{\\mathbf #1}', 1],
+            set: ['\\left\\{#1 \\; : \\; #2\\right\\}', 2],
+            bm: ['\\boldsymbol{\\mathbf #1}', 1],
+            argmin: ['\\operatorname\{arg\\,min\\,\}'],
+            argmax: ['\\operatorname\{arg\\,max\\,\}'],
+            softmax: ['\\operatorname\{soft\\,max\\,\}'],
+            prob: ["\\mbox{#1$\\left(#2\\right)$}", 2],
+          },
+          loader: { load: ['[tex]/color'] },
+          extensions: ["color.js"],
+          tex: { packages: { '[+]': ['color'] } },
+          svg: {
+            fontCache: 'global'
+          }
+        }
+      },
+
+      plugins: [Verticator, RevealMath, RevealChalkboard, RevealHighlight, RevealNotes, RevealZoom, RevealMenu],
+
+    });
+
+    Reveal.configure({ fragments: true }); // set false when developing to see everything at once
+    Reveal.configure({ slideNumber: true });
+    //Reveal.configure({ history: true });
+    Reveal.configure({ slideNumber: 'c / t' });
+    Reveal.addEventListener('darkside', function () {
+      document.getElementById('theme').setAttribute('href', 'dist/theme/aml_dark.css');
+    }, false);
+    Reveal.addEventListener('brightside', function () {
+      document.getElementById('theme').setAttribute('href', 'dist/theme/aml.css');
+    }, false);
+
+    // Listen for a fragment being shown
+    Reveal.addEventListener('fragmentshown', function (event) {
+      // Find all slides
+      const allSlides = document.querySelectorAll('.slide');
+
+      // Remove 'dim-background' from all slides first to ensure only the current slide is dimmed
+      allSlides.forEach(slide => slide.classList.remove('dim-background'));
+
+      // Find the closest ancestor slide of the shown fragment
+      const currentSlide = Reveal.getCurrentSlide();
+      // Check if the currentSlide has the 'special-dim' class
+      if (currentSlide && currentSlide.getAttribute('data-state')) {
+        console.log('target: ', currentSlide.getAttribute('data-state')); // Should be 'dimmed-slide' for this slide
+        const toModify = event.fragment.closest('.slide');
+        toModify.classList.add('dim-background');
+        currentSlide.classList.add('dim-background');
+      }
+    });
+
+    // Listen for a fragment being hidden and slide changes to remove the dimming effect where applicable
+    ['fragmenthidden', 'slidechanged'].forEach(eventType => {
+      Reveal.addEventListener(eventType, function () {
+        // Find all slides and remove 'dim-background' class
+        const slides = document.querySelectorAll('.slide');
+        slides.forEach(slide => slide.classList.remove('dim-background'));
+      });
+    });
+
+
+
+  </script>
+
+  <style type="text/css">
+    /* 1. Style header/footer <div> so they are positioned as desired. */
+    #header-left {
+      position: absolute;
+      top: 0%;
+      left: 0%;
+    }
+
+    #header-right {
+      position: absolute;
+      top: 0%;
+      right: 0%;
+    }
+
+    #footer-left {
+      position: absolute;
+      bottom: 0%;
+      left: 0%;
+    }
+  </style>
+
+  <!-- // 2. Create hidden header/footer -->
+  <div id="hidden" style="display:none;">
+    <div id="header">
+      <div id="header-left">
+        <img style="border:0; box-shadow: 0px 0px 0px
+			      rgba(150, 150, 255,0.8);" width="90" src="figures/neuroneural_logo.png" alt="brainchop">
+      </div>
+      <div id="header-right">
+        <img style="border:0; box-shadow: 0px 0px 0px
+			      rgba(150, 150, 255,0.8);" width="250" src="figures/TReNDS_logo_light.png" alt="TReNDS">
+        <!-- <img style="border:0; box-shadow: 0px 0px 0px -->
+        <!--             rgba(150, 150, 255, 0.8);" -->
+        <!--      width="100" -->
+        <!--      src="figures/neuroneural_logo.png" -->
+        <!--      alt="Neuroneural"> -->
+      </div>
+      <div id="footer-left">
+      </div>
+    </div>
+  </div>
+
+
+  <script type="text/javascript">
+    // 3. On Reveal.js ready event, copy header/footer <div> into each `.slide-background` <div>
+    var header = $('#header').html();
+    if (window.location.search.match(/print-pdf/gi)) {
+      Reveal.addEventListener('ready', function (event) {
+        $('.slide-background').append(header);
+      });
+    }
+    else if (window.self === window.top) {
+      $('div.reveal').append(header);
+    }
+
+  </script>
+
+</body>
+
+</html>

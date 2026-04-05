@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="100%" height="100%">
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/></marker>
+</defs>
+<rect x="100" y="450" width="60" height="100" fill="#93a1a1" stroke="#333" stroke-width="2"/>
+<text x="130" y="580" font-family="serif" font-size="24px" text-anchor="middle" font-weight="bold">Input X</text>
+<rect x="300" y="350" width="40" height="40" fill="#eee" stroke="#333" stroke-width="2"/>
+<text x="320" y="340" font-family="serif" font-size="18px" text-anchor="middle">W^Q</text>
+<rect x="300" y="450" width="40" height="40" fill="#eee" stroke="#333" stroke-width="2"/>
+<text x="320" y="440" font-family="serif" font-size="18px" text-anchor="middle">W^K</text>
+<rect x="300" y="550" width="40" height="40" fill="#eee" stroke="#333" stroke-width="2"/>
+<text x="320" y="540" font-family="serif" font-size="18px" text-anchor="middle">W^V</text>
+<line x1="160" y1="500" x2="295" y2="370" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="160" y1="500" x2="295" y2="470" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="160" y1="500" x2="295" y2="570" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="450" y="340" width="60" height="60" fill="#dc322f" stroke="#333" stroke-width="2"/>
+<text x="480" y="330" font-family="serif" font-size="22px" text-anchor="middle" font-weight="bold">Q</text>
+<rect x="450" y="440" width="60" height="60" fill="#268bd2" stroke="#333" stroke-width="2"/>
+<text x="480" y="430" font-family="serif" font-size="22px" text-anchor="middle" font-weight="bold">K</text>
+<rect x="450" y="540" width="60" height="60" fill="#859900" stroke="#333" stroke-width="2"/>
+<text x="480" y="530" font-family="serif" font-size="22px" text-anchor="middle" font-weight="bold">V</text>
+<line x1="340" y1="370" x2="445" y2="370" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="340" y1="470" x2="445" y2="470" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="340" y1="570" x2="445" y2="570" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+<circle cx="650" cy="400" r="30" fill="white" stroke="#333" stroke-width="2"/>
+<text x="650" y="408" font-family="serif" font-size="24px" text-anchor="middle">×</text>
+<text x="650" y="360" font-family="serif" font-size="18px" text-anchor="middle">QK^T</text>
+<path d="M 510 370 Q 550 370, 620 400" fill="none" stroke="#dc322f" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 510 470 Q 550 470, 620 400" fill="none" stroke="#268bd2" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="750" y="370" width="80" height="60" fill="#b58900" rx="10" stroke="#333" stroke-width="2"/>
+<text x="790" y="407" font-family="serif" font-size="18px" text-anchor="middle" fill="white">Softmax</text>
+<line x1="680" y1="400" x2="745" y2="400" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+<circle cx="900" cy="470" r="30" fill="white" stroke="#333" stroke-width="2"/>
+<text x="900" y="478" font-family="serif" font-size="24px" text-anchor="middle">+</text>
+<text x="900" y="530" font-family="serif" font-size="20px" text-anchor="middle" font-weight="bold">Output</text>
+<path d="M 830 400 Q 870 400, 900 440" fill="none" stroke="#b58900" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 510 570 Q 750 570, 880 490" fill="none" stroke="#859900" stroke-width="2" marker-end="url(#arrow)"/>
+</svg>

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <link href="css/fontawesome-free-6.2.1-web/css/all.css" rel="stylesheet">
+
+  <script src="lib/colorbrewer.v1.min.js" charset="utf-8"></script>
+  <script src="lib/colorStringStandalone.js" charset="utf-8"></script>
+  <script type="text/javascript" src="lib/jquery-2.2.4.min.js"></script>
+  <script src="https://d3js.org/d3.v7.js"></script>
+
+  <title>Lecture 6 – Test-Time Learning, Self-Modification, and Nested Learners</title>
+  <meta name="description" content="Fixed Points, Feedback, and Adaptive Computation — Lecture 6">
+  <meta name="author" content="Sergey Plis">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="stylesheet" href="dist/reset.css">
+  <link rel="stylesheet" href="dist/reveal.css">
+  <link rel="stylesheet" href="plugin/highlight/atom-one-light.css" id="highlight-theme">
+  <link rel="stylesheet" href="css/custom.css">
+  <link rel="stylesheet" href="dist/theme/aml.css" id="theme">
+  <style>
+    /* Lecture Theme Accent: subtle horizontal streak on slide titles */
+    .reveal h2, .reveal h3 {
+      border-top: 3px solid #6c71c4;
+      padding-top: 0.3em;
+      display: inline-block;
+    }
+  </style>
+  <script>
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.scss';
+    document.getElementsByTagName('head')[0].appendChild(link);
+  </script>
+</head>
+
+
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section>
+        <section>
+          <div style="font-family: 'Lato', sans-serif; font-size: 18px; font-weight: 700;
+                      letter-spacing: 0.15em; text-transform: uppercase;
+                      color: #6c71c4; margin-bottom: 10px;">
+            Lecture 6 &nbsp;·&nbsp; Fixed Points, Feedback, and Adaptive Computation
+          </div>
+          <div style="width: 60px; height: 3px; background: #6c71c4; margin: 0 auto 28px;"></div>
+
+          <h2 style="color: #6c71c4; margin-bottom: 24px;">
+            Test-Time Learning, Self-Modification,<br>and Nested Learners
+          </h2>
+
+          <div style="font-size: 22px; font-style: italic; color: #657b83;
+                      max-width: 680px; margin: 0 auto 36px; line-height: 1.55;">
+            What happens when we stop hand-designing update rules and let models learn their own —
+            turning the optimization process itself into a learnable, differentiable component?
+            MAML, TTT layers, and Nested Learning.
+          </div>
+
+          <div style="font-size: 18px; color: #93a1a1; margin-bottom: 8px;">presented by</div>
+          <div style="font-size: 28px; color: #586e75; font-weight: bold; margin-bottom: 28px;">
+            Sergey Plis
+          </div>
+
+          <p>
+            <img style="border:0; box-shadow: 0px 0px 0px;" height="160"
+                 src="figures/neuroneural_rubiks.svg" alt="Neuroneural">
+          </p>
+        </section>
+      </section>
+      <!-- ============================================================ -->
+      <!-- COURSE ARC MAP                                               -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>Course Arc</h2>
+          <blockquote class="left" style="font-size:22px;background-color:#eee8d5;width:100%;border-radius:8px;padding:20px;line-height:1.4;margin-bottom:30px;box-sizing:border-box;">
+            The unifying theme of this course is replacing fixed-depth feed-forward computation with iterative, stateful computation — whether via recurrence, equilibrium solving, adaptive depth, explicit memory, or learned test-time updates — so that models can allocate effort where it is needed.
+          </blockquote>
+          <div style="display:flex;flex-direction:column;gap:10px;max-width:800px;margin:0 auto;font-family:'Lato',sans-serif;">
+            <div  style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L1</span>
+              <span style="font-size:22px;color:#93a1a1;">Preliminaries</span>
+            </div>
+            <div  style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L2</span>
+              <span style="font-size:22px;color:#93a1a1;">Fixed points</span>
+            </div>
+            <div  style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L3</span>
+              <span style="font-size:22px;color:#93a1a1;">Adaptive depth</span>
+            </div>
+            <div  style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L4</span>
+              <span style="font-size:22px;color:#93a1a1;">Introspection</span>
+            </div>
+            <div  style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L5</span>
+              <span style="font-size:22px;color:#93a1a1;">Memory</span>
+            </div>
+            <div  style="display:flex;align-items:center;background:#fdf6e3;padding:0 20px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.1);border-left:8px solid #6c71c4;transform:scale(1.05);font-weight:bold;height:60px;">
+              <span style="font-family:monospace;font-size:22px;color:#6c71c4;width:80px;">L6</span>
+              <span style="font-size:24px;color:#586e75;">Learned update rules</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+
+    </div>
+  </div>
+
+  <script src="dist/reveal.js"></script>
+  <link rel="stylesheet" href="plugin/highlight/atom-one-light.css">
+  <script src="plugin/highlight/highlight.js"></script>
+  <script src="plugin/math/math.js"></script>
+  <script src="plugin/chalkboard/plugin.js"></script>
+  <script src="plugin/notes/notes.js"></script>
+  <script src="plugin/zoom/zoom.js"></script>
+  <script src="plugin/fullscreen/fullscreen.js"></script>
+  <script src="plugin/verticator/verticator.js"></script>
+  <link rel="stylesheet" href="plugin/verticator/verticator.css">
+  <script src="plugin/menu/menu.js"></script>
+
+  <script>
+    Reveal.initialize({
+      hash: true, margin: 0.01, minScale: 0.01, maxScale: 1.23, center: true,
+      controls: false, keyboard: true, overview: true,
+      transition: 'slide', transitionSpeed: 'fast',
+      menu: { themes: false, openSlideNumber: true, openButton: false },
+      chalkboard: {
+        boardmarkerWidth: 1, chalkWidth: 2, chalkEffect: 1,
+        toggleNotesButton: false, toggleChalkboardButton: false,
+        slideWidth: Reveal.width, slideHeight: Reveal.height,
+        readOnly: false, theme: "blackboard",
+        eraser: { src: "plugin/chalkboard/img/sponge.png", radius: 30 },
+      },
+      math: {
+        mathjax: 'https://cdn.jsdelivr.net/gh/mathjax/mathjax@2.7.8/MathJax.js',
+        config: 'TeX-AMS_SVG-full',
+        TeX: {
+          Macros: {
+            RR: '\\mathbb{R}', PP: '\\mathbb{P}', EE: '\\mathbb{E}', NN: '\\mathbb{N}',
+            vth: '\\vec{\\theta}', loss: '{\\cal l}', hclass: '{\\cal H}', CD: '{\\cal D}',
+            def: '\\stackrel{\\text{def}}{=}',
+            pag: ['\\text{pa}_{{\\cal G}^{#1}}(#2)}', 2],
+            vec: ['\\boldsymbol{\\mathbf #1}', 1],
+            set: ['\\left\\{#1 \\; : \\; #2\\right\\}', 2],
+            bm: ['\\boldsymbol{\\mathbf #1}', 1],
+            argmin: ['\\operatorname\{arg\\,min\\,\}'],
+            argmax: ['\\operatorname\{arg\\,max\\,\}'],
+            softmax: ['\\operatorname\{soft\\,max\\,\}'],
+            prob: ["\\mbox{#1$\\left(#2\\right)$}", 2],
+          },
+          loader: { load: ['[tex]/color'] }, extensions: ["color.js"],
+          tex: { packages: { '[+]': ['color'] } }, svg: { fontCache: 'global' }
+        }
+      },
+      plugins: [Verticator, RevealMath, RevealChalkboard, RevealHighlight, RevealNotes, RevealZoom, RevealMenu],
+    });
+    Reveal.configure({ fragments: true });
+    Reveal.configure({ slideNumber: 'c / t' });
+    Reveal.addEventListener('darkside',   function() { document.getElementById('theme').setAttribute('href','dist/theme/aml_dark.css'); }, false);
+    Reveal.addEventListener('brightside', function() { document.getElementById('theme').setAttribute('href','dist/theme/aml.css'); },      false);
+  </script>
+
+  <style type="text/css">
+    #header-left  { position: absolute; top: 0%; left:  0%; }
+    #header-right { position: absolute; top: 0%; right: 0%; }
+    #footer-left  { position: absolute; bottom: 0%; left: 0%; }
+  </style>
+
+  <div id="hidden" style="display:none;">
+    <div id="header">
+      <div id="header-left">
+        <img style="border:0; box-shadow:0px 0px 0px rgba(150,150,255,0.8);"
+             width="90" src="figures/neuroneural_logo.png" alt="Neuroneural">
+      </div>
+      <div id="header-right">
+        <img style="border:0; box-shadow:0px 0px 0px rgba(150,150,255,0.8);"
+             width="250" src="figures/TReNDS_logo_light.png" alt="TReNDS">
+      </div>
+      <div id="footer-left"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var header = $('#header').html();
+    if (window.location.search.match(/print-pdf/gi)) {
+      Reveal.addEventListener('ready', function(event) { $('.slide-background').append(header); });
+    } else if (window.self === window.top) { $('div.reveal').append(header); }
+  </script>
+
+</body>
+</html>

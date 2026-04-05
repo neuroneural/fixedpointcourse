@@ -1,0 +1,1640 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <link href="css/fontawesome-free-6.2.1-web/css/all.css" rel="stylesheet">
+
+  <script src="lib/colorbrewer.v1.min.js" charset="utf-8"></script>
+  <script src="lib/colorStringStandalone.js" charset="utf-8"></script>
+  <script type="text/javascript" src="lib/jquery-2.2.4.min.js"></script>
+  <script src="https://d3js.org/d3.v7.js"></script>
+
+  <title>Lecture 1 – Architectures, Recurrence, and Automatic Differentiation</title>
+  <meta name="description" content="Fixed Points, Feedback, and Adaptive Computation — Lecture 1">
+  <meta name="author" content="Sergey Plis">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="stylesheet" href="dist/reset.css">
+  <link rel="stylesheet" href="dist/reveal.css">
+  <link rel="stylesheet" href="plugin/highlight/atom-one-light.css" id="highlight-theme">
+  <link rel="stylesheet" href="css/custom.css">
+  <link rel="stylesheet" href="dist/theme/aml.css" id="theme">
+  <style>
+    /* Lecture Theme Accent: subtle horizontal streak on slide titles */
+    .reveal h2, .reveal h3 {
+      border-top: 3px solid #268bd2;
+      padding-top: 0.3em;
+      display: inline-block;
+    }
+  </style>
+  <script>
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.scss';
+    document.getElementsByTagName('head')[0].appendChild(link);
+  </script>
+</head>
+
+
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ============================================================ -->
+      <!-- TITLE SLIDE                                                   -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <!-- Lecture eyebrow -->
+          <div style="font-family: 'Lato', sans-serif; font-size: 18px; font-weight: 700;
+                      letter-spacing: 0.15em; text-transform: uppercase;
+                      color: #268bd2; margin-bottom: 10px;">
+            Lecture 1 &nbsp;·&nbsp; Fixed Points, Feedback, and Adaptive Computation
+          </div>
+          <!-- Accent rule -->
+          <div style="width: 60px; height: 3px; background: #268bd2; margin: 0 auto 28px;"></div>
+
+          <h2 style="color: #268bd2; margin-bottom: 24px;">
+            Architectures, Recurrence,<br>and Automatic Differentiation
+          </h2>
+
+          <div style="font-size: 22px; font-style: italic; color: #657b83;
+                      max-width: 680px; margin: 0 auto 36px; line-height: 1.55;">
+            We establish the baseline: standard deep networks as fixed-depth,
+            feed-forward computation graphs. We review FFNNs, RNNs, and Transformers,
+            emphasizing RNNs as dynamical systems — the first architecture to break
+            the fixed-depth mold. We close with automatic differentiation as the
+            universal tool for computing gradients through arbitrary computation.
+          </div>
+
+          <div style="font-size: 18px; color: #93a1a1; margin-bottom: 8px;">
+            presented by
+          </div>
+          <div style="font-size: 28px; color: #586e75; font-weight: bold; margin-bottom: 28px;">
+            Sergey Plis
+          </div>
+
+          <p>
+            <img style="border:0; box-shadow: 0px 0px 0px;" height="160"
+                 src="figures/neuroneural_rubiks.svg" alt="Neuroneural">
+          </p>
+        </section>
+      </section>
+      <!-- ============================================================ -->
+      <!-- COURSE ARC MAP                                               -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>Course Arc</h2>
+          <blockquote class="left" style="font-size:22px;background-color:#eee8d5;width:100%;border-radius:8px;padding:20px;line-height:1.4;margin-bottom:30px;box-sizing:border-box;">
+            The unifying theme of this course is replacing fixed-depth feed-forward computation with iterative, stateful computation — whether via recurrence, equilibrium solving, adaptive depth, explicit memory, or learned test-time updates — so that models can allocate effort where it is needed.
+          </blockquote>
+          <div style="display:flex;flex-direction:column;gap:10px;max-width:800px;margin:0 auto;font-family:'Lato',sans-serif;">
+            <div class="fragment fade-in" data-fragment-index="1" style="display:flex;align-items:center;background:#fdf6e3;padding:0 20px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.1);border-left:8px solid #268bd2;transform:scale(1.05);font-weight:bold;height:60px;">
+              <span style="font-family:monospace;font-size:22px;color:#268bd2;width:80px;">L1</span>
+              <span style="font-size:24px;color:#586e75;">Preliminaries</span>
+            </div>
+            <div class="fragment fade-in" data-fragment-index="2" style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L2</span>
+              <span style="font-size:22px;color:#93a1a1;">Fixed points</span>
+            </div>
+            <div class="fragment fade-in" data-fragment-index="3" style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L3</span>
+              <span style="font-size:22px;color:#93a1a1;">Adaptive depth</span>
+            </div>
+            <div class="fragment fade-in" data-fragment-index="4" style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L4</span>
+              <span style="font-size:22px;color:#93a1a1;">Introspection</span>
+            </div>
+            <div class="fragment fade-in" data-fragment-index="5" style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L5</span>
+              <span style="font-size:22px;color:#93a1a1;">Memory</span>
+            </div>
+            <div class="fragment fade-in" data-fragment-index="6" style="display:flex;align-items:center;background:#eee8d5;padding:0 20px;border-radius:8px;opacity:0.55;height:50px;">
+              <span style="font-family:monospace;font-size:20px;color:#93a1a1;width:80px;">L6</span>
+              <span style="font-size:22px;color:#93a1a1;">Learned update rules</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+
+
+      <!-- ============================================================ -->
+      <!-- SECTION 1 – FEED-FORWARD NEURAL NETWORKS                     -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h1>Feed-Forward Neural Networks</h1>
+        </section>
+
+        <!-- SLIDE 1: Rosenblatt -->
+        <section data-background="figures/RosenblattPerceptronMarkI.jpg">
+          <h2 style="text-shadow: 4px 4px 4px #002b36; color: #93a1a1">Perceptron</h2>
+        </section>
+
+        <!-- SLIDE 2: Neuron / Objective -->
+        <section>
+          <h2>A Neuron & Perceptron</h2>
+          <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 20px;">
+            <img style="border:0; box-shadow: 0px 0px 0px;" height="250"
+                 src="figures/neuron_cahal.png" alt="cahal">
+            <img style="border:0; box-shadow: 0px 0px 0px;" height="200"
+                 src="figures/two_neurons.png" alt="perceptron">
+          </div>
+          <div style="font-size: 28px; line-height: 1.5;">
+            <strong>Criterion (Objective):</strong> <br>
+            $ J(\vec{w}) = -\sum_{\text{incorrect } i} l_i\vec{w}^T\vec{x}_i$<br>
+            <br>
+            $\vec{w}$ represents the parameters of our model (the single perceptron).
+          </div>
+        </section>
+
+                <!-- SLIDE 3: Interactive 3D Plane -->
+        <section data-auto-animate>
+    <div id="plane-scene-container" style="width: 800px; height: 500px; margin: 0 auto; position: relative;">
+        <div id="plane-equation" style="position: absolute; top: 20px; left: 20px; color: white; font-size: 20px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px;">
+            Plane: <span id="plane-eq">0x + 0y + 0z = 0</span><br>
+            Intersection: <span id="line-eq">y = 1.00x + 0.00</span>
+        </div>
+        <canvas id="plane-scene-canvas" style="display: block;"></canvas>
+    </div>
+
+    <div style="position: absolute; bottom: 20px; left: 20px; color: white; font-size: 14px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px;">
+        <strong>Controls:</strong><br>
+        W - Rotate hyperplane in 3D<br>
+        E - Rotate line in Z=1 plane<br>
+        R - Move line in Z=1 plane<br>
+        Right click - Orbit camera
+    </div>
+
+    <script type="module">
+        import * as THREE from 'https://esm.sh/three@0.136.0';
+        import { OrbitControls } from 'https://esm.sh/three@0.136.0/examples/jsm/controls/OrbitControls.js';
+        import { TransformControls } from 'https://esm.sh/three@0.136.0/examples/jsm/controls/TransformControls.js';
+
+        let sceneObjects = {
+            renderer: null,
+            camera: null,
+            scene: null,
+            controls: null,
+            transformControls: null,
+            plane: null,
+            animationFrameId: null
+        };
+
+        function onWindowResize() {
+            if (sceneObjects.camera && sceneObjects.renderer) {
+                sceneObjects.camera.aspect = 800/500;
+                sceneObjects.camera.updateProjectionMatrix();
+                sceneObjects.renderer.setSize(800, 500);
+            }
+        }
+
+        function initPlaneScene() {
+            // Clear existing scene if any
+            if (sceneObjects.renderer) {
+                sceneObjects.renderer.dispose();
+                if (sceneObjects.animationFrameId) cancelAnimationFrame(sceneObjects.animationFrameId);
+            }
+
+            const container = document.getElementById('plane-scene-container');
+            const canvas = document.getElementById('plane-scene-canvas');
+            
+            // Set canvas dimensions
+            canvas.width = 800 * window.devicePixelRatio;
+            canvas.height = 500 * window.devicePixelRatio;
+            canvas.style.width = '800px';
+            canvas.style.height = '500px';
+
+            // Initialize scene
+            sceneObjects.scene = new THREE.Scene();
+            sceneObjects.scene.background = new THREE.Color(0x222222);
+            
+            // Lighting setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            sceneObjects.scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(2, 5, 3);
+            sceneObjects.scene.add(directionalLight);
+
+            // Camera setup
+            sceneObjects.camera = new THREE.PerspectiveCamera(45, 800/500, 0.1, 100);
+            sceneObjects.camera.position.set(0, 0, 10);
+            sceneObjects.camera.lookAt(0, 0, 0);
+
+            sceneObjects.renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                canvas: canvas
+            });
+            sceneObjects.renderer.setSize(800, 500);
+
+            // Create points
+            const points = [];
+            // Create red points (class 1)
+            for(let i = 0; i < 20; i++) {
+                const x = (Math.random() - 0.5) * 4;
+                const y = x + 1 + Math.random(); // Always above y = x + 1
+                const point = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.15, 0.15, 0.15),
+                    new THREE.MeshStandardMaterial({
+                        color: 0xff0000,
+                        metalness: 0.3,
+                        roughness: 0.8
+                    })
+                );
+                point.position.set(x, y, 1);
+                sceneObjects.scene.add(point);
+                points.push(point);
+            }
+
+            // Create blue points (class 2)
+            for(let i = 0; i < 20; i++) {
+                const x = (Math.random() - 0.5) * 4;
+                const y = x - 1 - Math.random(); // Always below y = x - 1
+                const point = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.07),
+                    new THREE.MeshStandardMaterial({
+                        color: 0x0000ff,
+                        metalness: 0.3,
+                        roughness: 0.8
+                    })
+                );
+                point.position.set(x, y, 1);
+                sceneObjects.scene.add(point);
+                points.push(point);
+            }
+
+            // Create separating plane
+            const planeGeometry = new THREE.PlaneGeometry(8, 8);
+            const planeMaterial = new THREE.MeshPhongMaterial({
+                color: 0x4080ff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.3
+            });
+            sceneObjects.plane = new THREE.Mesh(planeGeometry, planeMaterial);
+            sceneObjects.plane.rotation.x = Math.PI/4;
+            sceneObjects.scene.add(sceneObjects.plane);
+
+            // Create intersection line
+            const intersectionLine = new THREE.Line(
+                new THREE.BufferGeometry(),
+                new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 2 })
+            );
+            intersectionLine.userData.type = 'intersectionLine';
+            sceneObjects.scene.add(intersectionLine);
+
+            // Add axes helper
+            const axesHelper = new THREE.AxesHelper(3);
+            sceneObjects.scene.add(axesHelper);
+
+            // Camera controls
+            sceneObjects.controls = new OrbitControls(sceneObjects.camera, sceneObjects.renderer.domElement);
+            sceneObjects.controls.enableDamping = true;
+            sceneObjects.controls.dampingFactor = 0.05;
+            
+            // Transform controls
+            sceneObjects.transformControls = new TransformControls(sceneObjects.camera, sceneObjects.renderer.domElement);
+            sceneObjects.transformControls.addEventListener('change', updatePlane);
+            sceneObjects.scene.add(sceneObjects.transformControls);
+            sceneObjects.transformControls.attach(sceneObjects.plane);
+
+            // Add keyboard controls
+            const currentMode = { mode: 'none' }; // track current interaction mode
+            
+            document.addEventListener('keydown', function(event) {
+                switch(event.key.toLowerCase()) {
+                    case 'w':
+                        currentMode.mode = 'rotate_hyperplane';
+                        sceneObjects.transformControls.setMode('rotate');
+                        sceneObjects.transformControls.attach(sceneObjects.plane);
+                        break;
+                    case 'e':
+                        currentMode.mode = 'rotate_line';
+                        sceneObjects.plane.rotation.x = 0;
+                        sceneObjects.plane.rotation.z = Math.PI/4;
+                        sceneObjects.transformControls.setMode('rotate');
+                        sceneObjects.transformControls.attach(sceneObjects.plane);
+                        break;
+                    case 'r':
+                        currentMode.mode = 'translate_line';
+                        sceneObjects.transformControls.setMode('translate');
+                        sceneObjects.transformControls.attach(sceneObjects.plane);
+                        sceneObjects.plane.position.z = 1;
+                        break;
+                }
+            });
+
+            document.addEventListener('keyup', function(event) {
+                if ('wer'.includes(event.key.toLowerCase())) {
+                    currentMode.mode = 'none';
+                    sceneObjects.transformControls.detach();
+                }
+            });
+
+            // Modify transform controls to handle constrained movements
+            sceneObjects.transformControls.addEventListener('change', function() {
+                if (currentMode.mode === 'rotate_line') {
+                    sceneObjects.plane.rotation.x = 0;
+                    sceneObjects.plane.position.z = 1;
+                } else if (currentMode.mode === 'translate_line') {
+                    sceneObjects.plane.position.z = 1;
+                }
+                updatePlane();
+            });
+
+            // Add window resize handler
+            window.addEventListener('resize', onWindowResize);
+
+            updatePlane();
+            animatePlaneScene();
+        }
+
+        function updatePlane() {
+            if (!sceneObjects.plane) return;
+
+            const plane = sceneObjects.plane;
+            const normal = new THREE.Vector3(0, 0, 1)
+                .applyQuaternion(plane.quaternion)
+                .normalize();
+            
+            const planeConstant = -normal.dot(plane.position);
+            
+            // Update intersection line
+            const a = normal.x, b = normal.y, c = normal.z;
+            
+            if (Math.abs(b) < 0.0001) return;
+            
+            const k = -a/b;
+            const m = (-c - planeConstant)/b;
+            
+            const linePoints = [];
+            for(let x = -5; x <= 5; x += 0.1) {
+                const y = k * x + m;
+                linePoints.push(new THREE.Vector3(x, y, 1));
+            }
+            
+            const intersectionLine = sceneObjects.scene.children.find(
+                child => child.userData.type === 'intersectionLine'
+            );
+            if (intersectionLine) {
+                intersectionLine.geometry.dispose();
+                intersectionLine.geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
+            }
+            
+            // Update equations
+            document.getElementById('plane-eq').textContent = 
+                `${a.toFixed(2)}x + ${b.toFixed(2)}y + ${c.toFixed(2)}z = ${-planeConstant.toFixed(2)}`;
+            
+            document.getElementById('line-eq').textContent = 
+                `y = ${k.toFixed(2)}x + ${m.toFixed(2)}`;
+        }
+
+        function animatePlaneScene() {
+            sceneObjects.animationFrameId = requestAnimationFrame(animatePlaneScene);
+            sceneObjects.controls.update();
+            sceneObjects.renderer.render(sceneObjects.scene, sceneObjects.camera);
+        }
+
+        function cleanupScene() {
+            window.removeEventListener('resize', onWindowResize);
+            
+            if (sceneObjects.animationFrameId) {
+                cancelAnimationFrame(sceneObjects.animationFrameId);
+            }
+            
+            if (sceneObjects.scene) {
+                sceneObjects.scene.traverse(object => {
+                    if (object.geometry) object.geometry.dispose();
+                    if (object.material) {
+                        if (Array.isArray(object.material)) {
+                            object.material.forEach(mat => mat.dispose());
+                        } else {
+                            object.material.dispose();
+                        }
+                    }
+                });
+            }
+            
+            if (sceneObjects.renderer) {
+                sceneObjects.renderer.dispose();
+            }
+            
+            sceneObjects = {
+                renderer: null,
+                camera: null,
+                scene: null,
+                controls: null,
+                transformControls: null,
+                plane: null,
+                animationFrameId: null
+            };
+        }
+
+        // Reveal.js integration
+        Reveal.addEventListener('slidechanged', ({ currentSlide }) => {
+            if(currentSlide.querySelector('#plane-scene-container')) {
+                initPlaneScene();
+            } else {
+                cleanupScene();
+            }
+        });
+
+        // Initial load
+        if(document.querySelector('.present #plane-scene-container')) {
+            initPlaneScene();
+        }
+    </script>
+</section>
+
+        <!-- SLIDE 4: MLPs -->
+        <section>
+          <h2>Multilayer Perceptrons (MLPs)</h2>
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 26px;" class="left">
+            By stacking layers of perceptrons, we create deep feed-forward networks capable of learning hierarchical representations. Features extracted in early layers are combined in deeper layers to solve complex computations.
+          </blockquote>
+          <ul style="font-size: 28px; margin-top: 20px;">
+            <li class="fragment roll-in">Single perceptron $\implies$ Linear decision boundary.</li>
+            <li class="fragment roll-in">Stacked layers $\implies$ Complex composition of non-linear functions $\sigma(W\vec{h} + \vec{b})$.</li>
+            <li class="fragment roll-in">Computation flows strictly in one direction: input $\to$ hidden layers $\to$ output.</li>
+          </ul>
+        </section>
+
+        <!-- SLIDE 5: Univ Approximation -->
+        <section>
+          <h2>Universal Approximation</h2>
+          <div style="font-size: 26px; text-align: left;">
+            <div class="fragment roll-in">
+              <strong>Kolmogorov–Arnold Representation Theorem (1956–57)</strong><br>
+              <span style="color: #93a1a1; font-size: 20px;">Hilbert's 13th problem · non-constructive</span>
+              $$f(x_1, \ldots, x_n) = \sum_{q=0}^{2n} \Phi_q\!\left(\sum_{p=1}^{n} \phi_{q,p}(x_p)\right)$$
+            </div>
+            <div class="fragment roll-in" style="margin-top: 20px;">
+              <strong>Cybenko's Theorem (1989)</strong><br>
+              <span style="color: #93a1a1; font-size: 20px;">constructive · the approximator is an explicit neural network</span>
+              $$\left|\, f(\vec{x}) - \sum_{i=1}^{N} \alpha_i\,\sigma\!\left(\vec{w}_i^{\!\top}\vec{x} + b_i\right)\right| < \epsilon$$
+            </div>
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 14px; margin-top: 10px;">
+            Kolmogorov, <em>Doklady</em> 114 (1957) ·
+            Arnold, <em>Doklady</em> 114 (1957) ·
+            <a href="https://doi.org/10.1007/BF02551274" target="_blank">Cybenko, <em>MCSS</em> 2 (1989)</a>
+          </div>
+          <aside class="notes">
+            <p><strong>Kolmogorov–Arnold (1956–57):</strong> Hilbert's 13th problem (1900) asked whether every continuous function of several variables can be expressed via functions of fewer variables. Kolmogorov first reduced to 3 variables (1956); his 19-year-old student Arnold sharpened this to 2 (1957); Kolmogorov then proved the final form: any multivariate continuous function decomposes into univariate functions and addition. Non-constructive — the inner functions φ exist but can be pathological.</p>
+            <p><strong>Cybenko (1989):</strong> A single hidden layer with sigmoidal activations σ is dense in C([0,1]^n): for any continuous f and any ε > 0, there exist finitely many weights such that the network approximates f within ε. Constructive form — the approximator is an explicit neural network architecture.</p>
+            <p><strong>Connection:</strong> Neural networks are compositions of univariate activations and affine sums — precisely the structure both theorems describe. Kolmogorov–Arnold tells us the representation exists; Cybenko tells us neural networks can realize it.</p>
+          </aside>
+        </section>
+
+        <!-- SLIDE 6: Ballistic Neural Network Glass -->
+        <section>
+          <div style="display: flex; align-items: center; gap: 40px; height: 100%;">
+            <div style="flex: 1; text-align: left;">
+              <h2 style="margin-top: 0;">A Literal Ballistic Network</h2>
+              <blockquote style="background-color: #eee8d5; font-size: 22px; width: 100%;" class="left fragment">
+                "AI made from a sheet of glass can recognize numbers just by looking."<br><br>
+                Precisely placed bubbles and impurities (e.g. graphene) bend light waves so they focus on one of ten spots — each corresponding to a digit. Inference happens at the speed of light, with no power, no memory, no feedback.
+              </blockquote>
+              <div class="slide-footer" style="position: relative; margin-top: 20px;">
+                <a href="https://doi.org/10.1364/PRJ.7.000823" target="_blank">Yu et al., <em>Photonics Research</em> (2019)</a> ·
+                <a href="https://hackaday.com/2019/07/16/neural-network-in-glass-requires-no-power-recognizes-numbers/" target="_blank">Hackaday</a>
+              </div>
+            </div>
+            <div style="flex: 0 0 auto;">
+              <img style="border:0; box-shadow: 0px 0px 0px; max-height: 600px;"
+                   src="figures/doped_glass.png" alt="doped glass AI">
+            </div>
+          </div>
+        </section>
+
+
+        <section>
+          <h2>The Ballistic Paradigm</h2>
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 30px;" class="left">
+            A standard feed-forward network applies a <em>fixed sequence</em> of
+            transformations to every input — the same depth, the same cost,
+            regardless of whether the input is trivial or ambiguous.
+          </blockquote>
+          <ul style="font-size: 26px; margin-top: 20px;">
+            <li class="fragment roll-in">Input $\vec{x}$ flows through layers $\ell = 1, \ldots, L$ without feedback.</li>
+            <li class="fragment roll-in">Each layer: $\vec{h}^{(\ell)} = \sigma\!\left(W^{(\ell)}\vec{h}^{(\ell-1)} + \vec{b}^{(\ell)}\right)$</li>
+            <li class="fragment roll-in">Depth $L$ is a <em>design choice</em>, not adapted to the input.</li>
+            <li class="fragment roll-in">Universal approximation: in principle, any continuous function.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Why Call It "Ballistic"?</h2>
+          <blockquote style="background-color: #eee8d5; font-size: 28px; width: 100%;" class="left fragment" data-fragment-index="0">
+            Like a projectile once fired, the computation cannot check, correct,
+            or adapt its own intermediate results. There is no iteration, no
+            self-reference, no state beyond the current activation.
+          </blockquote>
+          <ul style="font-size: 26px; margin-top: 20px;">
+            <li class="fragment roll-in" data-fragment-index="1">Gradient computed via backprop — <em>training</em> is iterative, <em>inference</em> is not.</li>
+            <li class="fragment roll-in" data-fragment-index="2">This is the paradigm that <strong>the rest of this course challenges</strong>.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>FFN Section Wrap-Up</h2>
+          <ul style="font-size: 30px; line-height: 1.8;">
+            <li class="fragment roll-in">Fixed-depth computation</li>
+            <li class="fragment roll-in">Universal approximation exists</li>
+            <li class="fragment roll-in">No persistent state</li>
+            <li class="fragment roll-in">No iterative correction</li>
+          </ul>
+          <div class="fragment roll-in" style="font-size: 22px; color: #268bd2; margin-top: 16px; text-align: left;">
+            Next: recurrent state dynamics and gradients through time.
+          </div>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 2 – RECURRENT NEURAL NETWORKS                        -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h1>Recurrent Neural Networks</h1>
+        </section>
+
+        <section>
+          <h2>Recurrent Neural Networks</h2>
+          <img src="figures/RNN_unrolled_colah.png" alt="RNN unrolled" style="border:0; box-shadow: none;" width="100%">
+          <div style="font-size: 30px; margin-top: 10px;">
+            $$ \vec{h}_t = \tanh\!\left(W_x\vec{x}_t + W_h\vec{h}_{t-1} + \vec{b}\right) $$
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 14px; margin-top: 10px;">
+            <a href="https://colah.github.io/posts/2015-08-Understanding-LSTMs/" target="_blank">Figure source: Christopher Olah</a>
+          </div>
+        </section>
+
+        <section>
+          <h2>RNN as a Map</h2>
+          <img src="figures/FP_rnn_fp.svg" alt="RNN FP" style="border:0; box-shadow: none;" width="90%">
+          <div style="font-size: 32px; margin-top: 20px;">
+            $$ \vec{h}_{t+1} = F(\vec{x}_t, \mathbf{W}, \vec{h}_t) $$
+          </div>
+          <div style="font-size: 22px; color: #657b83; margin-top: 8px;">
+            where $\mathbf{W} = (W_x, W_h, \vec{b})$ collects the trainable parameters.
+          </div>
+        </section>
+
+        <section>
+          <h2><span style="color:#268bd2;">B</span>ack <span style="color:#268bd2;">P</span>ropagation <span style="color:#268bd2;">T</span>hrough <span style="color:#268bd2;">T</span>ime</h2>
+          <div style="font-size: 26px; text-align: left;">
+            Unroll over time $t=1\dots T$ and apply chain rule to weight $\vec{w}$:
+            \begin{align}
+              \frac{\partial L}{\partial \vec{w}} &= \frac{\partial L}{\partial \vec{h}_T} \sum_{k=1}^T \frac{\partial \vec{h}_T}{\partial \vec{h}_{T-k+1}} \frac{\partial \vec{h}_{T-k+1}}{\partial \vec{w}} \\
+              &= \frac{\partial L}{\partial \vec{h}_T} \sum_{k=1}^T \left( \prod_{i=T-k+2}^{T} J_{F, \vec{h}}(\vec{x}, \vec{w}, \vec{h}^{i-1}) \right) \frac{\partial F}{\partial \vec{w}}
+            \end{align}
+          </div>
+          <div class="fragment roll-in" style="font-size: 24px; color: #cb4b16; margin-top: 20px; text-align: left;">
+            <strong>TBPTT (Truncated):</strong> We typically unroll only $t_0$ steps to avoid unbounded memory and vanishing gradients. We will dive deeper next lecture!
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 8px; line-height: 1.35;">
+            <a href="https://gwern.net/doc/ai/nn/1974-werbos.pdf" target="_blank">Werbos, P. J. (1974). Beyond Regression: New Tools for Prediction and Analysis in the Behavioral Sciences (PhD thesis, Harvard University).</a><br>
+            <a href="https://www.scribd.com/document/958406610/Werbos-P-J-1990-Backpropagation-Through-Time-What-It-Does-and-How-to-Do-It" target="_blank">Werbos, P. J. (1990). Backpropagation Through Time: What It Does and How to Do It. Proceedings of the IEEE, 78(10). DOI: 10.1109/5.58337.</a>
+          </div>
+        </section>
+
+        <section>
+          <h2>Long-Term Dependencies<br>& Vanishing Gradients</h2>
+          <img src="figures/RNN_longtermdependencies_colah.png" alt="RNN vanishing" style="border:0; box-shadow: none;" width="90%">
+          <ul style="font-size: 24px;">
+            <li class="fragment roll-in">When spectral radius of Jacobian $J_{F, \vec{h}} &lt; 1$, gradients vanish over time.</li>
+            <li class="fragment roll-in">When $&gt; 1$, gradients explode.</li>
+          </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 100px; margin-bottom: -50px; line-height: 1.35;">
+            <a href="https://www.bioinf.jku.at/publications/older/2304.pdf" target="_blank">Hochreiter, S. (1991). Untersuchungen zu dynamischen neuronalen Netzen (Diploma thesis). Technische Universitat Munchen, Institut fur Informatik.</a><br>
+            <a href="https://ieeexplore.ieee.org/document/279181" target="_blank">Bengio, Y., Simard, P. and Frasconi, P., 1994. Learning long-term dependencies with gradient descent is difficult. IEEE Transactions on Neural Networks, 5(2), pp.157-166.</a>
+          </div>
+        </section>
+
+        <section>
+          <h2>Standard RNN internally</h2>
+          <img src="figures/LSTM3_SimpleRNN_colah.png" alt="Simple RNN" style="border:0; box-shadow: none;" width="100%">
+        </section>
+
+        <section>
+          <h2>Long Short-Term Memory (LSTM)</h2>
+          <img src="figures/LSTM3_chain_colah.png" alt="LSTM Chain" style="border:0; box-shadow: none;" width="82%">
+          <img src="figures/LSTM3_notation_colah.png" alt="LSTM Notation" style="border:0; box-shadow: none; margin-top: -6px;" width="46%">
+          <div style="font-size: 20px; line-height: 1.25; margin-top: 4px; text-align: left; max-width: 92%; margin-left: auto; margin-right: auto;">
+            <div class="fragment fade-in" data-fragment-index="1">$\vec{f}_t = \sigma\!\left(W_f[\vec{h}_{t-1},\vec{x}_t] + \vec{b}_f\right),\; \vec{i}_t = \sigma\!\left(W_i[\vec{h}_{t-1},\vec{x}_t] + \vec{b}_i\right)$</div>
+            <div class="fragment fade-in" data-fragment-index="2">$\tilde{\vec{c}}_t = \tanh\!\left(W_c[\vec{h}_{t-1},\vec{x}_t] + \vec{b}_c\right),\; \vec{o}_t = \sigma\!\left(W_o[\vec{h}_{t-1},\vec{x}_t] + \vec{b}_o\right)$</div>
+            <div class="fragment fade-in" data-fragment-index="3">$\vec{c}_t = \vec{f}_t \odot \vec{c}_{t-1} + \vec{i}_t \odot \tilde{\vec{c}}_t,\; \vec{h}_t = \vec{o}_t \odot \tanh(\vec{c}_t)$</div>
+          </div>
+        </section>
+
+        <section>
+          <h2>LSTM: The Essential Skip Connection</h2>
+          <img src="figures/LSTM3_carry_colah.png" alt="LSTM Carry" style="border:0; box-shadow: none;" width="100%">
+          <div class="fragment roll-in" style="font-size: 24px; color: #2aa198; margin-top: 10px;">
+            By carrying state $C_t$ with purely additive interactions, gradients can flow backwards completely unhindered! The "constant error carousel."
+          </div>
+        </section>
+
+        <section>
+          <h2>Modes of Sequence Processing</h2>
+          <img src="figures/RNN_use_types.png" alt="RNN Use Types" style="border:0; box-shadow: none;" width="100%">
+          <div class="fragment roll-in" style="font-size: 22px; margin-top: 10px; color: #93a1a1;">
+            Vanilla, Sequence output, Sequence input, Sequence-to-sequence, synced Sequence-to-sequence.
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 14px; margin-top: 10px;">
+            <a href="http://karpathy.github.io/2015/05/21/rnn-effectiveness/" target="_blank">Andrej Karpathy: The Unreasonable Effectiveness of Recurrent Neural Networks (2015)</a>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SEQUENCE TO SEQUENCE & ATTENTION                             -->
+        <!-- ============================================================ -->
+        <section>
+          <h2>Sequence-to-Sequence (Seq2Seq)</h2>
+          <div style="font-size: 24px; text-align: left; margin-bottom: 20px;">
+            Map a sequence $\vec{x}_{1:T_x}$ to $\vec{y}_{1:T_y}$ using<br>an <strong>Encoder</strong> and a <strong>Decoder</strong>.
+          </div>
+          <img src="figures/seq2seq_custom.svg" alt="Seq2Seq Translation" style="border:0; box-shadow: none; max-height: 450px; width: auto; margin-top: -70px;">
+          <ul style="font-size: 24px; margin-top: -10px;">
+            <li class="fragment roll-in"><strong>Encoder:</strong> Processes input to a fixed-length <em>context vector</em> $\vec{c} = \vec{h}_{T_x}$.</li>
+            <li class="fragment roll-in"><strong>Decoder:</strong> Generates output conditioned on $\vec{c}$ and previous outputs.</li>
+            <li class="fragment roll-in" style="color: #dc322f; font-weight: bold;">The Bottleneck: The entire input must be compressed into a single vector $\vec{c}$.</li>
+          </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 14px; margin-top: 10px; margin-bottom: -70px;">
+            <a href="https://arxiv.org/abs/1409.3215" target="_blank">Sutskever, I., Vinyals, O. and Le, Q.V., 2014. Sequence to sequence learning with neural networks. Advances in neural information processing systems, 27.</a>
+          </div>
+        </section>
+
+        <section data-vertical-align-top>
+          <h2>Attention</h2>
+          <blockquote style="font-size: 20px; background-color: #eee8d5; margin-bottom: 10px; margin-top: -20px;  width: 100%;" class="left">Instead of one static context vector $\vec{c}$, let the Decoder "attend" to all Encoder states dynamically at each step.</blockquote>
+          
+          <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; margin-bottom: 80px;">
+            <!-- Left Column: Math and Descriptions -->
+            <div style="flex: 1; font-size: 20px; text-align: left; padding-right: 20px;">
+              <div class="fragment roll-in">
+                For decoder hidden state $\vec{s}_i$, compute alignment scores with all encoder states $\vec{h}_j$:
+                <div style="font-size: 22px;">$$ e_{ij} = a(\vec{s}_{i-1}, \vec{h}_j) $$</div>
+              </div>
+              
+              <div class="fragment roll-in" style="margin-top: 15px;">
+                Convert to attention weights via softmax:
+                <div style="font-size: 22px;">$$ \alpha_{ij} = \frac{\exp(e_{ij})}{\sum_k \exp(e_{ik})} $$</div>
+              </div>
+              
+              <div class="fragment roll-in" style="margin-top: 15px;">
+                Compute dynamic context vector as weighted sum:
+                <div style="font-size: 22px;">$$ \vec{c}_i = \sum_j \alpha_{ij} \vec{h}_j $$</div>
+              </div>
+            </div>
+            
+            <!-- Right Column: Image -->
+            <div style="flex: 2;">
+              <img src="figures/attention_custom.svg" alt="Bahdanau Attention Diagram" style="border:0; box-shadow: none; width: 100%; max-height: 480px; background: transparent;">
+            </div>
+          </div>
+          
+          <div class="slide-footer" style="text-align: left; font-size: 14px; bottom: -30px;">
+            <a href="https://arxiv.org/abs/1409.0473" target="_blank">Bahdanau, Cho, Bengio: "Neural Machine Translation by Jointly Learning to Align and Translate" (2014)</a>
+          </div>
+        </section>
+
+        <section data-vertical-align-top>
+          <h2>Dot-Product Attention</h2>
+          <blockquote style="font-size: 20px; background-color: #eee8d5; margin-bottom: 10px; margin-top: -12px; width: 100%;" class="left">
+            Same attention pipeline, different alignment score. Luong et al. compare <em>dot</em>, <em>general</em>, and <em>concat</em> scoring functions.
+          </blockquote>
+
+          <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 22px; margin-bottom: 48px;">
+            <div style="flex: 1.05; font-size: 19px; text-align: left;">
+              <div class="fragment roll-in" data-fragment-index="0" style="margin-bottom: 10px;">
+                <strong>Dot score:</strong>
+                $$e_{ij}=\vec{s}_i^\top\vec{h}_j$$
+              </div>
+              <div class="fragment roll-in" data-fragment-index="1" style="font-size: 17px; color: #657b83; margin-bottom: 10px;">
+                <strong>Other Luong variants:</strong>
+                $$\text{general: }\vec{s}_i^\top W_a\vec{h}_j$$
+                $$\text{concat: }\vec{v}_a^\top\tanh\!\left(W_a[\vec{s}_i;\vec{h}_j]\right)$$
+              </div>
+              <div class="fragment roll-in" data-fragment-index="2" style="margin-bottom: 8px;">
+                $$\alpha_{ij}=\operatorname{softmax}_j(e_{ij}),\qquad \vec{c}_i=\sum_j\alpha_{ij}\vec{h}_j$$
+              </div>
+              <div class="fragment roll-in" data-fragment-index="3" style="font-size: 20px; color: #2aa198; margin-top: 12px;">
+                Dot-product is parameter-light and efficient, while preserving the same context-vector computation.
+              </div>
+            </div>
+
+            <div style="flex: 1.45; display: flex; justify-content: center;">
+              <img src="figures/attention_score.svg" alt="Attention scoring mechanisms: dot, general, concat" style="border:0; box-shadow: none; width: 100%; max-height: 500px; background: transparent;">
+            </div>
+          </div>
+
+          <div class="slide-footer" style="text-align: left; font-size: 13px; bottom: 10px; line-height: 1.3;">
+            <a href="https://arxiv.org/pdf/1508.04025" target="_blank">Luong, M.-T., Pham, H., &amp; Manning, C. D. (2015). Effective approaches to attention-based neural machine translation. In EMNLP 2015 (pp. 1412-1421).</a>
+          </div>
+        </section>
+
+        <section>
+          <h2>RNN Section Wrap-Up</h2>
+          <ul style="font-size: 30px; line-height: 1.8;">
+            <li class="fragment roll-in">Stateful sequence modeling</li>
+            <li class="fragment roll-in">Gradient pathologies persist</li>
+            <li class="fragment roll-in">Attention relieves bottleneck</li>
+            <li class="fragment roll-in">Parallelism becomes decisive</li>
+          </ul>
+          <div class="fragment roll-in" style="font-size: 22px; color: #268bd2; margin-top: 16px; text-align: left;">
+            Next: hardware lottery, token mixing, and self-attention as an on-the-fly linear operator.
+          </div>
+        </section>
+
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 3 – TRANSFORMERS                                     -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h1>Transformers</h1>
+        </section>
+
+        <section>
+          <h2>Attention Is All You Need</h2>
+          <ul style="font-size: 26px;">
+            <li class="fragment roll-in">Vaswani et al. (2017): replace recurrence with <em>self-attention</em>.</li>
+            <li class="fragment roll-in">All positions attend to all positions in parallel — no sequential dependency.</li>
+            <li class="fragment roll-in">
+              Attention output: $\mathrm{Attn}(Q,K,V) = \mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right)V$
+            </li>
+            <li class="fragment roll-in">Each layer is still a <em>fixed</em> computation applied to the full sequence.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Attention Matrix: A Data-Dependent Operator</h2>
+          <blockquote style="background-color: #eee8d5; font-size: 28px; width: 100%;" class="left fragment" data-fragment-index="0">
+            The attention matrix $\mathcal{T}$ is <strong>not</strong> a fixed learned parameter.
+            It is <em>computed on the fly from the input</em>: $Q, K = xW_Q, xW_K$.
+          </blockquote>
+          <ul style="font-size: 26px; margin-top: 16px;">
+            <li class="fragment roll-in" data-fragment-index="1">This makes attention a <em>higher-order function</em>: input → mixing weights → output.</li>
+            <li class="fragment roll-in" data-fragment-index="2">Later lectures show this on-the-fly computation can itself be <em>iteratively refined</em> (L4/SELF-Transformer).</li>
+            <li class="fragment roll-in" data-fragment-index="3">… used as differentiable memory access (L5).</li>
+            <li class="fragment roll-in" data-fragment-index="4">… or adapted at test time (L6).</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Encoders, Decoders, and Fixed Depth</h2>
+          <ul style="font-size: 26px;">
+            <li class="fragment roll-in">Encoder: $N$ identical layers, each with Multi-Head Attention + FFN + residual + LayerNorm.</li>
+            <li class="fragment roll-in">Decoder: additionally attends to encoder output (cross-attention).</li>
+            <li class="fragment roll-in">
+              <strong>Fixed depth:</strong> every token gets exactly $N$ layers regardless of its difficulty.
+              The Transformer is still "ballistic" in the depth dimension.
+            </li>
+            <li class="fragment roll-in">
+              Positional encodings inject sequence order (no built-in recurrence).
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 4 – AUTOMATIC DIFFERENTIATION                        -->
+      <!-- (content ported verbatim from cs8850_18_AD.html)             -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h1>Automatic Differentiation</h1>
+        </section>
+
+        <section>
+          <h2>Algorithmic Differentiation (AD)</h2>
+          <blockquote style="width: 100%;">
+            ".. may be one of the best scientific computing techniques you've never heard of."
+            <br>
+            <a href="https://alexey.radul.name/ideas/2013/introduction-to-automatic-differentiation/">Alexey Radul</a>
+          </blockquote>
+        </section>
+
+        <section>
+          <blockquote style="background-color: #eee8d5; width: 100%;">
+            The very first computer science PhD dissertation introduced forward accumulation mode<br> automatic differentiation.
+          </blockquote>
+          <blockquote style="background-color: #93a1a1; color: #fdf6e3; font-size: 38px;" class="fragment" data-fragment-index="0">
+            <center>
+              Wengert (1964)
+            </center>
+          </blockquote>
+        </section>
+
+        <section data-background="figures/AD_paper.png" background-size="cover">
+          <blockquote style="background-color: #93a1a1; color: #fdf6e3; width: 100%">
+            Robert Edwin Wengert. A simple automatic derivative evaluation program. Communications of the ACM 7(8):463–4, Aug 1964.
+          </blockquote>
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 32px;" class="left bordered">
+            A procedure for automatic evaluation of total/partial derivatives of arbitrary algebraic functions is presented. The technique permits computation of numerical values of derivatives without developing analytical expressions for the derivatives. <span class="fragment highlight-red" data-fragment-index="0">The key to the method is the decomposition of the given function</span>, by introduction of intermediate variables, <span class="fragment highlight-red" data-fragment-index="0">into a series of elementary functional steps</span>. A library of elementary function subroutines is provided for the automatic evaluation and differentiation of these new variables. The final step in this process produces the desired function's derivative. The main feature of this approach is its simplicity. It can be used as a quick-reaction tool where the derivation of analytical derivatives is laborious and also as a debugging tool for programs which contain derivatives.
+          </blockquote>
+        </section>
+
+        <section data-background="figures/wengert.png" background-size="cover">
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(150, 150, 255, 1);" width="1000"
+               src="figures/wengert2.png" class="bordered" alt="Wengert dissertation">
+        </section>
+
+        <section>
+          <blockquote style="background-color: #93a1a1; color: #fdf6e3; width: 100%">
+            R. E. Bellman, H. Kagiwada, and R. E. Kalaba (1965) Wengert's numerical method for partial derivatives, orbit determination and quasilinearization, Communications of the ACM 8(4):231–2, April 1965, doi:10.1145/363831.364886
+          </blockquote>
+          <blockquote style="background-color: #eee8d5; font-size: 34px; width: 100%" class="left">
+            In a recent article in the Communications of the ACM, R. Wengert suggested a technique for machine evaluation of the partial derivatives of a function given in analytical form. In solving nonlinear boundary-value problems using quasilinearization many partial derivatives must be formed analytically and then evaluated numerically. <span class="fragment highlight-red" data-fragment-index="0">Wengert's method</span> appears very attractive from the programming viewpoint and <span class="fragment highlight-red" data-fragment-index="0">permits the treatment of large systems</span> of differential equations <span class="fragment highlight-red" data-fragment-index="0">which might not otherwise be undertaken</span>.
+          </blockquote>
+        </section>
+
+        <section>
+          <h2 style="margin-bottom: 40px;">What is Automatic Differentiation?</h2>
+          <blockquote style="background-color: #eee8d5; font-size: 40px; line-height: 1.5;" class="left">
+            Automatic Differentiation (AD) mechanically calculates the derivatives <span style="font-size: 32px; color: #93a1a1;">(Leibnitz, 1664; Newton, 1704)</span> of <span class="fragment highlight-current-red" data-fragment-index="1">functions expressed as computer programs</span>, at <span class="fragment highlight-current-red" data-fragment-index="2">machine precision</span>, and <span class="fragment highlight-current-red" data-fragment-index="3">with complexity guarantees</span>.
+          </blockquote>
+        </section>
+
+        <section>
+          <h2>Automatic Differentiation</h2>
+          <ul  style="list-style-type: disk;">
+            <li class="fragment roll-in" data-fragment-index="1"> Derivative of $f: \RR^n \to \RR^m$ is $m\times n$ "Jacobian matrix" $\bm{J}$.
+            <li class="fragment roll-in" data-fragment-index="2"> AD in the forward accumulation mode: $\bm{J}v$ (Wengert, 1964)
+            <li class="fragment roll-in" data-fragment-index="3"> AD in the reverse accumulation mode, $\bm{J}^Tv$ (Speelpenning, 1980)
+            <li class="fragment roll-in" data-fragment-index="4"> About a zillion other modes and tricks
+            <li class="fragment roll-in" data-fragment-index="5"> Vibrant field with regular workshops, conferences, updated community portal
+              (<a href="http://autodiff.org" target="_blank">http://autodiff.org</a>)
+          </ul>
+        </section>
+
+        <section>
+          <h2>What is AD?</h2>
+          <ul  style="list-style-type: none; font-size: 22pt">
+            <li class="fragment roll-in" data-fragment-index="0"> <em>Automatic Differentiation</em>
+              <ul  style="list-style-type: none; font-size: 22pt">
+                <li class="fragment roll-in" data-fragment-index="1"> aka <em>Algorithmic Differentiation</em>
+                  <ul  style="list-style-type: none; font-size: 22pt">
+                    <li class="fragment roll-in" data-fragment-index="2"> aka <em>Computational Differentiation</em>
+                  </ul>
+              </ul>
+          </ul>
+          <dl  style="list-style-type: disk; font-size: 22pt">
+            <span class="fragment roll-in" data-fragment-index="3">
+              <dt>AD Type I</dt>
+              <dd>A calculus for efficiently calculating derivatives of functions specified by a set of equations.
+              </dd>
+            </span>
+            <span class="fragment roll-in" data-fragment-index="4">
+              <dt>AD Type II</dt>
+              <dd>A way of transforming a computer program implementing a numeric function to also efficiently calculate some derivatives.</dd>
+            </span>
+            <span class="fragment roll-in" data-fragment-index="5">
+              <dt>AD Type III</dt>
+              <dd>
+                A computer program which automatically transforms an input computer program specifying a numeric function into one that also efficiently calculates derivatives.
+              </dd>
+            </span>
+          </dl>
+        </section>
+
+        <section data-background="figures/logisticbifurcation.png" background-size="cover">
+          <h2 style="text-shadow: 4px 4px 4px #002b36; color: #93a1a1">
+            AD is not Numerical Differentiation</h2>
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(255, 255, 255, 0);" width="1000"
+               src="figures/ADnotND.svg" alt="ADnotND">
+          <blockquote style="background-color: #eee8d5; font-size: 40px; width: 100%;" class="fragment roll-in">
+            Numerical diffirentiation is a problematic approximation
+            <ul  style="list-style-type: disk; font-size: 22pt">
+              <li class="fragment roll-in"> though shalt not add small numbers to big numbers
+              <li class="fragment roll-in"> though shalt not subtract numbers which are approximately equal
+            </ul>
+          </blockquote>
+        </section>
+
+        <section data-background="figures/logisticbifurcation.png" background-size="cover">
+          <h3 style="text-shadow: 4px 4px 4px #002b36; color: #93a1a1">
+            What is wrong with Numerical Differentiation
+          </h3>
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(255, 255, 255, 0);" width="80%"
+               src="figures/truncation_error.svg" alt="round off and truncation errors">
+          
+          <aside class="notes">
+            <p>This plot shows the fundamental catch-22 of numerical differentiation — a log-log plot of error vs. step size <em>h</em>.</p>
+
+            <p><strong>Truncation Error (Right side):</strong> When <em>h</em> is large, our finite difference approximation is inaccurate mathematically. We dropped (truncated) higher-order terms from the infinite Taylor series. The dashed blue line (center difference) gets steeper because it is $O(h^2)$, compared to the $O(h)$ forward difference.</p>
+
+            <p><strong>Round-off Error (Left side):</strong> To fix truncation error, we shrink <em>h</em>. But as <em>h</em> gets tiny, <em>f(x+h)</em> and <em>f(x)</em> become almost identical in the computer's memory. Subtracting them causes "catastrophic cancellation", destroying all significant digits and leaving pure machine noise. Dividing that noise by a tiny <em>h</em> makes the error explode upward.</p>
+
+            <p><strong>The Punchline:</strong> We are trapped inside that V-shape. We can never take the mathematical limit of $h \to 0$ safely on a computer. Automatic differentiation entirely bypasses this by calculating exact analytic derivatives programmatically.</p>
+          </aside>
+        </section>
+
+        <section data-background="figures/logisticbifurcation.png" background-size="cover">
+          <h2 style="text-shadow: 4px 4px 4px #002b36; color: #93a1a1">
+            AD is not Symbolic Differentiation
+          </h2>
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(255, 255, 255, 0); margin-bottom: -10px; margin-top: -10px;" width="1000"
+               src="figures/ADsnotSymbolic.svg" alt="ADnotSymbolic">
+          <blockquote class="fragment roll-in" style="background-color: #eee8d5; font-size: 20px; width: 100%; margin-top: -100px;">
+            \begin{align}
+            f(\vec{x}) & = \prod_{i=1}^d x_i \\
+            \nabla f(\vec{x}) & = \left(\frac{\partial f}{\partial x_1}, \frac{\partial f}{\partial x_2}, \dots, \frac{\partial f}{\partial x_d},\right)
+            = \left(\begin{array}{ccccc}
+            x_2x_3x_4\cdots x_{d-1}x_d, \\
+            x_1x_3x_4\cdots x_{d-1}x_d, \\
+            x_1x_2x_4\cdots x_{d-1}x_d, \\
+            \vdots \\
+            x_1x_2x_3\cdots x_{d-1} \\
+            \end{array}\right)
+            \end{align}
+          </blockquote>
+          <div class="slide-footer">
+            Example from Speelpenning, figure modified from Baydin<br>
+            For an alternative opinion see: <a href="https://arxiv.org/abs/1904.02990v3" target="blank_">On the Equivalence of Forward Mode Automatic Differentiation and Symbolic Differentiation
+</a>
+          </div>
+        </section>
+
+        <section>
+          <h2>
+            We want exact derivative at a point!
+          </h2>
+          <img width="100%" src="figures/example_derivatives.svg" alt="Derivatives">
+        </section>
+
+        <!-- Forward Mode AD -->
+        <section>
+          <h1>Forward Mode AD</h1>
+        </section>
+
+        <section data-background="figures/logisticbifurcation.png" background-size="cover">
+          <h2 style="text-shadow: 4px 4px 4px #002b36; color: #93a1a1">
+            AD is</h2>
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(255, 255, 255, 0);" width="1000"
+               src="figures/ADis.svg" alt="ADis">
+          <div class="slide-footer">
+            Figure modified from Baydin
+          </div>
+        </section>
+
+        <section data-background="figures/logisticbifurcation.png" background-size="cover">
+          <h2>AD is</h2>
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(255, 255, 255, 0); margin-bottom: -10px; margin-top: -70px;" width="780"
+               src="figures/whatisADnot.svg" alt="AD">
+          <div class="slide-footer">
+            Figure from Baydin
+          </div>
+        </section>
+
+        <section>
+          <h2>AD graph</h2>
+          $$
+          y = f(x_1, x_2) = \ln(x_1) + x_1x_2 - \sin(x_2)
+          $$
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(255, 255, 255, 0);" width="800"
+               src="figures/computation_graph.svg" alt="graph">
+        </section>
+
+        <section>
+          <div style="position: absolute; z-index: 10; font-size: 24px; left: -16%; top: -5%;">
+            <img style="border:0; box-shadow: 0px 0px 0px rgba(150, 150, 255, 1); " width="400"
+                 src="figures/computation_graph.svg" alt="dice">
+          </div>
+          <h2>AD trace</h2>
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(255, 255, 255, 0);" width="75%"
+               src="figures/computation_trace.svg" alt="trace">
+        </section>
+
+        
+        <section data-fullscreen>
+          <div style="position: absolute; z-index: 10; font-size: 24px; left: 10%; top: -15%;">
+            <img style="border:0; box-shadow: 0px 0px 0px rgba(150, 150, 255, 1); " width="500"
+                 src="figures/computation_graph.svg" alt="dice">
+          </div>
+          <h2>AD</h2>
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(255, 255, 255, 0);" width="130%"
+               src="figures/forwardAD_example.svg" alt="forward">
+        </section>
+
+        <section>
+          <h2>AD: a Jacobian column in a pass</h2>
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(255, 255, 255, 0);" width="1000"
+               src="figures/JacobianAD.svg" alt="forward">
+        </section>
+
+        <section>
+          <h2>AD: directional derivative</h2>
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(255, 255, 255, 0);" width="1000"
+               src="figures/JacobianADdirectional.svg" alt="directional">
+        </section>
+
+        <section>
+          <h3>Dual numbers (1873)</h3>
+          \begin{align}
+          \fragment{1}{v + \dot{v}\epsilon} &\\
+          \fragment{2}{v, \dot{v} \in \RR,} & \fragment{2}{\epsilon \ne 0, \epsilon^2 = 0} \\
+          \fragment{3}{(v + \dot{v}\epsilon) + (u + \dot{u}\epsilon)} & \fragment{3}{= (v + u) + (\dot{v} + \dot{u})\epsilon}\\
+          \fragment{4}{(v + \dot{v}\epsilon)(u + \dot{u}\epsilon)} & \fragment{4}{= (vu) + (v\dot{u} + u\dot{v})\epsilon}\\
+          \fragment{5}{\frac{v + \dot{v}\epsilon}{u + \dot{u}\epsilon}} & \fragment{5}{= \frac{v}{u} + \frac{u\dot{v} - v\dot{u}}{u^2}\epsilon}\\
+          \fragment{6}{f(v+\dot{v}\epsilon)} & \fragment{6}{= f(v) + f^{\prime}(v)\dot{v}\epsilon}\\
+          \fragment{7}{f(g(v+\dot{v}\epsilon))} & \fragment{7}{= f(g(v)) + f^{\prime}(g(v))g^{\prime}(v)\dot{v}\epsilon}\\
+          \fragment{8}{v + \dot{v}\epsilon} & \fragment{8}{\cong \begin{pmatrix} v & \dot{v} \\ 0 & v \end{pmatrix}}
+          \end{align}
+          <div style="position: absolute; top: -50px; right: 65px; text-align: center;">
+            <img src="figures/Clifford_William_Kingdon.png"
+                 style="border:0; box-shadow: none; display: block; margin: 0 auto -15px auto;"
+                 height="210" alt="William Kingdon Clifford">
+            <div style="font-size: 15px; color: #93a1a1; margin-top: 0; line-height: 1.3;">
+              William Kingdon Clifford<br>(1845 – 1879)
+            </div>
+          </div>
+
+          <aside class="notes">
+            <p><strong>Notes on exactly how Dual Number AD works natively:</strong></p>
+            
+            <p><strong>1. How does the fundamental rule f(a + b&epsilon;) = f(a) + f'(a)b&epsilon; emerge?</strong><br>
+            It evaluates strictly from the standard Taylor series! Take the expansion of $f(a+h)$: $f(a) + f'(a)h + \frac{1}{2!}f''(a)h^2 + \dots$<br>
+            Substitute $h = b\epsilon$. Because we postulate $\epsilon^2 = 0$, every single term with $\epsilon^2, \epsilon^3$, etc., vanishes algebraically to exactly zero. You are left purely with $f(a) + f'(a)b\epsilon$.</p>
+            
+            <p><strong>2. How does the Division (Quotient) Rule naturally emerge?</strong><br>
+            Exactly like complex number division—you multiply the numerator and denominator by the "conjugate" $u - \dot{u}\epsilon$!<br>
+            $$ \frac{v + \dot{v}\epsilon}{u + \dot{u}\epsilon} \cdot \frac{u - \dot{u}\epsilon}{u - \dot{u}\epsilon} $$<br>
+            Denominator: expands to $u^2 - u\dot{u}\epsilon + u\dot{u}\epsilon - (\dot{u}\epsilon)^2$. Since $\epsilon^2 = 0$, the denominator collapses exactly to $u^2$.<br>
+            Numerator: expands to $vu - v\dot{u}\epsilon + u\dot{v}\epsilon - \dot{v}\dot{u}\epsilon^2$. Again $\epsilon^2 = 0$, so it collapses to $vu + (u\dot{v} - v\dot{u})\epsilon$.<br>
+            Bringing them together: $\frac{vu}{u^2} + \frac{(u\dot{v} - v\dot{u})\epsilon}{u^2} = \frac{v}{u} + \frac{u\dot{v} - v\dot{u}}{u^2}\epsilon$.<br>
+            Behold: exactly the quotient rule!</p>
+            
+            <p><strong>3. How does the Chain Rule emerge?</strong><br>
+            Apply the fundamental rule to the inner function: $g(v+\dot{v}\epsilon) = g(v) + g'(v)\dot{v}\epsilon$.<br>
+            Treating $g(v)$ as your new real part '$A$' and $g'(v)\dot{v}$ as your new dual part '$B$', plug this directly into $f(A + B\epsilon)$.<br>
+            It expands to $f(A) + f'(A)B\epsilon$. Substituting back, we receive $f(g(v)) + f'(g(v))\cdot g'(v)\dot{v}\epsilon$.<br>
+            The coefficient attached to $\epsilon$ is strictly the chain rule multiplying our initial seed!</p>
+            
+            <p><strong>4. Why the Matrix Isomorphism? How does it show the Sum and Product Rules?</strong><br>
+            If you represent a dual number $v + \dot{v}\epsilon$ as a 2x2 matrix $\begin{pmatrix} v & \dot{v} \\ 0 & v \end{pmatrix}$, standard linear algebra flawlessly simulates AD!<br>
+            <strong>Sum Rule:</strong> Add two dual matrices together. You get $\begin{pmatrix} u+v & \dot{u}+\dot{v} \\ 0 & u+v \end{pmatrix}$. The upper right is naturally $\dot{u}+\dot{v}$.<br>
+            <strong>Product Rule:</strong> Multiply two matrices $\begin{pmatrix} v & \dot{v} \\ 0 & v \end{pmatrix} \begin{pmatrix} u & \dot{u} \\ 0 & u \end{pmatrix} = \begin{pmatrix} vu & v\dot{u} + u\dot{v} \\ 0 & vu \end{pmatrix}$. The upper right is EXACTLY the derivative product rule $v\dot{u} + u\dot{v}$!</p>
+          </aside>
+        </section>
+
+        <!-- Back propagation -->
+        <section>
+          <h1>Back propagation</h1>
+        </section>
+
+        <section>
+          <h2>the classical presentation</h2>
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(255, 255, 255, 0);" width="780"
+               src="figures/backprop.svg" alt="BP">
+          <div class="slide-footer">
+            Figure from Baydin
+          </div>
+          <aside class="notes">
+            <p><strong>Speaker Notes: "The Classical Presentation vs Reverse AD"</strong></p>
+            <p><strong>The standard Backprop story (the "ugly" version):</strong><br>
+            When backprop was popularized for neural networks in the 1980s, the community explained it purely in terms of "neurons" and "layers." Students are forced to stare at monstrous equations full of nested summations, indices ($i, j, k$), and bespoke "delta rules" for hidden vs. output layers. It feels like a highly specialized, incredibly fragile algorithm that only works if your math strictly aligns with multi-layer perceptrons.</p>
+            
+            <p><strong>The Reverse Mode AD story (the "elegant" version):</strong><br>
+            Reverse Mode AD comes from the compiler community, and it steps back and says: <em>Forget neurons. Everything is just a computation graph.</em></p>
+            
+            <p>Instead of wrestling with global chain rule summations, we recognize a beautiful local principle: every intermediate variable just receives "sensitivities" (adjoints, denoted $\bar{v}$) from the nodes it pushes data to, multiplies that by the local derivative, and passes it backward. It replaces complex matrix-calculus proofs with simple, mechanical <strong>local message passing</strong> on a graph.</p>
+
+            <p><strong>The Takeaway:</strong> By viewing backprop simply as Reverse-Mode AD on a computation graph, the mystery vanishes. You don’t need a different rule for a CNN, an RNN, or an arbitrary physics simulation. As long as you can draw the forward graph, the reverse graph writes itself.</p>
+          </aside>
+        </section>
+
+        <!-- Reverse Mode AD -->
+        <section>
+          <h1>Reverse Mode AD</h1>
+        </section>
+
+        <section>
+          <blockquote style="background-color: #eee8d5; width: 100%; display: grid; margin-bottom: 30px;" class="left">
+            <div class="fragment fade-out" data-fragment-index="1" style="grid-area: 1 / 1;">
+              In the 1970s, tools for automated generation of adjoint codes (aka reverse accumulation mode automatic differentiation, aka backpropagation) were developed.
+            </div>
+            <div class="fragment current-visible" data-fragment-index="1" style="grid-area: 1 / 1;">
+              <strong>Type I: Pure Mathematics.</strong> Brilliant derivations of the adjoint state method for specific continuous systems. It required a human genius doing pure calculus, not automated algorithms.
+            </div>
+            <div class="fragment current-visible" data-fragment-index="2" style="grid-area: 1 / 1;">
+              <strong>Type II: Hand-Coded Gradients.</strong> The manual derivation and hard-coding of reverse-mode difference equations (like old-school neural network backprop). It was tedious and incredibly topology-specific.
+            </div>
+            <div class="fragment current-visible" data-fragment-index="3" style="grid-area: 1 / 1;">
+              <strong>Type III: Source-to-Source Compilers.</strong> A specialized compiler deeply analyzes your source code's AST and explicitly writes thousands of lines of new source code representing the exact derivative.
+            </div>
+            <div class="fragment fade-in" data-fragment-index="4" style="grid-area: 1 / 1;">
+              <strong>Type IV: Differentiable Programming.</strong> The modern standard. Gradients are natively generated dynamically on-the-fly with first-class AD operators implicitly integrated into the language or framework.
+            </div>
+          </blockquote>
+          <dl style="list-style-type: disk; font-size: 22pt">
+            <dt class="fragment fade-in" data-fragment-index="1">Type I</dt>
+            <dd class="fragment fade-in" data-fragment-index="1"> Geniuses transforming mathematical systems
+              <br><span style="font-size: 18pt;">(Gauss; Feynman (1939); Rozonoer and Pontryagin (1959))</span>
+            </dd>
+            <dt class="fragment fade-in" data-fragment-index="2">Type II</dt>
+            <dd class="fragment fade-in" data-fragment-index="2"> Manual transformation of computational processes
+              <br><span style="font-size: 18pt;">(Bryson (1962); Werbos (1974); Le Cun (1985); Rumelhart et al. (1986))</span>
+            </dd>
+            <dt class="fragment fade-in" data-fragment-index="3">Type III</dt>
+            <dd class="fragment fade-in" data-fragment-index="3"> Computer programs transform other computer programs
+              <br><span style="font-size: 18pt;">(Speelpenning (1980); <a href="https://lush.sourceforge.net/">LUSH</a>; TAPENADE)</span>
+            </dd>
+            <dt class="fragment fade-in" data-fragment-index="4">Type IV</dt>
+            <dd class="fragment fade-in" data-fragment-index="4"> First-class AD operators; closure
+              <br><span style="font-size: 18pt;">(STALIN$\nabla$; R$^6$RS-AD; AUTOGRAD; DIFFSHARP)</span>
+            </dd>
+          </dl>
+
+          <aside class="notes">
+            <p><strong>Speaker Notes: Where does TensorFlow live in this hierarchy?</strong></p>
+            <p>TensorFlow actually underwent a massive paradigm shift that perfectly tells this historical story!</p>
+
+            <p><strong>1. TensorFlow 1.x is fundamentally a modern flavor of Type III:</strong><br>
+            In TF v1, you didn't evaluate standard code; you built a static, symbolic computation graph. When you called an optimizer, TensorFlow took your graph and acted exactly like a <strong>Graph-to-Graph compiler</strong>. It analyzed your forward graph and statically embedded hundreds of new symbolic gradient nodes into it <em>before</em> anything actually executed. It was rigid and clunky, but highly optimized—classic Type III.</p>
+
+            <p><strong>2. TensorFlow 2.x (along with PyTorch) operates squarely in Type IV:</strong><br>
+            When TF v2 launched with <strong>Eager Execution</strong> and <code>tf.GradientTape</code>, it abandoned the static graph and fully crossed the bridge into <strong>Type IV (Differentiable Programming)</strong>. Now, you execute standard Python dynamically, and the "tape" silently traces the operations via operator overloading and closures under the hood. The derivative evaluates on-the-fly automatically alongside your standard runtime code.</p>
+
+            <p><strong>The JAX Hybrid:</strong><br>
+            JAX is the ultimate chimera. In its API, it acts beautifully like Type IV (first class functions, <code>jax.grad</code> closures). But completely under the hood, it rigidly traces python down to "jaxpr" expressions and hands them to XLA, acting exactly like a hyper-optimized Type III source-to-source compiler!</p>
+          </aside>
+        </section>
+
+        <section>
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(150, 150, 255, 1); " width="400"
+               src="figures/Speelpenning.jpeg" alt="Speelpenning">
+          <blockquote style="background-color: #93a1a1; color: #fdf6e3;">
+            <center>
+              Bert Speelpenning
+            </center>
+          </blockquote>
+        </section>
+
+        <section data-background="figures/SPAD_1.png" background-size="cover">
+        </section>
+        <section data-background="figures/SPAD_2.png" background-size="cover">
+        </section>
+
+        <section data-background="figures/SPAD_3.png" background-size="cover">
+        </section>
+
+        <section data-background="figures/SPAD_4.png" background-size="cover">
+          <img style="border:0; box-shadow: 0px 0px 0px rgba(150, 150, 255, 1); " width="1200"
+               src="figures/SPAD_4w.png" alt="Speelpenning">
+        </section>
+
+        <section>
+          <h2>Two Directions, Three Traces</h2>
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 22pt" class="fragment" data-fragment-index="0">
+            \begin{align}
+            y &= \log(\sin(x^2))
+            \end{align}
+          </blockquote>
+
+          <row>
+            <col80>
+              <ul  style="list-style-type: none; font-size: 22pt">
+                <li class="fragment roll-in" data-fragment-index="1"> Traces:
+                <li class="fragment roll-in" data-fragment-index="2"> Primal
+                <li class="fragment roll-in" data-fragment-index="3"> Tangent Derivative
+                <li class="fragment roll-in" data-fragment-index="4"> Cotangent Derivative
+              </ul>
+            </col80>
+            <col80>
+              <ul  style="list-style-type: none; font-size: 22pt">
+                <li class="fragment roll-in" data-fragment-index="1"> Direction:
+                <li class="fragment roll-in" data-fragment-index="2"> $\rightarrow$ Forward
+                <li class="fragment roll-in" data-fragment-index="3"> $\rightarrow$ Forward
+                <li class="fragment roll-in" data-fragment-index="4"> $\leftarrow$ Reverse
+              </ul>
+            </col80>
+          </row>
+
+          <aside class="notes">
+            <p>Every AD computation involves three conceptually distinct passes through the same function.
+            Use this example — <strong>y = log(sin(x²))</strong> — to make it concrete.</p>
+
+            <p><strong>The Primal trace</strong> is just ordinary execution: plug in a number for x,
+            compute x², compute sin of that, compute log of that. You get a number out.
+            This flows strictly <em>forward</em>, left to right through the graph.
+            Nothing special here — every program does this.</p>
+
+            <p><strong>The Tangent derivative trace</strong> is forward mode AD.
+            You carry a second "shadow" value alongside each intermediate — the derivative of that
+            intermediate with respect to your chosen input direction.
+            This also flows <em>forward</em>, in lockstep with the primal.
+            One forward pass gives you one column of the Jacobian — one directional derivative.
+            Efficient when you have <em>few inputs, many outputs</em>.</p>
+
+            <p><strong>The Cotangent derivative trace</strong> is reverse mode AD — backpropagation.
+            You first run the primal forward to record the computation graph,
+            then you flow sensitivity information <em>backward</em> from the output to every input.
+            One reverse pass gives you one <em>row</em> of the Jacobian — the full gradient with respect to
+            all inputs at once.
+            This is why backprop is so powerful for neural networks:
+            you have <em>many parameters, one scalar loss</em>.</p>
+
+            <p><strong>The punchline:</strong> forward and reverse mode are duals of each other —
+            one gives you Jv (Jacobian-vector product), the other gives you J<sup>T</sup>v
+            (vector-Jacobian product). Both are exact, at machine precision.
+            The choice between them is purely a question of whether your function is
+            "tall" (more outputs than inputs → prefer forward) or
+            "wide" (more inputs than outputs → prefer reverse).</p>
+
+            <p><strong>Note: Why "Tangent" and "Cotangent"? (Geometric Intuition)</strong><br>
+            <strong>Tangent (Forward):</strong> Imagine you pick a direction to move. That velocity vector geometrically lives in the <em>Tangent Space</em>. Because forward-mode AD pushes a perturbation direction <em>forward</em> through the graph, it calculates a Tangent Derivative.<br>
+            <strong>Cotangent (Reverse):</strong> In linear algebra, the "dual" to a vector space is the set of linear operations that map vectors to scalars. Geometrically, the dual to the Tangent Space is the <em>Cotangent Space</em>. Reverse-mode AD starts with a final scalar (like Loss) and pulls sensitivities <em>backward</em>. Because these gradients act exactly as linear operators waiting to eat a tangent perturbation, they fundamentally live in the Cotangent Space! Hence, backprop calculates Cotangent Derivatives (geometric pullbacks).</p>
+          </aside>
+
+        </section>
+        <section>
+          <h3>Computation Graph</h3>
+          <blockquote style="background-color: #eee8d5; width: 100%; border-radius: 8px; padding: 20px 0;">
+            <svg width="100%" height="220" viewBox="0 0 900 220" style="font-family: sans-serif; display: block; margin: 0 auto;">
+              <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                </marker>
+              </defs>
+
+              <!-- Arcs -->
+              <line x1="240" y1="120" x2="135" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead)" />
+              <line x1="430" y1="120" x2="330" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead)" />
+              <line x1="615" y1="120" x2="520" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead)" />
+              <line x1="800" y1="120" x2="725" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead)" />
+
+              <!-- Output leaf -->
+              <text x="110" y="55" text-anchor="middle" font-size="20" fill="#333">output</text>
+              <text x="110" y="80" text-anchor="middle" font-size="20" fill="#333">root</text>
+              <rect x="95" y="105" width="30" height="30" fill="transparent" stroke="#333" stroke-width="3" />
+              <foreignObject x="90" y="145" width="40" height="40">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="text-align: center; font-size: 26px; color: #333;">$y$</div>
+              </foreignObject>
+
+              <foreignObject x="167" y="130" width="40" height="40">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="text-align: center; font-size: 24px; color: #333;">$z_3$</div>
+              </foreignObject>
+
+              <!-- log() -->
+              <circle cx="285" cy="120" r="45" fill="white" stroke="#333" stroke-width="3" />
+              <foreignObject x="240" y="104" width="90" height="40">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="text-align: center; font-family: monospace; font-style: normal; font-size: 22px; color: #333;">log($\cdot$)</div>
+              </foreignObject>
+
+              <foreignObject x="360" y="130" width="40" height="40">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="text-align: center; font-size: 24px; color: #333;">$z_2$</div>
+              </foreignObject>
+
+              <!-- sin() -->
+              <circle cx="475" cy="120" r="45" fill="white" stroke="#333" stroke-width="3" />
+              <foreignObject x="430" y="104" width="90" height="40">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="text-align: center; font-family: monospace; font-style: normal; font-size: 22px; color: #333;">sin($\cdot$)</div>
+              </foreignObject>
+
+              <foreignObject x="550" y="130" width="40" height="40">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="text-align: center; font-size: 24px; color: #333;">$z_1$</div>
+              </foreignObject>
+
+              <!-- pow() -->
+              <circle cx="670" cy="120" r="55" fill="white" stroke="#333" stroke-width="3" />
+              <foreignObject x="610" y="106" width="120" height="40">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="text-align: center; font-family: monospace; font-style: normal; font-size: 18px; color: #333;">pow($\cdot$, 2)</div>
+              </foreignObject>
+
+              <foreignObject x="740" y="130" width="40" height="40">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="text-align: center; font-size: 24px; color: #333;">$x$</div>
+              </foreignObject>
+
+              <!-- Input leaf -->
+              <text x="815" y="55" text-anchor="middle" font-size="20" fill="#333">input</text>
+              <text x="815" y="80" text-anchor="middle" font-size="20" fill="#333">leaf</text>
+              <rect x="800" y="105" width="30" height="30" fill="transparent" stroke="#333" stroke-width="3" />
+              <foreignObject x="795" y="145" width="40" height="40">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="text-align: center; font-size: 26px; color: #333;">$x$</div>
+              </foreignObject>
+
+            </svg>
+          </blockquote>
+
+          <ul  style="list-style-type: none; font-size: 22pt">
+            <li class="fragment roll-in" data-fragment-index="0"> Following precedence rules
+            <li class="fragment roll-in" data-fragment-index="1"> binary/n-ary operators allowed $\rightarrow$ DAG (tree)
+            <li class="fragment roll-in" data-fragment-index="1"> $y =$ root, $x =$ leaves
+          </ul>
+        </section>
+
+        <section>
+          <h3>Intermediate Variables: $z_i$</h3>
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 22pt" class="fragment" data-fragment-index="0">
+            \begin{align}
+            x &\\
+            z_1 &= x^2\\
+            z_2 &= \sin(z_1)\\
+            z_3 &= \log(z_2)\\
+            y &= z_3\\
+            \end{align}
+          </blockquote>
+          
+          <!-- Inset Graph -->
+          <svg style="position: absolute; top: -15px; left:-180px; width: 400px; opacity: 1; z-index: 10; pointer-events: none;" viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrowhead_inset" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+              </marker>
+            </defs>
+            <line x1="240" y1="120" x2="135" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead_inset)" />
+            <line x1="430" y1="120" x2="330" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead_inset)" />
+            <line x1="615" y1="120" x2="520" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead_inset)" />
+            <line x1="800" y1="120" x2="725" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead_inset)" />
+
+            <text x="110" y="55" text-anchor="middle" font-size="20" fill="#333" font-family="sans-serif">output</text>
+            <text x="110" y="80" text-anchor="middle" font-size="20" fill="#333" font-family="sans-serif">root</text>
+            <rect x="95" y="105" width="30" height="30" fill="transparent" stroke="#333" stroke-width="4" />
+            <text x="110" y="165" text-anchor="middle" font-size="32" fill="#333" font-family="serif" font-style="italic">y</text>
+
+            <text x="187" y="150" text-anchor="middle" font-size="28" fill="#333" font-family="serif" font-style="italic">z<tspan dy="8" font-size="20">3</tspan></text>
+
+            <circle cx="285" cy="120" r="45" fill="white" stroke="#333" stroke-width="4" />
+            <text x="285" y="128" text-anchor="middle" font-size="24" fill="#333" font-family="monospace">log(&#183;)</text>
+
+            <text x="380" y="150" text-anchor="middle" font-size="28" fill="#333" font-family="serif" font-style="italic">z<tspan dy="8" font-size="20">2</tspan></text>
+
+            <circle cx="475" cy="120" r="45" fill="white" stroke="#333" stroke-width="4" />
+            <text x="475" y="128" text-anchor="middle" font-size="24" fill="#333" font-family="monospace">sin(&#183;)</text>
+
+            <text x="567" y="150" text-anchor="middle" font-size="28" fill="#333" font-family="serif" font-style="italic">z<tspan dy="8" font-size="20">1</tspan></text>
+
+            <circle cx="670" cy="120" r="55" fill="white" stroke="#333" stroke-width="4" />
+            <text x="670" y="128" text-anchor="middle" font-size="22" fill="#333" font-family="monospace">pow(&#183;, 2)</text>
+
+            <text x="762" y="150" text-anchor="middle" font-size="28" fill="#333" font-family="serif" font-style="italic">x</text>
+
+            <text x="815" y="55" text-anchor="middle" font-size="20" fill="#333" font-family="sans-serif">input</text>
+            <text x="815" y="80" text-anchor="middle" font-size="20" fill="#333" font-family="sans-serif">leaf</text>
+            <rect x="800" y="105" width="30" height="30" fill="transparent" stroke="#333" stroke-width="4" />
+            <text x="815" y="165" text-anchor="middle" font-size="32" fill="#333" font-family="serif" font-style="italic">x</text>
+          </svg>
+        </section>
+
+        <section>
+          <h3>Adjoint: $\bar{z_i} = \frac{\partial y}{\partial z_i}$</h3>
+        </section>
+        <section >
+          <h3>Example</h3>
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 22px" class="fragment" data-fragment-index="0">
+            <div class="row">
+              <div class="col-40">
+                \begin{align}
+                x &\\
+                z_1 &= x^2\\
+                z_2 &= \sin(z_1)\\
+                z_3 &= \log(z_2)\\
+                y &= z_3\\
+                \end{align}
+              </div>
+              <div class="col">
+                <ul style="font-size: 26px;">
+                  <li class="fragment roll-in" data-fragment-index="5"> $\bar{x} = \left(\left(\frac{\partial y}{\partial z_3}\frac{\partial z_3}{\partial z_2}\right) \frac{\partial z_2}{\partial
+                    l z_1}\right)\frac{\partial z_1}{\partial x}$
+                  <li class="fragment roll-in" data-fragment-index="4"> $\bar{x} = \frac{\partial y}{\partial x} = \frac{\partial y}{\partial z_1}\frac{\partial z_1}{\partial x} = \bar{z}_1 2 x$
+                  <li class="fragment roll-in" data-fragment-index="3"> $\bar{z}_1 = \frac{\partial y}{\partial z_1} = \frac{\partial y}{\partial z_2}\frac{\partial z_2}{\partial z_1} = \bar{z}_
+                    2\mathrm{cos}(z_1)$
+                  <li class="fragment roll-in" data-fragment-index="2"> $\bar{z}_2 = \frac{\partial y}{\partial z_2} = \frac{\partial y}{\partial z_3}\frac{\partial z_3}{\partial z_2} = \bar{y}\
+                    \frac{1}{z_2}$
+                  <li class="fragment roll-in" data-fragment-index="1"> $\bar{z}_3 = \frac{\partial y}{\partial z_3} = \frac{\partial y}{\partial y} = \bar{y} = 1$ (seed)
+                </ul>
+              </div>
+            </div>
+          </blockquote>
+          <blockquote style="background-color: rgba(0,0,0,0); width: 100%; font-size: 20px" class="fragment" data-fragment-index="6">
+            \begin{align}
+            \bar{x} & \fragment{6}{= \bar{z}_1 2 x}\\
+            &\fragment{7}{= (\bar{z}_2\mathrm{cos}(z_1) ) 2 x}\\
+            &\fragment{8}{= \left(\left(\bar{z}_3 \frac{1}{z_2} \right) \mathrm{cos}(x^2) \right) 2 x}\\
+            &\fragment{9}{= \left(\left( \frac{1}{\mathrm{sin}(z_1)} \right) \mathrm{cos}(x^2) \right) 2 x}\\
+            &\fragment{10}{= \left(\left( \frac{1}{\mathrm{sin}(x^2)} \right) \mathrm{cos}(x^2) \right) 2 x}\\
+            &\fragment{11}{= \left( \mathrm{cot}(x^2)  \right) 2 x\ = 2 x ~\mathrm{tan} \left( \frac{\pi}{2} - x^2\right)}\\
+            \end{align}
+          </blockquote>
+          
+          <!-- Inset Graph -->
+          <svg style="position: absolute; top: -20px; left: 0px; width: 400px; opacity: 0.9; z-index: 10; pointer-events: none;" viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrowhead_inset" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+              </marker>
+            </defs>
+            <line x1="240" y1="120" x2="135" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead_inset)" />
+            <line x1="430" y1="120" x2="330" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead_inset)" />
+            <line x1="615" y1="120" x2="520" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead_inset)" />
+            <line x1="800" y1="120" x2="725" y2="120" stroke="#333" stroke-width="4" marker-end="url(#arrowhead_inset)" />
+
+            <text x="110" y="55" text-anchor="middle" font-size="20" fill="#333" font-family="sans-serif">output</text>
+            <text x="110" y="80" text-anchor="middle" font-size="20" fill="#333" font-family="sans-serif">root</text>
+            <rect x="95" y="105" width="30" height="30" fill="transparent" stroke="#333" stroke-width="4" />
+            <text x="110" y="165" text-anchor="middle" font-size="32" fill="#333" font-family="serif" font-style="italic">y</text>
+
+            <text x="187" y="150" text-anchor="middle" font-size="28" fill="#333" font-family="serif" font-style="italic">z<tspan dy="8" font-size="20">3</tspan></text>
+
+            <circle cx="285" cy="120" r="45" fill="white" stroke="#333" stroke-width="4" />
+            <text x="285" y="128" text-anchor="middle" font-size="24" fill="#333" font-family="monospace">log(&#183;)</text>
+
+            <text x="380" y="150" text-anchor="middle" font-size="28" fill="#333" font-family="serif" font-style="italic">z<tspan dy="8" font-size="20">2</tspan></text>
+
+            <circle cx="475" cy="120" r="45" fill="white" stroke="#333" stroke-width="4" />
+            <text x="475" y="128" text-anchor="middle" font-size="24" fill="#333" font-family="monospace">sin(&#183;)</text>
+
+            <text x="567" y="150" text-anchor="middle" font-size="28" fill="#333" font-family="serif" font-style="italic">z<tspan dy="8" font-size="20">1</tspan></text>
+
+            <circle cx="670" cy="120" r="55" fill="white" stroke="#333" stroke-width="4" />
+            <text x="670" y="128" text-anchor="middle" font-size="22" fill="#333" font-family="monospace">pow(&#183;, 2)</text>
+
+            <text x="762" y="150" text-anchor="middle" font-size="28" fill="#333" font-family="serif" font-style="italic">x</text>
+
+            <text x="815" y="55" text-anchor="middle" font-size="20" fill="#333" font-family="sans-serif">input</text>
+            <text x="815" y="80" text-anchor="middle" font-size="20" fill="#333" font-family="sans-serif">leaf</text>
+            <rect x="800" y="105" width="30" height="30" fill="transparent" stroke="#333" stroke-width="4" />
+            <text x="815" y="165" text-anchor="middle" font-size="32" fill="#333" font-family="serif" font-style="italic">x</text>
+          </svg>
+        </section>
+
+        <section>
+          <h3>References</h3>
+          <ol style="list-style-type: none; font-size: 17pt; line-height: 1.5; text-align: left;
+                     margin: 0 auto; max-width: 92%; padding: 0; counter-reset: ref-counter;">
+            <li class="fragment roll-in" data-fragment-index="0"
+                style="border-top: 2px solid #268bd2; padding-top: 14px; margin-bottom: 4px; padding-left: 48px; position: relative;">
+              <span style="position:absolute; left:0; top:14px; background:#268bd2; color:#fdf6e3;
+                           font-size:14pt; font-weight:bold; border-radius:50%; width:32px; height:32px;
+                           display:flex; align-items:center; justify-content:center;">1</span>
+              R. F. Silva, S. M. Plis, T. Adalı, M. S. Pattichis, V. D. Calhoun.<br>
+              <a href="https://arxiv.org/abs/1911.04048" target="_blank" style="font-weight:bold;">
+                Multidataset Independent Subspace Analysis with Application to Multimodal Fusion
+              </a><br>
+              <span style="color: #93a1a1; font-size: 14pt;"><em>IEEE Transactions on Image Processing</em>, 2021 &nbsp;·&nbsp; arXiv:1911.04048</span>
+            </li>
+            <li class="fragment roll-in" data-fragment-index="1"
+                style="border-top: 2px solid #268bd2; padding-top: 14px; margin-top: 18px; margin-bottom: 4px; padding-left: 48px; position: relative;">
+              <span style="position:absolute; left:0; top:14px; background:#268bd2; color:#fdf6e3;
+                           font-size:14pt; font-weight:bold; border-radius:50%; width:32px; height:32px;
+                           display:flex; align-items:center; justify-content:center;">2</span>
+              A. G. Baydin, B. A. Pearlmutter, A. A. Radul, J. M. Siskind.<br>
+              <a href="https://arxiv.org/abs/1502.05767" target="_blank" style="font-weight:bold;">
+                Automatic Differentiation in Machine Learning: a Survey
+              </a><br>
+              <span style="color: #93a1a1; font-size: 14pt;"><em>Journal of Machine Learning Research</em>, 18(153):1–43, 2018 &nbsp;·&nbsp; arXiv:1502.05767</span>
+            </li>
+            <li class="fragment roll-in" data-fragment-index="2"
+                style="border-top: 2px solid #268bd2; padding-top: 14px; margin-top: 18px; margin-bottom: 4px; padding-left: 48px; position: relative;">
+              <span style="position:absolute; left:0; top:14px; background:#268bd2; color:#fdf6e3;
+                           font-size:14pt; font-weight:bold; border-radius:50%; width:32px; height:32px;
+                           display:flex; align-items:center; justify-content:center;">3</span>
+              S. Geeraert, C.-A. Lehalle, B. Pearlmutter, O. Pironneau, A. Reghai.<br>
+              <a href="https://arxiv.org/abs/1703.02311" target="_blank" style="font-weight:bold;">
+                Mini-Symposium on Automatic Differentiation and its Applications in the Financial Industry
+              </a><br>
+              <span style="color: #93a1a1; font-size: 14pt;"><em>ESAIM: Proceedings and Surveys</em>, Vol. 59, pp. 56–75, 2017 &nbsp;·&nbsp; arXiv:1703.02311</span>
+            </li>
+          </ol>
+        </section>
+
+      </section>
+      <!-- end Automatic Differentiation -->
+
+      <!-- ============================================================ -->
+      <!-- TAKEAWAYS                                                     -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>Takeaways</h2>
+        <ul style="font-size: 30px; line-height: 1.9; max-width: 92%; margin: 0 auto;">
+          <li class="fragment roll-in">
+            <strong>FFNNs &amp; Transformers are "ballistic"</strong> — fixed depth, fixed cost per input; the paradigm this course challenges.
+          </li>
+          <li class="fragment roll-in">
+            <strong>RNNs are dynamical systems</strong> — hidden state as lossy summary; convergent RNN → fixed point of $f_\theta$ (L2).
+          </li>
+          <li class="fragment roll-in">
+            <strong>Attention is a higher-order, data-dependent operator</strong> — $\mathcal{T}$ computed on the fly, previewing L4 / L5 / L6.
+          </li>
+          <li class="fragment roll-in">
+            <strong>Automatic differentiation</strong> — exact $\mathbf{J}v$ / $\mathbf{J}^\top v$ for any computation graph; the tool for what comes next.
+          </li>
+        </ul>
+      </section>
+
+
+    </div>
+  </div>
+
+  <script src="dist/reveal.js"></script>
+  <link rel="stylesheet" href="plugin/highlight/atom-one-light.css">
+  <script src="plugin/highlight/highlight.js"></script>
+  <script src="plugin/math/math.js"></script>
+  <script src="plugin/chalkboard/plugin.js"></script>
+  <script src="plugin/notes/notes.js"></script>
+  <script src="plugin/zoom/zoom.js"></script>
+  <script src="plugin/fullscreen/fullscreen.js"></script>
+  <script src="plugin/verticator/verticator.js"></script>
+  <link rel="stylesheet" href="plugin/verticator/verticator.css">
+  <script src="plugin/menu/menu.js"></script>
+
+  <script>
+    Reveal.initialize({
+      hash: true,
+      margin: 0.01,
+      minScale: 0.01,
+      maxScale: 1.23,
+      center: true,
+      controls: false,
+      keyboard: true,
+      overview: true,
+      transition: 'slide',
+      transitionSpeed: 'fast',
+      menu: { themes: false, openSlideNumber: true, openButton: false },
+      chalkboard: {
+        boardmarkerWidth: 1, chalkWidth: 2, chalkEffect: 1,
+        toggleNotesButton: false, toggleChalkboardButton: false,
+        slideWidth: Reveal.width, slideHeight: Reveal.height,
+        readOnly: false, theme: "blackboard",
+        eraser: { src: "plugin/chalkboard/img/sponge.png", radius: 30 },
+      },
+      math: {
+        mathjax: 'https://cdn.jsdelivr.net/gh/mathjax/mathjax@2.7.8/MathJax.js',
+        config: 'TeX-AMS_SVG-full',
+        TeX: {
+          Macros: {
+            RR: '\\mathbb{R}', PP: '\\mathbb{P}', EE: '\\mathbb{E}', NN: '\\mathbb{N}',
+            vth: '\\vec{\\theta}', loss: '{\\cal l}', hclass: '{\\cal H}', CD: '{\\cal D}',
+            def: '\\stackrel{\\text{def}}{=}',
+            pag: ['\\text{pa}_{{\\cal G}^{#1}}(#2)}', 2],
+            vec: ['\\boldsymbol{\\mathbf #1}', 1],
+            set: ['\\left\\{#1 \\; : \\; #2\\right\\}', 2],
+            bm: ['\\boldsymbol{\\mathbf #1}', 1],
+            argmin: ['\\operatorname\{arg\\,min\\,\}'],
+            argmax: ['\\operatorname\{arg\\,max\\,\}'],
+            softmax: ['\\operatorname\{soft\\,max\\,\}'],
+            prob: ["\\mbox{#1$\\left(#2\\right)$}", 2],
+          },
+          loader: { load: ['[tex]/color'] },
+          extensions: ["color.js"],
+          tex: { packages: { '[+]': ['color'] } },
+          svg: { fontCache: 'global' }
+        }
+      },
+      plugins: [Verticator, RevealMath, RevealChalkboard, RevealHighlight, RevealNotes, RevealZoom, RevealMenu],
+    });
+    Reveal.configure({ fragments: true });
+    Reveal.configure({ slideNumber: 'c / t' });
+    Reveal.addEventListener('darkside',   function() { document.getElementById('theme').setAttribute('href','dist/theme/aml_dark.css'); }, false);
+    Reveal.addEventListener('brightside', function() { document.getElementById('theme').setAttribute('href','dist/theme/aml.css'); },      false);
+  </script>
+
+  <style type="text/css">
+    #header-left  { position: absolute; top: 0%; left:  0%; }
+    #header-right { position: absolute; top: 0%; right: 0%; }
+    #footer-left  { position: absolute; bottom: 0%; left: 0%; }
+  </style>
+
+  <div id="hidden" style="display:none;">
+    <div id="header">
+      <div id="header-left">
+        <img style="border:0; box-shadow:0px 0px 0px rgba(150,150,255,0.8);"
+             width="90" src="figures/neuroneural_logo.png" alt="Neuroneural">
+      </div>
+      <div id="header-right">
+        <img style="border:0; box-shadow:0px 0px 0px rgba(150,150,255,0.8);"
+             width="250" src="figures/TReNDS_logo_light.png" alt="TReNDS">
+      </div>
+      <div id="footer-left">
+        <img style="border:0; box-shadow:0px 0px 0px rgba(150,150,255,0.8);"
+             width="200" src="figures/UniverVerona.svg" alt="University of Verona">
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var header = $('#header').html();
+    if (window.location.search.match(/print-pdf/gi)) {
+      Reveal.addEventListener('ready', function(event) { $('.slide-background').append(header); });
+    } else if (window.self === window.top) {
+      // Only inject logos when running as the main window, not inside the
+      // speaker-notes preview iframe (where they overlap the slide thumbnail).
+      $('div.reveal').append(header);
+    }
+  </script>
+
+</body>
+</html>
