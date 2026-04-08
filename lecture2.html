@@ -116,6 +116,670 @@
         </section>
       </section>
 
+      <!-- ============================================================ -->
+      <!-- LECTURE ROADMAP                                              -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>Roadmap</h2>
+          <ul style="font-size: 30px; line-height: 1.7; max-width: 92%; margin: 0 auto;">
+            <li class="fragment roll-in">
+              <strong>Motivation</strong>
+              <div style="font-size: 24px; color: #657b83; margin-top: 2px;">Fixed-point iteration through square-root computation</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>Foundations</strong>
+              <div style="font-size: 24px; color: #657b83; margin-top: 2px;">Brouwer, Banach, and implicit function theorem</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>Recurrent Backpropagation</strong>
+              <div style="font-size: 24px; color: #657b83; margin-top: 2px;">From BPTT to implicit gradients (Almeida-Pineda, Liao)</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>Modern Echoes</strong>
+              <div style="font-size: 24px; color: #657b83; margin-top: 2px;">DEQ, phantom gradients, and the NODE connection</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>Why This Matters</strong>
+              <div style="font-size: 24px; color: #657b83; margin-top: 2px;">Convergence guarantees vs universal computation</div>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 1 – MOTIVATION                                       -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>Motivation</h2>
+          <h1>Fixed Points as Computation</h1>
+        </section>
+
+        <section>
+          <h2>Computing $\sqrt{28}$</h2>
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 28px;" class="left">
+            Start with a rough guess, then repeatedly correct it.
+          </blockquote>
+          <ul style="font-size: 28px; line-height: 1.62; margin-top: 20px;">
+            <li class="fragment roll-in">We want $\sqrt{28}$ and start from $x_1 = 5$.</li>
+            <li class="fragment roll-in">Write $\sqrt{28} = 5 + \alpha_1$, where $\alpha_1$ is a small correction.</li>
+            <li class="fragment roll-in">Square both sides, estimate $\alpha_1$, and update the guess.</li>
+            <li class="fragment roll-in">Use the corrected value as the next iterate and repeat.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Expand, Then Drop a Tiny Term</h2>
+          <div style="font-size: 31px; line-height: 1.58; margin-top: 8px;">
+            \[
+            28 = (5+\alpha_1)^2 = 25 + 10\alpha_1 + \alpha_1^2
+            \]
+            \[
+            28 - 25 = 3 = 10\alpha_1 + \alpha_1^2
+            \]
+          </div>
+          <div class="fragment" style="font-size: 30px; line-height: 1.6; margin-top: 8px; color: #586e75;">
+            \[
+            3 \approx 10\alpha_1 + \textcolor{#93a1a1}{\alpha_1^2}
+            \quad \Rightarrow \quad
+            \alpha_1 \approx 0.3
+            \]
+          </div>
+          <div class="fragment" style="font-size: 26px; color: #657b83; margin-top: 8px;">
+            Then $x_2 = 5 + 0.3 = 5.3$.
+          </div>
+        </section>
+
+        <section>
+          <h2>From Correction to Expression</h2>
+          <div style="font-size: 31px; line-height: 1.55; margin-top: 10px;">
+            \[
+            x_{n+1}=x_n-\frac{x_n^2-a}{2x_n}
+            =\frac{x_n^2+a}{2x_n}
+            =\frac12\left(x_n+\frac{a}{x_n}\right)
+            \]
+          </div>
+          <ul style="font-size: 27px; line-height: 1.58; margin-top: 18px;">
+            <li class="fragment roll-in">This is the Babylonian/Newton update for square roots.</li>
+            <li class="fragment roll-in">Works for any $a &gt; 0$ with a positive initial guess.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Why It Converges</h2>
+          <div style="font-size: 28px; line-height: 1.5; text-align: left;">
+            <span class="fragment roll-in" data-fragment-index="0">Let $r=\sqrt{a}$ and $x_{n+1}=\frac12\left(x_n+\frac{a}{x_n}\right)$.</span>
+            <div class="fragment roll-in" data-fragment-index="1">
+              \[
+              x_{n+1}-r=\frac{(x_n-r)^2}{2x_n}\ge 0,
+              \]
+            </div>
+            <span class="fragment roll-in" data-fragment-index="1">so after one step the iterate is above the root.</span>
+            <div class="fragment roll-in" data-fragment-index="2">
+              \[
+              x_n>r\Rightarrow x_{n+1}-x_n=\frac{a-x_n^2}{2x_n}<0,
+              \]
+            </div>
+            <span class="fragment roll-in" data-fragment-index="2">so iterates decrease while staying $\ge r$.</span>
+          </div>
+          <div class="fragment roll-in" data-fragment-index="3" style="font-size: 26px; line-height: 1.5; text-align: left; margin-top: 6px;">
+            Therefore $\{x_n\}$ is decreasing and bounded below by $r$, hence convergent; the limit satisfies
+            $L=\frac12\left(L+\frac{a}{L}\right)\Rightarrow L^2=a\Rightarrow L=\sqrt{a}$.
+          </div>
+          <blockquote class="fragment roll-in" data-fragment-index="4" style="background-color: #eee8d5; width: 100%; font-size: 26px; line-height: 1.45; margin-top: 8px;">
+            The iteration converges. Next question: how fast?<br>That local rate is governed by the derivative (or Jacobian) at the fixed point.
+          </blockquote>
+          <aside class="notes">
+            <p><strong>Talk track (4 beats):</strong></p>
+            <p>(1) Define r = sqrt(a) and the update map. (2) Show x_{n+1} - r >= 0, so after one step we are on/above the root. (3) If x_n > r then x_{n+1} - x_n < 0, so sequence decreases. (4) Decreasing + bounded below implies convergence; limit equation gives L = sqrt(a).</p>
+            <p><strong>Emphasize:</strong> this is a global argument for positive initialization; it does not yet quantify local rate.</p>
+            <p><strong>Bridge:</strong> "We now know it converges. Next: what controls the speed near the fixed point?"</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Derivative as Local Error Gain</h2>
+          <div style="font-size: 31px; line-height: 1.7; text-align: center; margin-top: 10px;">
+            <div class="fragment roll-in">$x_{n+1}=g(x_n),\quad g(r)=r,\quad e_n=x_n-r$</div>
+            <div class="fragment roll-in" style="margin-top: 26px;">$e_{n+1}=g(x_n)-g(r)$</div>
+            <div class="fragment roll-in" style="margin-top: 26px;">$g(x_n)=g(r)+g'(r)(x_n-r)+o(x_n-r)$</div>
+            <div class="fragment roll-in" style="margin-top: 26px;">$e_{n+1}=g'(r)e_n+o(e_n)$</div>
+          </div>
+          <blockquote class="fragment roll-in" style="background-color: #eee8d5; width: 80%; font-size: 26px; margin-top: 24px;">
+            Local stability is controlled by $g'(r)$.
+          </blockquote>
+          <aside class="notes">
+            <p><strong>Goal:</strong> explain derivative as local error gain.</p>
+            <p>Define error e_n = x_n - r with g(r)=r. Then e_{n+1} = g(x_n)-g(r). Taylor-expand around r: g(x_n)=g(r)+g'(r)(x_n-r)+o(x_n-r). Therefore e_{n+1}=g'(r)e_n+o(e_n).</p>
+            <p><strong>Interpretation:</strong> near r, each iteration roughly multiplies error by g'(r). Smaller |g'(r)| means faster local convergence.</p>
+            <p>For the sqrt map, g'(r)=0, which explains very rapid local convergence once near the fixed point.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Derivative Bound $\Rightarrow$ Contraction</h2>
+          <div style="font-size: 30px; line-height: 1.7; text-align: left; margin-top: 6px;">
+            <div class="fragment roll-in">If $|g'(r)|&lt;1$, the fixed point is locally attracting.</div>
+            <div class="fragment roll-in" style="margin-top: 16px;">A stronger sufficient condition: $|g'(x)|\le q&lt;1$ near $r$.</div>
+            <div class="fragment roll-in" style="margin-top: 16px;">Then (Mean Value Theorem): $|g(x)-g(y)|\le q|x-y|$, so $g$ is a contraction.</div>
+            <div class="fragment roll-in" style="margin-top: 16px;">Hence local geometric convergence: $|e_{n+1}|\le q|e_n|$.</div>
+            <div class="fragment roll-in" style="margin-top: 16px; color:#657b83;">In higher dimensions: replace $g'$ with Jacobian $J_g$ and $|\cdot|$ with $\|\cdot\|_2$.</div>
+          </div>
+          <aside class="notes">
+            <p><strong>Goal:</strong> connect derivative bounds to contraction mapping language.</p>
+            <p>First statement is intuitive: |g'(r)| &lt; 1 gives local attraction. Stronger sufficient condition is a neighborhood bound |g'(x)| <= q &lt; 1. By the Mean Value Theorem, this implies |g(x)-g(y)| <= q|x-y|, i.e., contraction.</p>
+            <p>Then convergence rate is geometric: |e_{n+1}| <= q|e_n|.</p>
+            <p><strong>Bridge forward:</strong> in vector settings, use Jacobian/operator norm; this is the form used for Banach-style guarantees in implicit models.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Pseudocode</h2>
+          <pre class="python" style="font-size: 23px;"><code data-trim data-noescape>
+Input: a > 0, initial guess x > 0
+repeat:
+    x_next = 0.5 * (x + a / x)
+    x = x_next
+until converged
+return x
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Two Real Algorithms, Different Speeds</h2>
+          <ul style="font-size: 28px; line-height: 1.65; margin-top: 18px;">
+            <li class="fragment roll-in"><strong>Bisection (slow, robust):</strong> maintain an interval containing $\sqrt{x}$ and repeatedly halve it.</li>
+            <li class="fragment roll-in"><strong>Babylonian/Newton (fast):</strong> iterate $u_{k+1}=\frac12\left(u_k+\frac{x}{u_k}\right)$.</li>
+            <li class="fragment roll-in">Both converge to the same root; they differ in convergence rate.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Bisection (Historical Slow Baseline)</h2>
+          <pre class="python" style="font-size: 22px;"><code data-trim data-noescape>
+def sqrt_bisection(x, lo=0.0, hi=None, tol=1e-10, max_iter=80):
+    if hi is None:
+        hi = max(1.0, x)
+    hist = []
+    for _ in range(max_iter):
+        mid = 0.5 * (lo + hi)
+        hist.append(mid)
+        if abs(mid*mid - x) < tol or (hi - lo) < tol:
+            break
+        if mid*mid < x:
+            lo = mid
+        else:
+            hi = mid
+    return hist
+          </code></pre>
+          <div style="font-size: 24px; color: #657b83; text-align: left; margin-top: 8px;">
+            Guaranteed but linear convergence: interval length halves each step.
+          </div>
+          <aside class="notes">
+            <p><strong>Historical note:</strong> there is no single "inventor" of bisection. Interval-halving style reasoning appears in older numerical traditions, while the modern theorem-backed form is tied to 19th-century analysis (Bolzano, 1817; Cauchy, 1821).</p>
+            <p><strong>What to say in class:</strong> "Think of this as the classical bracketing method: robust and guaranteed, but only linear in speed."</p>
+            <p><strong>Contrast line:</strong> "Babylonian/Newton wins on speed near the solution; bisection wins on robustness with a valid bracket."</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Babylonian / Newton in Python</h2>
+          <pre class="python" style="font-size: 22px;"><code data-trim data-noescape>
+def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
+    u = abs(u0)
+    hist = [u]
+    for _ in range(max_iter):
+        denom = u if abs(u) > 1e-12 else 1e-12
+        u_next = 0.5 * (u + x / denom)
+        hist.append(u_next)
+        if abs(u_next - u) < tol:
+            break
+        u = u_next
+    return hist
+          </code></pre>
+          <div style="font-size: 24px; color: #657b83; text-align: left; margin-top: 8px;">
+            Same objective, usually far fewer iterations.
+          </div>
+        </section>
+
+        <section data-auto-animate style="overflow: visible;">
+          <div style="margin-top: -70px; width: 80vw; max-width: 1650px; position: relative; left: 50%; transform: translateX(-50%);">
+            <h2 style="margin-bottom: 6px;">Compare Bisection vs Babylonian</h2>
+            <div style="font-size: 20px; color: #657b83; margin-bottom: 12px;">
+              Run in-browser Python to compare convergence behavior in real time.
+            </div>
+
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) 220px minmax(0, 1fr); column-gap: 0px; align-items: flex-start;">
+              <div style="background: #fdf6e3; border-radius: 8px; padding: 10px 14px;">
+                <h3 style="font-size: 24px; color: #cb4b16; margin-top: 0;">Bisection</h3>
+                <div id="table-bisection" style="font-size: 17px; text-align: left; max-height: 62vh; overflow-y: auto; overflow-x: auto;"></div>
+              </div>
+
+              <div style="background: #eee8d5; border-radius: 8px; padding: 10px 12px;">
+                <div style="display: grid; grid-template-columns: 1fr; gap: 6px; align-items: center;">
+                  <label for="sqrt-x" style="font-size: 18px; text-align: left;">$x$</label>
+                  <input id="sqrt-x" type="number" value="2" step="0.1" style="width: 100%; font-size: 18px; padding: 4px;">
+
+                  <label for="sqrt-u0" style="font-size: 18px; text-align: left;">Newton $u_0$</label>
+                  <input id="sqrt-u0" type="number" value="1" step="0.1" style="width: 100%; font-size: 18px; padding: 4px;">
+
+                  <label for="sqrt-lo" style="font-size: 18px; text-align: left;">Bisect lo</label>
+                  <input id="sqrt-lo" type="number" value="0" step="0.1" style="width: 100%; font-size: 18px; padding: 4px;">
+
+                  <label for="sqrt-hi" style="font-size: 18px; text-align: left;">Bisect hi</label>
+                  <input id="sqrt-hi" type="number" value="2" step="0.1" style="width: 100%; font-size: 18px; padding: 4px;">
+
+                  <label for="sqrt-tol" style="font-size: 18px; text-align: left;">tol</label>
+                  <input id="sqrt-tol" type="number" value="1e-10" step="1e-10" style="width: 100%; font-size: 18px; padding: 4px;">
+
+                  <label for="sqrt-maxiter" style="font-size: 18px; text-align: left;">max iter</label>
+                  <input id="sqrt-maxiter" type="number" value="25" step="1" style="width: 100%; font-size: 18px; padding: 4px;">
+
+                  <button id="run-sqrt" style="font-size: 22px; padding: 6px 10px; margin-top: 4px;">Run Python</button>
+                </div>
+                <div id="py-status" style="font-size: 18px; color: #657b83; min-height: 24px; margin-top: 10px; text-align: left;">
+                  Click "Run Python" to load runtime and execute.
+                </div>
+              </div>
+
+              <div style="background: #fdf6e3; border-radius: 8px; padding: 10px 14px;">
+                <h3 style="font-size: 24px; color: #2aa198; margin-top: 0;">Babylonian loop</h3>
+                <div id="table-babylonian" style="font-size: 17px; text-align: left; max-height: 62vh; overflow-y: auto; overflow-x: auto;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>From Example to General Form</h2>
+          <div style="font-size: 36px; margin-bottom: 22px;">
+            $$z = f(x, z, \theta)$$
+          </div>
+          <ul style="font-size: 29px; line-height: 1.65;">
+            <li class="fragment roll-in">Bisection and Babylonian are both special cases of iterative maps.</li>
+            <li class="fragment roll-in">In general: $x$ selects the task, $z$ is the state, and $\theta$ shapes the update map.</li>
+            <li class="fragment roll-in">If $z$ is defined only implicitly at equilibrium, how do we differentiate w.r.t. $\theta$?</li>
+            <li class="fragment roll-in">To answer that, we need existence, uniqueness, and differentiability guarantees.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Motivation Wrap-Up</h2>
+          <ul style="font-size: 30px; line-height: 1.8;">
+            <li class="fragment roll-in">Same fixed point, different algorithms: bisection is robust, Babylonian is fast</li>
+            <li class="fragment roll-in">Initialization/bracketing changes practical compute effort</li>
+            <li class="fragment roll-in">This motivates writing computation as equilibrium: $z = f(x, z, \theta)$</li>
+            <li class="fragment roll-in">Training now depends on math conditions, not just forward iteration</li>
+          </ul>
+          <div class="fragment roll-in" style="font-size: 22px; color: #2aa198; margin-top: 16px; text-align: left;">
+            Next: Brouwer (existence), Banach (uniqueness/convergence), and IFT (differentiability).
+          </div>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 2 – FOUNDATIONS                                      -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>Foundations</h2>
+            <h1>Why Implicit Gradients Work</h1>
+        </section>
+
+        <section>
+          <div style="position: absolute; right: 30px; top: 118px; z-index: 5; text-align: center;">
+            <img src="figures/LEJ_Brouwer.jpeg" alt="L. E. J. Brouwer" style="border:0; box-shadow: none; margin-bottom: -40%;" width="150">
+            <br><small>L.E.J. Brouwer</small>
+          </div>
+          <h2>Brouwer: Existence</h2>
+          <img src="figures/FP_coffee.gif" alt="coffee fixed-point intuition" style="border:0; box-shadow:none;" width="400">
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 36px; margin-top: 14px;" class="left">
+            Every continuous function from a convex compact set $K$ to itself has a fixed point.
+          </blockquote>
+        </section>
+
+        <section data-background="figures/FP_nested_map.png" data-background-size="contain">
+          <img src="figures/FP_matreshka.png" alt="nested maps intuition" style="border:0; box-shadow:none;" width="96%" class="fragment roll-in">
+        </section>
+
+        <section data-background="figures/FP_nested_map.png" data-background-size="contain">
+          <img src="figures/FP_crumpled_map.png" alt="crumpled map intuition" style="border:0; box-shadow:none;" width="96%">
+        </section>
+
+        <section>
+          <div style="position: absolute; right: -90px; top: 118px; z-index: 5; text-align: center;">
+            <img src="figures/Stefan_Banach.jpg" alt="Stefan Banach" style="border:0; box-shadow:none; margin-bottom: -5%;" width="150">
+            <br><small>Stefan Banach</small>
+          </div>
+          <h2>Uniqueness + Iterative Computability</h2>
+          <ul style="font-size: 29px; line-height: 1.62; list-style-type: none;">
+            <li class="fragment roll-in">
+              <blockquote style="background-color: #eee8d5; width: 100%;">
+                If $T$ is a contraction on a complete metric space,
+                \[d(T(x), T(y)) \le q\,d(x,y),\; 0 \le q &lt; 1\]
+                then there is a unique fixed point $x^*$.
+              </blockquote>
+            </li>
+            <li class="fragment roll-in">
+              <blockquote style="background-color: #eee8d5; width: 100%;">
+                Computability claim: the fixed point is obtained algorithmically by iteration.
+                Start from any $x_0$, apply $x_{n+1}=T(x_n)$, and $x_n\to x^*$.
+              </blockquote>
+            </li>
+            <li class="fragment roll-in">
+              <blockquote style="background-color: #eee8d5; width: 100%; font-size: 26px;">
+                Practical check (local): in 1D, $|g'(r)|&lt;1$; in higher dimensions,
+                $\left\|J_f(\vec{z}^{\,*})\right\|_2&lt;1$ (or a uniform bound
+                $\left\|J_f(\vec{z})\right\|_2\le q&lt;1$ nearby) gives contraction.
+                For the square-root map, $g'(\sqrt{a})=0$, matching the fast local convergence we observed.
+              </blockquote>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Implicit Function Theorem</h2>
+          <div style="font-size: 24px; color: #657b83; text-align: left; margin-bottom: 10px;" class="fragment roll-in" data-fragment-index="0">
+            Why this theorem: it guarantees local existence, uniqueness, and smoothness, which licenses the derivative formula on the next slide.
+          </div>
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 29px; line-height: 1.55; text-align: left;">
+            <span class="fragment roll-in" data-fragment-index="0"><strong>Theorem (IFT, local).</strong></span>
+            <span class="fragment roll-in" data-fragment-index="1">Let $F:\mathbb{R}^2\to\mathbb{R}$ be continuously differentiable near $(x_0,y_0)$ and satisfy $F(x_0,y_0)=0$.</span>
+            <span class="fragment roll-in" data-fragment-index="2">If $\dfrac{\partial F}{\partial y}(x_0,y_0)\neq 0$,</span>
+            <span class="fragment roll-in" data-fragment-index="3">then there exists a neighborhood of $x_0$ and a unique differentiable function $y(x)$ with $y(x_0)=y_0$ such that</span>
+            <span class="fragment roll-in" data-fragment-index="4">$F(x,y(x))=0$ for nearby $x$.</span>
+          </blockquote>
+          <div class="fragment roll-in" data-fragment-index="5" style="font-size: 24px; color: #657b83; text-align: left; margin-top: 10px;">
+            Translation: a nonzero partial in $y$ means the constraint is locally solvable for $y$ as a smooth function of $x$.
+          </div>
+          <div class="fragment roll-in" data-fragment-index="6" style="font-size: 23px; color: #586e75; text-align: left; margin-top: 8px;">
+            Example: $x^2+y^2=1$ defines $y(x)$ near $(0,1)$ since $\frac{\partial F}{\partial y}=2y$ and $\frac{\partial F}{\partial y}(0,1)=2\neq0$; not near $(1,0)$ where $\frac{\partial F}{\partial y}(1,0)=0$.
+          </div>
+          <div class="fragment" data-fragment-index="6" style="font-size: 16px; color: #8a9aa3; text-align: right; margin-top: 8px;">
+            Historical note: modern rigorous form often attributed to Ulisse Dini (1870s), building on Cauchy-era analysis.
+          </div>
+        </section>
+
+        <section>
+          <h2>Implicit Differentiation Formula</h2>
+          <div style="font-size: 27px; line-height: 1.35; text-align: left; margin-top: 6px;">
+            Suppose $F(x,y)=0$ defines $y$ implicitly as a function of $x$.
+            <div class="fragment roll-in" data-fragment-index="0">
+              Constraint step: \(F(x+\Delta x,\,y+\Delta y)-F(x,y)=0\).
+            </div>
+            <div class="fragment roll-in" data-fragment-index="1">
+              \[
+              F(x+\Delta x,\,y+\Delta y)-F(x,y)
+              \approx
+              \frac{\partial F}{\partial x}\,\Delta x + \frac{\partial F}{\partial y}\,\Delta y
+              \]
+            </div>
+            <div class="fragment roll-in" data-fragment-index="2">
+              \[
+              \frac{\partial F}{\partial x}\,\Delta x + \frac{\partial F}{\partial y}\,\Delta y \approx 0
+              \]
+            </div>
+            <div class="fragment roll-in" data-fragment-index="3" style="margin-top: -4px;">
+              If \(\dfrac{\partial F}{\partial y}\neq 0\), then
+              \[
+              \frac{dy}{dx} = -\frac{\partial F/\partial x}{\partial F/\partial y}.
+              \]
+            </div>
+          </div>
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 21px; margin-top: 6px;" class="left fragment roll-in">
+            Taylor gives the approximation; the constraint gives the equality to zero.
+          </blockquote>
+          <aside class="notes">
+            <p><strong>Q1: Why does perturbing both x and y keep F unchanged?</strong></p>
+            <p>Because we are not perturbing arbitrarily. We move <em>along the constraint curve</em> F(x,y)=0. If y is implicitly defined by x through F(x,y(x))=0, then for nearby x+dx we choose y+dy = y(x+dx), which also satisfies the same constraint value 0.</p>
+
+            <p><strong>Q2: What Taylor expansion are we using?</strong></p>
+            <p>First-order expansion around (x,y):</p>
+            <p>F(x+dx,y+dy) = F(x,y) + F_x dx + F_y dy + higher-order terms.</p>
+            <p>Subtract F(x,y) from both sides to get the displayed difference form. We are not "cancelling the first term" by magic; we explicitly subtract it.</p>
+
+            <p><strong>Q3: Why does the right side become approximately zero?</strong></p>
+            <p>From Q1, the left side difference equals 0 exactly along the constraint. From Q2, that same difference is approximated by F_x dx + F_y dy. Hence F_x dx + F_y dy ≈ 0, then divide by dx and take dx→0 to get dy/dx = -(F_x/F_y), assuming F_y ≠ 0.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>IFT for Implicit Layers</h2>
+          <div style="font-size: 30px; line-height: 1.55; text-align: left; margin-top: 4px;">
+            Write equilibrium as
+            \[
+            \Psi(\vec{z},\vec{x},\vec{\theta}) = \vec{z} - f(\vec{x},\vec{z},\vec{\theta}) = \vec{0}.
+            \]
+            Differentiate w.r.t. parameters:
+            \[
+            \frac{\partial \vec{z}^{\,*}}{\partial \vec{\theta}} =
+            \left(I - \frac{\partial f}{\partial \vec{z}}\Big|_{\vec{z}^{\,*}}\right)^{-1}
+            \frac{\partial f}{\partial \vec{\theta}}\Big|_{\vec{z}^{\,*}}.
+            \]
+          </div>
+          <ul style="font-size: 25px; line-height: 1.55; margin-top: 10px;">
+            <li class="fragment roll-in">IFT condition: the Jacobian in $\vec{z}$ is locally invertible.</li>
+            <li class="fragment roll-in">Sign check: general form is $\frac{\partial \vec{z}^{\,*}}{\partial\vec{\theta}}=-\left(\frac{\partial\Psi}{\partial \vec{z}}\right)^{-1}\frac{\partial\Psi}{\partial\vec{\theta}}$; here $\frac{\partial\Psi}{\partial\vec{\theta}}=-\frac{\partial f}{\partial\vec{\theta}}$, so the two minus signs cancel.</li>
+            <li class="fragment roll-in">This is the exact bridge from fixed-point solving to trainable implicit models.</li>
+            <li class="fragment roll-in">Next section: this inverse appears as an adjoint linear solve (RBP).</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Foundations Wrap-Up</h2>
+          <ul style="font-size: 30px; line-height: 1.8;">
+            <li class="fragment roll-in">Brouwer: fixed points exist</li>
+            <li class="fragment roll-in">Banach: fixed point is unique and computable by iteration</li>
+            <li class="fragment roll-in">IFT: fixed points are differentiable under regularity</li>
+            <li class="fragment roll-in">These are the mathematical prerequisites for RBP and DEQ</li>
+          </ul>
+          <div class="fragment roll-in" style="font-size: 22px; color: #2aa198; margin-top: 16px; text-align: left;">
+            Next: from BPTT to implicit gradients at steady state.
+          </div>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 3 – RBP                                               -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h1>Recurrent Backpropagation</h1>
+        </section>
+
+        <section>
+          <h2>RNN as a Map (recap from Lecture 1)</h2>
+          <img src="figures/FP_rnn_fp.svg" alt="RNN as unrolled map" style="border:0; box-shadow:none;" width="92%">
+          <div style="font-size: 31px; margin-top: 8px;">
+            \[
+            \vec{h}_{t+1}=F(\vec{x}_t,\vec{\theta},\vec{h}_t),\qquad L=\ell(\vec{h}_T)
+            \]
+          </div>
+          <div class="fragment roll-in" style="font-size: 23px; color: #657b83; text-align: left; margin-top: 8px;">
+            We now derive BPTT step by step from this unrolled computation graph.
+          </div>
+        </section>
+
+        <section data-auto-animate>
+          <h2>Back Propagation Through Time</h2>
+          <div style="position: relative; width: 92%; margin: 0 auto;">
+            <img src="figures/FP_rnn_fp.svg" alt="RNN with backward adjoint flow" style="border:0; box-shadow:none; width:100%;">
+            <svg viewBox="0 0 1000 330" style="position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none;">
+              <defs>
+                <marker id="adjointArrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+                  <polygon points="0,0 9,4.5 0,9" fill="#d97b00"></polygon>
+                </marker>
+              </defs>
+              <line class="fragment" data-fragment-index="0" x1="872" y1="171" x2="808" y2="171" stroke="#d97b00" stroke-width="4" marker-end="url(#adjointArrow)"></line>
+              <line class="fragment" data-fragment-index="0" x1="748" y1="126" x2="748" y2="56" stroke="#d97b00" stroke-width="4" marker-end="url(#adjointArrow)"></line>
+              <line class="fragment" data-fragment-index="1" x1="706" y1="171" x2="612" y2="171" stroke="#d97b00" stroke-width="4" marker-end="url(#adjointArrow)"></line>
+              <line class="fragment" data-fragment-index="1" x1="565" y1="126" x2="565" y2="56" stroke="#d97b00" stroke-width="4" marker-end="url(#adjointArrow)"></line>
+            </svg>
+            <div class="fragment" data-fragment-index="0" style="position:absolute; left:77%; top:58%; color:#d97b00; font-size:30px;">\(\frac{\partial L}{\partial \vec{h}^{\,T}}\)</div>
+            <div class="fragment" data-fragment-index="0" style="position:absolute; left:79%; top:24%; color:#d97b00; font-size:28px;">\(\frac{\partial L}{\partial \vec{w}^{\,T}}\)</div>
+            <div class="fragment" data-fragment-index="1" style="position:absolute; left:66%; top:69%; color:#d97b00; font-size:30px;">\(\frac{\partial L}{\partial \vec{h}^{\,T-1}}\)</div>
+          </div>
+          <div style="font-size: 30px; line-height: 1.45; margin-top: 8px; text-align: left;">
+            <div class="fragment roll-in" data-fragment-index="0">
+              \[
+              \frac{\partial L}{\partial \vec{w}^{\,T}} = \frac{\partial L}{\partial \vec{h}^{\,T}}\frac{\partial \vec{h}^{\,T}}{\partial \vec{w}^{\,T}}
+              \]
+            </div>
+            <div class="fragment roll-in" data-fragment-index="1">
+              \[
+              \frac{\partial L}{\partial \vec{w}^{\,T-1}} = \frac{\partial L}{\partial \vec{h}^{\,T}}\frac{\partial \vec{h}^{\,T}}{\partial \vec{h}^{\,T-1}}\frac{\partial \vec{h}^{\,T-1}}{\partial \vec{w}^{\,T-1}}
+              \]
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>BPTT with Shared Parameters</h2>
+          <div style="font-size: 30px; line-height: 1.5;">
+            <div class="fragment roll-in">
+              \[
+              \frac{\partial L}{\partial \vec{w}} =
+              \frac{\partial L}{\partial \vec{h}^{\,T}}
+              \left(
+              \frac{\partial \vec{h}^{\,T}}{\partial \vec{w}}+
+              \frac{\partial \vec{h}^{\,T}}{\partial \vec{h}^{\,T-1}}\frac{\partial \vec{h}^{\,T-1}}{\partial \vec{w}}+\cdots
+              \right)
+              \]
+            </div>
+            <div class="fragment roll-in">
+            \[
+            \frac{\partial L}{\partial \vec{w}}=
+            \frac{\partial L}{\partial \vec{h}^{\,T}}
+            \sum_{k=1}^{T}
+            \left(\prod_{i=T-k+1}^{T-1}
+            J_{F,\vec{h}}\!\left(\vec{x},\vec{w},\vec{h}^{\,i}\right)\right)
+            \frac{\partial F}{\partial \vec{w}}\!\left(\vec{x},\vec{w},\vec{h}^{\,T-k}\right)
+            \]
+            </div>
+          </div>
+          <ul style="font-size: 25px; line-height: 1.55; margin-top: 10px;">
+            <li class="fragment roll-in">Here $\vec{w}^{\,t}$ means the copy of shared parameters at unrolled step $t$.</li>
+            <li class="fragment roll-in">This is a sum of all temporal influence paths.</li>
+            <li class="fragment roll-in">RBP emerges by taking the convergent limit and replacing long products with an implicit linear solve.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>RBP Derivation Arc (Liao 2018 framing)</h2>
+          <ul style="font-size: 27px; line-height: 1.62;">
+            <li class="fragment roll-in">Define $\Psi(\vec{z}, \vec{x}, \vec{\theta})=\vec{z}-f(\vec{x},\vec{z},\vec{\theta})=\vec{0}$.</li>
+            <li class="fragment roll-in">Differentiate implicitly to obtain the inverse Jacobian term.</li>
+            <li class="fragment roll-in">Avoid explicit inverse by solving an adjoint linear system.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Historical Lineage</h2>
+          <ul style="font-size: 27px; line-height: 1.62;">
+            <li class="fragment roll-in">Almeida and Pineda (1987): fixed-point gradients in recurrent nets.</li>
+            <li class="fragment roll-in">Feynman (1939): early adjoint-style equilibrium sensitivity idea.</li>
+            <li class="fragment roll-in">Liao et al. (2018): clean modern derivation and improvements.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Variants (to Expand)</h2>
+          <ul style="font-size: 27px; line-height: 1.62;">
+            <li class="fragment roll-in"><strong>Neumann RBP:</strong> $(I - J_f^T)^{-1}=\sum_{k=0}^{\infty}(J_f^T)^k$.</li>
+            <li class="fragment roll-in"><strong>Krylov / CG style:</strong> solve linear system with matrix-free Jacobian-vector products.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>RBP Wrap-Up</h2>
+          <ul style="font-size: 30px; line-height: 1.8;">
+            <li class="fragment roll-in">RBP is BPTT at convergence, written implicitly</li>
+            <li class="fragment roll-in">Core computation is an adjoint linear solve</li>
+            <li class="fragment roll-in">Neumann and Krylov methods are solver choices, not new objectives</li>
+            <li class="fragment roll-in">This is the template reused in modern implicit models</li>
+          </ul>
+          <div class="fragment roll-in" style="font-size: 22px; color: #2aa198; margin-top: 16px; text-align: left;">
+            Next: modern names for the same principle.
+          </div>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 4 – MODERN APPLICATIONS                              -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h1>Modern Applications</h1>
+        </section>
+
+        <section>
+          <h2>Same Core Idea, New Packaging</h2>
+          <ul style="font-size: 28px; line-height: 1.65;">
+            <li class="fragment roll-in"><strong>DEQ:</strong> prediction as fixed point, gradients by implicit differentiation.</li>
+            <li class="fragment roll-in"><strong>Phantom gradients:</strong> truncated Neumann-style approximation.</li>
+            <li class="fragment roll-in"><strong>NODE:</strong> continuous-depth limit with adjoint-based sensitivity.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Modern Applications Wrap-Up</h2>
+          <ul style="font-size: 30px; line-height: 1.8;">
+            <li class="fragment roll-in">DEQ and RBP share the same gradient mathematics</li>
+            <li class="fragment roll-in">Approximation quality depends on solver choice and truncation depth</li>
+            <li class="fragment roll-in">Continuous-time and discrete-time views are mathematically aligned</li>
+            <li class="fragment roll-in">Terminology changed faster than the core method</li>
+          </ul>
+          <div class="fragment roll-in" style="font-size: 22px; color: #2aa198; margin-top: 16px; text-align: left;">
+            Next: the practical significance of these tradeoffs.
+          </div>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 5 – WHY IMPORTANT                                    -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h1>Why This Matters</h1>
+        </section>
+
+        <section>
+          <h2>Stability vs Expressivity</h2>
+          <ul style="font-size: 28px; line-height: 1.65;">
+            <li class="fragment roll-in">Contractive/reversible maps support stable training and inference.</li>
+            <li class="fragment roll-in">Universal computation often pushes beyond strict contraction regimes.</li>
+            <li class="fragment roll-in">Practical design is a tradeoff: guarantees, speed, capacity, and robustness.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Importance Wrap-Up</h2>
+          <ul style="font-size: 30px; line-height: 1.8;">
+            <li class="fragment roll-in">Implicit models replace fixed depth with adaptive iterative solving</li>
+            <li class="fragment roll-in">Convergence assumptions are central, not optional</li>
+            <li class="fragment roll-in">Solver engineering directly affects model behavior</li>
+            <li class="fragment roll-in">This sets up adaptive computation in Lecture 3</li>
+          </ul>
+          <div class="fragment roll-in" style="font-size: 22px; color: #2aa198; margin-top: 16px; text-align: left;">
+            Next lecture: explicit mechanisms for adaptive depth and halting.
+          </div>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAKEAWAYS                                                     -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>Takeaways</h2>
+        <ul style="font-size: 30px; line-height: 1.9; max-width: 92%; margin: 0 auto;">
+          <li class="fragment roll-in"><strong>Banach + IFT are the foundation</strong> for stable, differentiable fixed-point computation.</li>
+          <li class="fragment roll-in"><strong>RBP (Almeida-Pineda) and DEQ are the same core move</strong>: gradients at equilibrium via implicit differentiation.</li>
+          <li class="fragment roll-in"><strong>Implicit layers trade fixed depth for iterative solving</strong>, decoupling representational depth from explicit layer count.</li>
+          <li class="fragment roll-in"><strong>The course shift:</strong> from static input-output maps to learnable computational processes.</li>
+        </ul>
+      </section>
+
 
     </div>
   </div>
@@ -174,10 +838,242 @@
     Reveal.addEventListener('brightside', function() { document.getElementById('theme').setAttribute('href','dist/theme/aml.css'); },      false);
   </script>
 
+  <script>
+    let pyodideRuntime = null;
+    let pyodideLoaderPromise = null;
+
+    function updatePyStatus(message, color) {
+      const status = document.getElementById('py-status');
+      if (!status) return;
+      status.textContent = message;
+      if (color) status.style.color = color;
+    }
+
+    async function loadScriptOnce(src) {
+      if (document.querySelector('script[data-pyodide="1"]')) return;
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+        script.dataset.pyodide = '1';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    async function ensurePyodideRuntime() {
+      if (pyodideRuntime) return pyodideRuntime;
+      if (!pyodideLoaderPromise) {
+        pyodideLoaderPromise = (async function () {
+          updatePyStatus('Loading Pyodide runtime...', '#cb4b16');
+          await loadScriptOnce('https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js');
+          pyodideRuntime = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/' });
+          updatePyStatus('Python runtime ready.', '#2aa198');
+          return pyodideRuntime;
+        })();
+      }
+      return pyodideLoaderPromise;
+    }
+
+    function renderConvergenceTable(rows, headerLabel) {
+      const body = rows.map(function (r) {
+        return '<tr>' +
+          '<td style="padding:2px 6px; text-align:right; white-space:nowrap;">' + r.k + '</td>' +
+          '<td style="padding:2px 6px; text-align:right; font-family:monospace; white-space:nowrap;">' + r.u.toExponential(6) + '</td>' +
+          '<td style="padding:2px 6px; text-align:right; font-family:monospace; white-space:nowrap;">' + r.error.toExponential(3) + '</td>' +
+          '<td style="padding:2px 6px; text-align:right; font-family:monospace; white-space:nowrap;">' + r.delta.toExponential(3) + '</td>' +
+          '</tr>';
+      }).join('');
+
+      return '<div style="font-size:16px; color:#657b83; margin-bottom:4px;">' + headerLabel + '</div>' +
+        '<table style="width:max-content; min-width:0px; border-collapse:collapse; font-size:16px;">' +
+          '<thead><tr style="border-bottom:1px solid #93a1a1;">' +
+            '<th style="text-align:right; padding:2px 6px; position:sticky; top:0; z-index:2; background:#fdf6e3; white-space:nowrap;">k</th>' +
+            '<th style="text-align:right; padding:2px 6px; position:sticky; top:0; z-index:2; background:#fdf6e3; white-space:nowrap;">u_k</th>' +
+            '<th style="text-align:right; padding:2px 6px; position:sticky; top:0; z-index:2; background:#fdf6e3; white-space:nowrap;">|u_k-sqrt(x)|</th>' +
+            '<th style="text-align:right; padding:2px 6px; position:sticky; top:0; z-index:2; background:#fdf6e3; white-space:nowrap;">|u_k-u_{k-1}|</th>' +
+          '</tr></thead>' +
+          '<tbody>' + body + '</tbody>' +
+        '</table>';
+    }
+
+    async function runSqrtDemo() {
+      const xInput = document.getElementById('sqrt-x');
+      const u0Input = document.getElementById('sqrt-u0');
+      const loInput = document.getElementById('sqrt-lo');
+      const hiInput = document.getElementById('sqrt-hi');
+      const tolInput = document.getElementById('sqrt-tol');
+      const maxInput = document.getElementById('sqrt-maxiter');
+      const bisectionDiv = document.getElementById('table-bisection');
+      const babDiv = document.getElementById('table-babylonian');
+
+      if (!xInput || !u0Input || !loInput || !hiInput || !tolInput || !maxInput || !bisectionDiv || !babDiv) return;
+
+      const x = Number(xInput.value);
+      const u0 = Number(u0Input.value);
+      const lo = Number(loInput.value);
+      const hi = Number(hiInput.value);
+      const tol = Number(tolInput.value);
+      const maxIter = Number(maxInput.value);
+
+      if (!(x > 0)) {
+        updatePyStatus('Please set x > 0 for real-valued square roots.', '#cb4b16');
+        return;
+      }
+      if (!(maxIter > 0)) {
+        updatePyStatus('Please set max iter > 0.', '#cb4b16');
+        return;
+      }
+
+      await ensurePyodideRuntime();
+      updatePyStatus('Running Python...', '#657b83');
+
+      pyodideRuntime.globals.set('x_in', x);
+      pyodideRuntime.globals.set('u0_in', u0);
+      pyodideRuntime.globals.set('lo_in', lo);
+      pyodideRuntime.globals.set('hi_in', hi);
+      pyodideRuntime.globals.set('tol_in', tol);
+      pyodideRuntime.globals.set('max_iter_in', maxIter);
+
+      try {
+        const jsonText = await pyodideRuntime.runPythonAsync(`
+import math
+import json
+
+x = float(x_in)
+u0 = float(u0_in)
+lo = float(lo_in)
+hi = float(hi_in)
+tol = float(tol_in)
+max_iter = int(max_iter_in)
+
+root = math.sqrt(x)
+eps = 1e-12
+
+def run_bisection(x, lo, hi, tol, max_iter):
+    lo = max(0.0, lo)
+    hi = max(hi, lo + 1e-9)
+    # Ensure [lo, hi] brackets sqrt(x): lo^2 <= x <= hi^2
+    if lo * lo > x:
+        lo = 0.0
+    if hi * hi < x:
+        hi = max(1.0, x)
+
+    rows = []
+    mid = 0.5 * (lo + hi)
+    prev = mid
+    rows.append({
+        'k': 0,
+        'u': mid,
+        'error': abs(mid - root),
+        'delta': 0.0
+    })
+    for k in range(1, max_iter + 1):
+        mid = 0.5 * (lo + hi)
+        val = mid * mid
+        if val < x:
+            lo = mid
+        else:
+            hi = mid
+        mid_next = 0.5 * (lo + hi)
+        delta = abs(mid_next - prev)
+        rows.append({
+            'k': k,
+            'u': mid_next,
+            'error': abs(mid_next - root),
+            'delta': delta
+        })
+        prev = mid_next
+        if delta < tol or abs(mid_next * mid_next - x) < tol:
+            break
+    return rows
+
+def run_babylonian(x, u0, tol, max_iter):
+    u = abs(u0) if abs(u0) > eps else 1.0
+    rows = []
+    prev = u
+    rows.append({
+        'k': 0,
+        'u': u,
+        'error': abs(u - root),
+        'delta': 0.0
+    })
+    for k in range(1, max_iter + 1):
+        denom = u if abs(u) > eps else eps
+        u = 0.5 * (u + x / denom)
+        delta = abs(u - prev)
+        rows.append({
+            'k': k,
+            'u': u,
+            'error': abs(u - root),
+            'delta': delta
+        })
+        prev = u
+        if delta < tol:
+            break
+    return rows
+
+payload = {
+    'root': root,
+    'bisection': run_bisection(x, lo, hi, tol, max_iter),
+    'babylonian': run_babylonian(x, u0, tol, max_iter)
+}
+
+json.dumps(payload)
+        `);
+
+        const result = JSON.parse(jsonText);
+        bisectionDiv.innerHTML = renderConvergenceTable(
+          result.bisection,
+          'Converged in ' + (result.bisection.length - 1) + ' iterations'
+        );
+        babDiv.innerHTML = renderConvergenceTable(
+          result.babylonian,
+          'Converged in ' + (result.babylonian.length - 1) + ' iterations'
+        );
+
+        updatePyStatus('Done. sqrt(' + x + ') ~= ' + result.root.toPrecision(8), '#2aa198');
+      } catch (err) {
+        updatePyStatus('Python execution error: ' + err, '#dc322f');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const runBtn = document.getElementById('run-sqrt');
+      if (!runBtn) return;
+      runBtn.addEventListener('click', runSqrtDemo);
+    });
+  </script>
+
   <style type="text/css">
     #header-left  { position: absolute; top: 0%; left:  0%; }
     #header-right { position: absolute; top: 0%; right: 0%; }
     #footer-left  { position: absolute; bottom: 0%; left: 0%; }
+
+    #sqrt-x,
+    #sqrt-u0,
+    #sqrt-lo,
+    #sqrt-hi,
+    #sqrt-tol,
+    #sqrt-maxiter {
+      border: 1px solid #7f8f99;
+      border-radius: 4px;
+      background: #f1f1f1;
+      box-shadow: inset 0 1px 0 #ffffff, inset 0 -1px 0 #c5c5c5, 0 1px 0 rgba(0, 0, 0, 0.08);
+    }
+
+    #run-sqrt {
+      border: 1px solid #6f7d86;
+      border-radius: 4px;
+      background: linear-gradient(to bottom, #f5f5f5, #d8d8d8);
+      box-shadow: inset 0 1px 0 #ffffff, 0 1px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    #run-sqrt:active {
+      background: linear-gradient(to bottom, #d8d8d8, #f5f5f5);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
   </style>
 
   <div id="hidden" style="display:none;">
@@ -190,7 +1086,10 @@
         <img style="border:0; box-shadow:0px 0px 0px rgba(150,150,255,0.8);"
              width="250" src="figures/TReNDS_logo_light.png" alt="TReNDS">
       </div>
-      <div id="footer-left"></div>
+      <div id="footer-left">
+        <img style="border:0; box-shadow:0px 0px 0px rgba(150,150,255,0.8);"
+             width="200" src="figures/UniverVerona.svg" alt="University of Verona">
+      </div>
     </div>
   </div>
 
