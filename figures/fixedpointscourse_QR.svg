@@ -1,0 +1,3290 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="500"
+   height="500"
+   version="1.1"
+   id="svg460"
+   sodipodi:docname="fixedpointscourse_QR.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview460"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.634"
+     inkscape:cx="249.694"
+     inkscape:cy="250"
+     inkscape:window-width="1680"
+     inkscape:window-height="992"
+     inkscape:window-x="0"
+     inkscape:window-y="30"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg460" />
+  <defs
+     id="defs452">
+    <clipPath
+       id="clip-path-dot-color">
+      <rect
+         x="19"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,26,194)"
+         id="rect1" />
+      <rect
+         x="19"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,26,208)"
+         id="rect2" />
+      <rect
+         x="19"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,26,236)"
+         id="rect3" />
+      <rect
+         x="19"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,26,264)"
+         id="rect4" />
+      <rect
+         x="19"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,26,278)"
+         id="rect5" />
+      <rect
+         x="19"
+         y="313"
+         width="14"
+         height="14"
+         transform="rotate(0,26,320)"
+         id="rect6" />
+      <rect
+         x="19"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,26,334)"
+         id="rect7" />
+      <rect
+         x="33"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,40,180)"
+         id="rect8" />
+      <rect
+         x="33"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,40,194)"
+         id="rect9" />
+      <rect
+         x="33"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,40,236)"
+         id="rect10" />
+      <rect
+         x="33"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,40,250)"
+         id="rect11" />
+      <rect
+         x="33"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,40,334)"
+         id="rect12" />
+      <rect
+         x="33"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,40,362)"
+         id="rect13" />
+      <rect
+         x="47"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,54,152)"
+         id="rect14" />
+      <rect
+         x="47"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,54,194)"
+         id="rect15" />
+      <rect
+         x="47"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,54,222)"
+         id="rect16" />
+      <rect
+         x="47"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,54,264)"
+         id="rect17" />
+      <rect
+         x="47"
+         y="313"
+         width="14"
+         height="14"
+         transform="rotate(0,54,320)"
+         id="rect18" />
+      <rect
+         x="61"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,68,138)"
+         id="rect19" />
+      <rect
+         x="61"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,68,236)"
+         id="rect20" />
+      <rect
+         x="61"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,68,292)"
+         id="rect21" />
+      <rect
+         x="61"
+         y="313"
+         width="14"
+         height="14"
+         transform="rotate(0,68,320)"
+         id="rect22" />
+      <rect
+         x="61"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,68,334)"
+         id="rect23" />
+      <rect
+         x="61"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,68,348)"
+         id="rect24" />
+      <rect
+         x="61"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,68,362)"
+         id="rect25" />
+      <rect
+         x="75"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,82,166)"
+         id="rect26" />
+      <rect
+         x="75"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,82,208)"
+         id="rect27" />
+      <rect
+         x="75"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,82,222)"
+         id="rect28" />
+      <rect
+         x="75"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,82,264)"
+         id="rect29" />
+      <rect
+         x="75"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,82,292)"
+         id="rect30" />
+      <rect
+         x="89"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,96,138)"
+         id="rect31" />
+      <rect
+         x="89"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,96,152)"
+         id="rect32" />
+      <rect
+         x="89"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,96,166)"
+         id="rect33" />
+      <rect
+         x="89"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,96,180)"
+         id="rect34" />
+      <rect
+         x="89"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,96,250)"
+         id="rect35" />
+      <rect
+         x="89"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,96,278)"
+         id="rect36" />
+      <rect
+         x="89"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,96,292)"
+         id="rect37" />
+      <rect
+         x="89"
+         y="313"
+         width="14"
+         height="14"
+         transform="rotate(0,96,320)"
+         id="rect38" />
+      <rect
+         x="89"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,96,334)"
+         id="rect39" />
+      <rect
+         x="89"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,96,362)"
+         id="rect40" />
+      <rect
+         x="103"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,110,138)"
+         id="rect41" />
+      <rect
+         x="103"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,110,166)"
+         id="rect42" />
+      <rect
+         x="103"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,110,194)"
+         id="rect43" />
+      <rect
+         x="103"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,110,222)"
+         id="rect44" />
+      <rect
+         x="103"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,110,250)"
+         id="rect45" />
+      <rect
+         x="103"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,110,278)"
+         id="rect46" />
+      <rect
+         x="103"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,110,306)"
+         id="rect47" />
+      <rect
+         x="103"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,110,334)"
+         id="rect48" />
+      <rect
+         x="103"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,110,362)"
+         id="rect49" />
+      <rect
+         x="117"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,124,138)"
+         id="rect50" />
+      <rect
+         x="117"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,124,166)"
+         id="rect51" />
+      <rect
+         x="117"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,124,236)"
+         id="rect52" />
+      <rect
+         x="117"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,124,250)"
+         id="rect53" />
+      <rect
+         x="117"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,124,278)"
+         id="rect54" />
+      <rect
+         x="117"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,124,292)"
+         id="rect55" />
+      <rect
+         x="117"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,124,306)"
+         id="rect56" />
+      <rect
+         x="117"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,124,348)"
+         id="rect57" />
+      <rect
+         x="117"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,124,362)"
+         id="rect58" />
+      <rect
+         x="131"
+         y="33"
+         width="14"
+         height="14"
+         transform="rotate(0,138,40)"
+         id="rect59" />
+      <rect
+         x="131"
+         y="47"
+         width="14"
+         height="14"
+         transform="rotate(0,138,54)"
+         id="rect60" />
+      <rect
+         x="131"
+         y="103"
+         width="14"
+         height="14"
+         transform="rotate(0,138,110)"
+         id="rect61" />
+      <rect
+         x="131"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,138,152)"
+         id="rect62" />
+      <rect
+         x="131"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,138,194)"
+         id="rect63" />
+      <rect
+         x="131"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,138,222)"
+         id="rect64" />
+      <rect
+         x="131"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,138,236)"
+         id="rect65" />
+      <rect
+         x="131"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,138,250)"
+         id="rect66" />
+      <rect
+         x="131"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,138,306)"
+         id="rect67" />
+      <rect
+         x="131"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,138,362)"
+         id="rect68" />
+      <rect
+         x="131"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,138,390)"
+         id="rect69" />
+      <rect
+         x="131"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,138,404)"
+         id="rect70" />
+      <rect
+         x="131"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,138,432)"
+         id="rect71" />
+      <rect
+         x="145"
+         y="19"
+         width="14"
+         height="14"
+         transform="rotate(0,152,26)"
+         id="rect72" />
+      <rect
+         x="145"
+         y="47"
+         width="14"
+         height="14"
+         transform="rotate(0,152,54)"
+         id="rect73" />
+      <rect
+         x="145"
+         y="61"
+         width="14"
+         height="14"
+         transform="rotate(0,152,68)"
+         id="rect74" />
+      <rect
+         x="145"
+         y="75"
+         width="14"
+         height="14"
+         transform="rotate(0,152,82)"
+         id="rect75" />
+      <rect
+         x="145"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,152,138)"
+         id="rect76" />
+      <rect
+         x="145"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,152,166)"
+         id="rect77" />
+      <rect
+         x="145"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,152,208)"
+         id="rect78" />
+      <rect
+         x="145"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,152,222)"
+         id="rect79" />
+      <rect
+         x="145"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,152,264)"
+         id="rect80" />
+      <rect
+         x="145"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,152,278)"
+         id="rect81" />
+      <rect
+         x="145"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,152,292)"
+         id="rect82" />
+      <rect
+         x="145"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,152,306)"
+         id="rect83" />
+      <rect
+         x="145"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,152,348)"
+         id="rect84" />
+      <rect
+         x="145"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,152,362)"
+         id="rect85" />
+      <rect
+         x="145"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,152,390)"
+         id="rect86" />
+      <rect
+         x="145"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,152,432)"
+         id="rect87" />
+      <rect
+         x="145"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,152,474)"
+         id="rect88" />
+      <rect
+         x="159"
+         y="19"
+         width="14"
+         height="14"
+         transform="rotate(0,166,26)"
+         id="rect89" />
+      <rect
+         x="159"
+         y="33"
+         width="14"
+         height="14"
+         transform="rotate(0,166,40)"
+         id="rect90" />
+      <rect
+         x="159"
+         y="61"
+         width="14"
+         height="14"
+         transform="rotate(0,166,68)"
+         id="rect91" />
+      <rect
+         x="159"
+         y="89"
+         width="14"
+         height="14"
+         transform="rotate(0,166,96)"
+         id="rect92" />
+      <rect
+         x="159"
+         y="103"
+         width="14"
+         height="14"
+         transform="rotate(0,166,110)"
+         id="rect93" />
+      <rect
+         x="159"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,166,152)"
+         id="rect94" />
+      <rect
+         x="159"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,166,180)"
+         id="rect95" />
+      <rect
+         x="159"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,166,194)"
+         id="rect96" />
+      <rect
+         x="159"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,166,208)"
+         id="rect97" />
+      <rect
+         x="159"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,166,236)"
+         id="rect98" />
+      <rect
+         x="159"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,166,292)"
+         id="rect99" />
+      <rect
+         x="159"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,166,306)"
+         id="rect100" />
+      <rect
+         x="159"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,166,334)"
+         id="rect101" />
+      <rect
+         x="159"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,166,348)"
+         id="rect102" />
+      <rect
+         x="159"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,166,362)"
+         id="rect103" />
+      <rect
+         x="159"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,166,432)"
+         id="rect104" />
+      <rect
+         x="159"
+         y="439"
+         width="14"
+         height="14"
+         transform="rotate(0,166,446)"
+         id="rect105" />
+      <rect
+         x="159"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,166,474)"
+         id="rect106" />
+      <rect
+         x="173"
+         y="19"
+         width="14"
+         height="14"
+         transform="rotate(0,180,26)"
+         id="rect107" />
+      <rect
+         x="173"
+         y="33"
+         width="14"
+         height="14"
+         transform="rotate(0,180,40)"
+         id="rect108" />
+      <rect
+         x="173"
+         y="75"
+         width="14"
+         height="14"
+         transform="rotate(0,180,82)"
+         id="rect109" />
+      <rect
+         x="173"
+         y="117"
+         width="14"
+         height="14"
+         transform="rotate(0,180,124)"
+         id="rect110" />
+      <rect
+         x="173"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,180,138)"
+         id="rect111" />
+      <rect
+         x="173"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,180,152)"
+         id="rect112" />
+      <rect
+         x="173"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,180,166)"
+         id="rect113" />
+      <rect
+         x="173"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,180,236)"
+         id="rect114" />
+      <rect
+         x="173"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,180,264)"
+         id="rect115" />
+      <rect
+         x="173"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,180,292)"
+         id="rect116" />
+      <rect
+         x="173"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,180,306)"
+         id="rect117" />
+      <rect
+         x="173"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,180,348)"
+         id="rect118" />
+      <rect
+         x="173"
+         y="369"
+         width="14"
+         height="14"
+         transform="rotate(0,180,376)"
+         id="rect119" />
+      <rect
+         x="173"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,180,390)"
+         id="rect120" />
+      <rect
+         x="173"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,180,404)"
+         id="rect121" />
+      <rect
+         x="173"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,180,418)"
+         id="rect122" />
+      <rect
+         x="173"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,180,432)"
+         id="rect123" />
+      <rect
+         x="173"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,180,474)"
+         id="rect124" />
+      <rect
+         x="187"
+         y="19"
+         width="14"
+         height="14"
+         transform="rotate(0,194,26)"
+         id="rect125" />
+      <rect
+         x="187"
+         y="33"
+         width="14"
+         height="14"
+         transform="rotate(0,194,40)"
+         id="rect126" />
+      <rect
+         x="187"
+         y="75"
+         width="14"
+         height="14"
+         transform="rotate(0,194,82)"
+         id="rect127" />
+      <rect
+         x="187"
+         y="103"
+         width="14"
+         height="14"
+         transform="rotate(0,194,110)"
+         id="rect128" />
+      <rect
+         x="187"
+         y="117"
+         width="14"
+         height="14"
+         transform="rotate(0,194,124)"
+         id="rect129" />
+      <rect
+         x="187"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,194,138)"
+         id="rect130" />
+      <rect
+         x="187"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,194,166)"
+         id="rect131" />
+      <rect
+         x="187"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,194,208)"
+         id="rect132" />
+      <rect
+         x="187"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,194,222)"
+         id="rect133" />
+      <rect
+         x="187"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,194,264)"
+         id="rect134" />
+      <rect
+         x="187"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,194,348)"
+         id="rect135" />
+      <rect
+         x="187"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,194,362)"
+         id="rect136" />
+      <rect
+         x="187"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,194,390)"
+         id="rect137" />
+      <rect
+         x="187"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,194,404)"
+         id="rect138" />
+      <rect
+         x="187"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,194,474)"
+         id="rect139" />
+      <rect
+         x="201"
+         y="19"
+         width="14"
+         height="14"
+         transform="rotate(0,208,26)"
+         id="rect140" />
+      <rect
+         x="201"
+         y="61"
+         width="14"
+         height="14"
+         transform="rotate(0,208,68)"
+         id="rect141" />
+      <rect
+         x="201"
+         y="75"
+         width="14"
+         height="14"
+         transform="rotate(0,208,82)"
+         id="rect142" />
+      <rect
+         x="201"
+         y="117"
+         width="14"
+         height="14"
+         transform="rotate(0,208,124)"
+         id="rect143" />
+      <rect
+         x="201"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,208,152)"
+         id="rect144" />
+      <rect
+         x="201"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,208,166)"
+         id="rect145" />
+      <rect
+         x="201"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,208,180)"
+         id="rect146" />
+      <rect
+         x="201"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,208,194)"
+         id="rect147" />
+      <rect
+         x="201"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,208,236)"
+         id="rect148" />
+      <rect
+         x="201"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,208,264)"
+         id="rect149" />
+      <rect
+         x="201"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,208,334)"
+         id="rect150" />
+      <rect
+         x="201"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,208,348)"
+         id="rect151" />
+      <rect
+         x="201"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,208,362)"
+         id="rect152" />
+      <rect
+         x="201"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,208,390)"
+         id="rect153" />
+      <rect
+         x="201"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,208,404)"
+         id="rect154" />
+      <rect
+         x="201"
+         y="439"
+         width="14"
+         height="14"
+         transform="rotate(0,208,446)"
+         id="rect155" />
+      <rect
+         x="201"
+         y="453"
+         width="14"
+         height="14"
+         transform="rotate(0,208,460)"
+         id="rect156" />
+      <rect
+         x="201"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,208,474)"
+         id="rect157" />
+      <rect
+         x="215"
+         y="47"
+         width="14"
+         height="14"
+         transform="rotate(0,222,54)"
+         id="rect158" />
+      <rect
+         x="215"
+         y="61"
+         width="14"
+         height="14"
+         transform="rotate(0,222,68)"
+         id="rect159" />
+      <rect
+         x="215"
+         y="75"
+         width="14"
+         height="14"
+         transform="rotate(0,222,82)"
+         id="rect160" />
+      <rect
+         x="215"
+         y="89"
+         width="14"
+         height="14"
+         transform="rotate(0,222,96)"
+         id="rect161" />
+      <rect
+         x="215"
+         y="103"
+         width="14"
+         height="14"
+         transform="rotate(0,222,110)"
+         id="rect162" />
+      <rect
+         x="215"
+         y="117"
+         width="14"
+         height="14"
+         transform="rotate(0,222,124)"
+         id="rect163" />
+      <rect
+         x="215"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,222,138)"
+         id="rect164" />
+      <rect
+         x="215"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,222,152)"
+         id="rect165" />
+      <rect
+         x="215"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,222,166)"
+         id="rect166" />
+      <rect
+         x="215"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,222,180)"
+         id="rect167" />
+      <rect
+         x="215"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,222,194)"
+         id="rect168" />
+      <rect
+         x="215"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,222,208)"
+         id="rect169" />
+      <rect
+         x="215"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,222,236)"
+         id="rect170" />
+      <rect
+         x="215"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,222,264)"
+         id="rect171" />
+      <rect
+         x="215"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,222,278)"
+         id="rect172" />
+      <rect
+         x="215"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,222,292)"
+         id="rect173" />
+      <rect
+         x="215"
+         y="313"
+         width="14"
+         height="14"
+         transform="rotate(0,222,320)"
+         id="rect174" />
+      <rect
+         x="215"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,222,348)"
+         id="rect175" />
+      <rect
+         x="215"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,222,404)"
+         id="rect176" />
+      <rect
+         x="215"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,222,418)"
+         id="rect177" />
+      <rect
+         x="215"
+         y="439"
+         width="14"
+         height="14"
+         transform="rotate(0,222,446)"
+         id="rect178" />
+      <rect
+         x="215"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,222,474)"
+         id="rect179" />
+      <rect
+         x="229"
+         y="33"
+         width="14"
+         height="14"
+         transform="rotate(0,236,40)"
+         id="rect180" />
+      <rect
+         x="229"
+         y="75"
+         width="14"
+         height="14"
+         transform="rotate(0,236,82)"
+         id="rect181" />
+      <rect
+         x="229"
+         y="117"
+         width="14"
+         height="14"
+         transform="rotate(0,236,124)"
+         id="rect182" />
+      <rect
+         x="229"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,236,152)"
+         id="rect183" />
+      <rect
+         x="229"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,236,180)"
+         id="rect184" />
+      <rect
+         x="229"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,236,222)"
+         id="rect185" />
+      <rect
+         x="229"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,236,250)"
+         id="rect186" />
+      <rect
+         x="229"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,236,334)"
+         id="rect187" />
+      <rect
+         x="229"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,236,348)"
+         id="rect188" />
+      <rect
+         x="229"
+         y="369"
+         width="14"
+         height="14"
+         transform="rotate(0,236,376)"
+         id="rect189" />
+      <rect
+         x="229"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,236,390)"
+         id="rect190" />
+      <rect
+         x="229"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,236,432)"
+         id="rect191" />
+      <rect
+         x="243"
+         y="89"
+         width="14"
+         height="14"
+         transform="rotate(0,250,96)"
+         id="rect192" />
+      <rect
+         x="243"
+         y="103"
+         width="14"
+         height="14"
+         transform="rotate(0,250,110)"
+         id="rect193" />
+      <rect
+         x="243"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,250,138)"
+         id="rect194" />
+      <rect
+         x="243"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,250,152)"
+         id="rect195" />
+      <rect
+         x="243"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,250,194)"
+         id="rect196" />
+      <rect
+         x="243"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,250,222)"
+         id="rect197" />
+      <rect
+         x="243"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,250,236)"
+         id="rect198" />
+      <rect
+         x="243"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,250,278)"
+         id="rect199" />
+      <rect
+         x="243"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,250,292)"
+         id="rect200" />
+      <rect
+         x="243"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,250,306)"
+         id="rect201" />
+      <rect
+         x="243"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,250,348)"
+         id="rect202" />
+      <rect
+         x="243"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,250,390)"
+         id="rect203" />
+      <rect
+         x="243"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,250,404)"
+         id="rect204" />
+      <rect
+         x="243"
+         y="453"
+         width="14"
+         height="14"
+         transform="rotate(0,250,460)"
+         id="rect205" />
+      <rect
+         x="257"
+         y="47"
+         width="14"
+         height="14"
+         transform="rotate(0,264,54)"
+         id="rect206" />
+      <rect
+         x="257"
+         y="61"
+         width="14"
+         height="14"
+         transform="rotate(0,264,68)"
+         id="rect207" />
+      <rect
+         x="257"
+         y="117"
+         width="14"
+         height="14"
+         transform="rotate(0,264,124)"
+         id="rect208" />
+      <rect
+         x="257"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,264,194)"
+         id="rect209" />
+      <rect
+         x="257"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,264,208)"
+         id="rect210" />
+      <rect
+         x="257"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,264,222)"
+         id="rect211" />
+      <rect
+         x="257"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,264,236)"
+         id="rect212" />
+      <rect
+         x="257"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,264,250)"
+         id="rect213" />
+      <rect
+         x="257"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,264,264)"
+         id="rect214" />
+      <rect
+         x="257"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,264,278)"
+         id="rect215" />
+      <rect
+         x="257"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,264,292)"
+         id="rect216" />
+      <rect
+         x="257"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,264,334)"
+         id="rect217" />
+      <rect
+         x="257"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,264,348)"
+         id="rect218" />
+      <rect
+         x="257"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,264,362)"
+         id="rect219" />
+      <rect
+         x="257"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,264,390)"
+         id="rect220" />
+      <rect
+         x="257"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,264,432)"
+         id="rect221" />
+      <rect
+         x="257"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,264,474)"
+         id="rect222" />
+      <rect
+         x="271"
+         y="19"
+         width="14"
+         height="14"
+         transform="rotate(0,278,26)"
+         id="rect223" />
+      <rect
+         x="271"
+         y="61"
+         width="14"
+         height="14"
+         transform="rotate(0,278,68)"
+         id="rect224" />
+      <rect
+         x="271"
+         y="75"
+         width="14"
+         height="14"
+         transform="rotate(0,278,82)"
+         id="rect225" />
+      <rect
+         x="271"
+         y="89"
+         width="14"
+         height="14"
+         transform="rotate(0,278,96)"
+         id="rect226" />
+      <rect
+         x="271"
+         y="103"
+         width="14"
+         height="14"
+         transform="rotate(0,278,110)"
+         id="rect227" />
+      <rect
+         x="271"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,278,166)"
+         id="rect228" />
+      <rect
+         x="271"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,278,292)"
+         id="rect229" />
+      <rect
+         x="271"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,278,306)"
+         id="rect230" />
+      <rect
+         x="271"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,278,334)"
+         id="rect231" />
+      <rect
+         x="271"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,278,348)"
+         id="rect232" />
+      <rect
+         x="271"
+         y="369"
+         width="14"
+         height="14"
+         transform="rotate(0,278,376)"
+         id="rect233" />
+      <rect
+         x="271"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,278,404)"
+         id="rect234" />
+      <rect
+         x="271"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,278,432)"
+         id="rect235" />
+      <rect
+         x="271"
+         y="439"
+         width="14"
+         height="14"
+         transform="rotate(0,278,446)"
+         id="rect236" />
+      <rect
+         x="271"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,278,474)"
+         id="rect237" />
+      <rect
+         x="285"
+         y="19"
+         width="14"
+         height="14"
+         transform="rotate(0,292,26)"
+         id="rect238" />
+      <rect
+         x="285"
+         y="33"
+         width="14"
+         height="14"
+         transform="rotate(0,292,40)"
+         id="rect239" />
+      <rect
+         x="285"
+         y="61"
+         width="14"
+         height="14"
+         transform="rotate(0,292,68)"
+         id="rect240" />
+      <rect
+         x="285"
+         y="89"
+         width="14"
+         height="14"
+         transform="rotate(0,292,96)"
+         id="rect241" />
+      <rect
+         x="285"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,292,138)"
+         id="rect242" />
+      <rect
+         x="285"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,292,166)"
+         id="rect243" />
+      <rect
+         x="285"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,292,180)"
+         id="rect244" />
+      <rect
+         x="285"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,292,194)"
+         id="rect245" />
+      <rect
+         x="285"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,292,236)"
+         id="rect246" />
+      <rect
+         x="285"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,292,250)"
+         id="rect247" />
+      <rect
+         x="285"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,292,278)"
+         id="rect248" />
+      <rect
+         x="285"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,292,306)"
+         id="rect249" />
+      <rect
+         x="285"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,292,334)"
+         id="rect250" />
+      <rect
+         x="285"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,292,362)"
+         id="rect251" />
+      <rect
+         x="285"
+         y="369"
+         width="14"
+         height="14"
+         transform="rotate(0,292,376)"
+         id="rect252" />
+      <rect
+         x="285"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,292,418)"
+         id="rect253" />
+      <rect
+         x="285"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,292,432)"
+         id="rect254" />
+      <rect
+         x="285"
+         y="453"
+         width="14"
+         height="14"
+         transform="rotate(0,292,460)"
+         id="rect255" />
+      <rect
+         x="285"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,292,474)"
+         id="rect256" />
+      <rect
+         x="299"
+         y="33"
+         width="14"
+         height="14"
+         transform="rotate(0,306,40)"
+         id="rect257" />
+      <rect
+         x="299"
+         y="47"
+         width="14"
+         height="14"
+         transform="rotate(0,306,54)"
+         id="rect258" />
+      <rect
+         x="299"
+         y="61"
+         width="14"
+         height="14"
+         transform="rotate(0,306,68)"
+         id="rect259" />
+      <rect
+         x="299"
+         y="75"
+         width="14"
+         height="14"
+         transform="rotate(0,306,82)"
+         id="rect260" />
+      <rect
+         x="299"
+         y="89"
+         width="14"
+         height="14"
+         transform="rotate(0,306,96)"
+         id="rect261" />
+      <rect
+         x="299"
+         y="103"
+         width="14"
+         height="14"
+         transform="rotate(0,306,110)"
+         id="rect262" />
+      <rect
+         x="299"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,306,138)"
+         id="rect263" />
+      <rect
+         x="299"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,306,152)"
+         id="rect264" />
+      <rect
+         x="299"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,306,166)"
+         id="rect265" />
+      <rect
+         x="299"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,306,194)"
+         id="rect266" />
+      <rect
+         x="299"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,306,236)"
+         id="rect267" />
+      <rect
+         x="299"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,306,250)"
+         id="rect268" />
+      <rect
+         x="299"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,306,264)"
+         id="rect269" />
+      <rect
+         x="299"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,306,306)"
+         id="rect270" />
+      <rect
+         x="299"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,306,348)"
+         id="rect271" />
+      <rect
+         x="299"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,306,362)"
+         id="rect272" />
+      <rect
+         x="299"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,306,390)"
+         id="rect273" />
+      <rect
+         x="313"
+         y="33"
+         width="14"
+         height="14"
+         transform="rotate(0,320,40)"
+         id="rect274" />
+      <rect
+         x="313"
+         y="61"
+         width="14"
+         height="14"
+         transform="rotate(0,320,68)"
+         id="rect275" />
+      <rect
+         x="313"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,320,166)"
+         id="rect276" />
+      <rect
+         x="313"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,320,180)"
+         id="rect277" />
+      <rect
+         x="313"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,320,236)"
+         id="rect278" />
+      <rect
+         x="313"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,320,278)"
+         id="rect279" />
+      <rect
+         x="313"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,320,306)"
+         id="rect280" />
+      <rect
+         x="313"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,320,348)"
+         id="rect281" />
+      <rect
+         x="313"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,320,362)"
+         id="rect282" />
+      <rect
+         x="313"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,320,390)"
+         id="rect283" />
+      <rect
+         x="313"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,320,404)"
+         id="rect284" />
+      <rect
+         x="313"
+         y="439"
+         width="14"
+         height="14"
+         transform="rotate(0,320,446)"
+         id="rect285" />
+      <rect
+         x="313"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,320,474)"
+         id="rect286" />
+      <rect
+         x="327"
+         y="19"
+         width="14"
+         height="14"
+         transform="rotate(0,334,26)"
+         id="rect287" />
+      <rect
+         x="327"
+         y="33"
+         width="14"
+         height="14"
+         transform="rotate(0,334,40)"
+         id="rect288" />
+      <rect
+         x="327"
+         y="61"
+         width="14"
+         height="14"
+         transform="rotate(0,334,68)"
+         id="rect289" />
+      <rect
+         x="327"
+         y="103"
+         width="14"
+         height="14"
+         transform="rotate(0,334,110)"
+         id="rect290" />
+      <rect
+         x="327"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,334,138)"
+         id="rect291" />
+      <rect
+         x="327"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,334,166)"
+         id="rect292" />
+      <rect
+         x="327"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,334,180)"
+         id="rect293" />
+      <rect
+         x="327"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,334,278)"
+         id="rect294" />
+      <rect
+         x="327"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,334,306)"
+         id="rect295" />
+      <rect
+         x="327"
+         y="313"
+         width="14"
+         height="14"
+         transform="rotate(0,334,320)"
+         id="rect296" />
+      <rect
+         x="327"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,334,348)"
+         id="rect297" />
+      <rect
+         x="327"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,334,362)"
+         id="rect298" />
+      <rect
+         x="327"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,334,404)"
+         id="rect299" />
+      <rect
+         x="327"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,334,418)"
+         id="rect300" />
+      <rect
+         x="327"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,334,432)"
+         id="rect301" />
+      <rect
+         x="327"
+         y="439"
+         width="14"
+         height="14"
+         transform="rotate(0,334,446)"
+         id="rect302" />
+      <rect
+         x="327"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,334,474)"
+         id="rect303" />
+      <rect
+         x="341"
+         y="47"
+         width="14"
+         height="14"
+         transform="rotate(0,348,54)"
+         id="rect304" />
+      <rect
+         x="341"
+         y="117"
+         width="14"
+         height="14"
+         transform="rotate(0,348,124)"
+         id="rect305" />
+      <rect
+         x="341"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,348,138)"
+         id="rect306" />
+      <rect
+         x="341"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,348,180)"
+         id="rect307" />
+      <rect
+         x="341"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,348,208)"
+         id="rect308" />
+      <rect
+         x="341"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,348,250)"
+         id="rect309" />
+      <rect
+         x="341"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,348,292)"
+         id="rect310" />
+      <rect
+         x="341"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,348,306)"
+         id="rect311" />
+      <rect
+         x="341"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,348,334)"
+         id="rect312" />
+      <rect
+         x="341"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,348,362)"
+         id="rect313" />
+      <rect
+         x="341"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,348,390)"
+         id="rect314" />
+      <rect
+         x="341"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,348,404)"
+         id="rect315" />
+      <rect
+         x="341"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,348,432)"
+         id="rect316" />
+      <rect
+         x="341"
+         y="453"
+         width="14"
+         height="14"
+         transform="rotate(0,348,460)"
+         id="rect317" />
+      <rect
+         x="355"
+         y="19"
+         width="14"
+         height="14"
+         transform="rotate(0,362,26)"
+         id="rect318" />
+      <rect
+         x="355"
+         y="33"
+         width="14"
+         height="14"
+         transform="rotate(0,362,40)"
+         id="rect319" />
+      <rect
+         x="355"
+         y="47"
+         width="14"
+         height="14"
+         transform="rotate(0,362,54)"
+         id="rect320" />
+      <rect
+         x="355"
+         y="89"
+         width="14"
+         height="14"
+         transform="rotate(0,362,96)"
+         id="rect321" />
+      <rect
+         x="355"
+         y="103"
+         width="14"
+         height="14"
+         transform="rotate(0,362,110)"
+         id="rect322" />
+      <rect
+         x="355"
+         y="117"
+         width="14"
+         height="14"
+         transform="rotate(0,362,124)"
+         id="rect323" />
+      <rect
+         x="355"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,362,138)"
+         id="rect324" />
+      <rect
+         x="355"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,362,152)"
+         id="rect325" />
+      <rect
+         x="355"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,362,166)"
+         id="rect326" />
+      <rect
+         x="355"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,362,194)"
+         id="rect327" />
+      <rect
+         x="355"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,362,208)"
+         id="rect328" />
+      <rect
+         x="355"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,362,222)"
+         id="rect329" />
+      <rect
+         x="355"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,362,264)"
+         id="rect330" />
+      <rect
+         x="355"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,362,278)"
+         id="rect331" />
+      <rect
+         x="355"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,362,306)"
+         id="rect332" />
+      <rect
+         x="355"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,362,348)"
+         id="rect333" />
+      <rect
+         x="355"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,362,362)"
+         id="rect334" />
+      <rect
+         x="355"
+         y="369"
+         width="14"
+         height="14"
+         transform="rotate(0,362,376)"
+         id="rect335" />
+      <rect
+         x="355"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,362,390)"
+         id="rect336" />
+      <rect
+         x="355"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,362,404)"
+         id="rect337" />
+      <rect
+         x="355"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,362,418)"
+         id="rect338" />
+      <rect
+         x="355"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,362,432)"
+         id="rect339" />
+      <rect
+         x="355"
+         y="453"
+         width="14"
+         height="14"
+         transform="rotate(0,362,460)"
+         id="rect340" />
+      <rect
+         x="369"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,376,138)"
+         id="rect341" />
+      <rect
+         x="369"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,376,166)"
+         id="rect342" />
+      <rect
+         x="369"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,376,208)"
+         id="rect343" />
+      <rect
+         x="369"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,376,222)"
+         id="rect344" />
+      <rect
+         x="369"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,376,236)"
+         id="rect345" />
+      <rect
+         x="369"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,376,278)"
+         id="rect346" />
+      <rect
+         x="369"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,376,292)"
+         id="rect347" />
+      <rect
+         x="369"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,376,306)"
+         id="rect348" />
+      <rect
+         x="369"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,376,334)"
+         id="rect349" />
+      <rect
+         x="369"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,376,348)"
+         id="rect350" />
+      <rect
+         x="369"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,376,362)"
+         id="rect351" />
+      <rect
+         x="369"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,376,418)"
+         id="rect352" />
+      <rect
+         x="369"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,376,474)"
+         id="rect353" />
+      <rect
+         x="383"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,390,152)"
+         id="rect354" />
+      <rect
+         x="383"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,390,222)"
+         id="rect355" />
+      <rect
+         x="383"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,390,236)"
+         id="rect356" />
+      <rect
+         x="383"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,390,250)"
+         id="rect357" />
+      <rect
+         x="383"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,390,292)"
+         id="rect358" />
+      <rect
+         x="383"
+         y="313"
+         width="14"
+         height="14"
+         transform="rotate(0,390,320)"
+         id="rect359" />
+      <rect
+         x="383"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,390,362)"
+         id="rect360" />
+      <rect
+         x="383"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,390,390)"
+         id="rect361" />
+      <rect
+         x="383"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,390,418)"
+         id="rect362" />
+      <rect
+         x="383"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,390,432)"
+         id="rect363" />
+      <rect
+         x="383"
+         y="439"
+         width="14"
+         height="14"
+         transform="rotate(0,390,446)"
+         id="rect364" />
+      <rect
+         x="383"
+         y="453"
+         width="14"
+         height="14"
+         transform="rotate(0,390,460)"
+         id="rect365" />
+      <rect
+         x="383"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,390,474)"
+         id="rect366" />
+      <rect
+         x="397"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,404,152)"
+         id="rect367" />
+      <rect
+         x="397"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,404,166)"
+         id="rect368" />
+      <rect
+         x="397"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,404,194)"
+         id="rect369" />
+      <rect
+         x="397"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,404,222)"
+         id="rect370" />
+      <rect
+         x="397"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,404,264)"
+         id="rect371" />
+      <rect
+         x="397"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,404,334)"
+         id="rect372" />
+      <rect
+         x="397"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,404,348)"
+         id="rect373" />
+      <rect
+         x="397"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,404,362)"
+         id="rect374" />
+      <rect
+         x="397"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,404,418)"
+         id="rect375" />
+      <rect
+         x="397"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,404,432)"
+         id="rect376" />
+      <rect
+         x="411"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,418,152)"
+         id="rect377" />
+      <rect
+         x="411"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,418,166)"
+         id="rect378" />
+      <rect
+         x="411"
+         y="187"
+         width="14"
+         height="14"
+         transform="rotate(0,418,194)"
+         id="rect379" />
+      <rect
+         x="411"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,418,222)"
+         id="rect380" />
+      <rect
+         x="411"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,418,264)"
+         id="rect381" />
+      <rect
+         x="411"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,418,278)"
+         id="rect382" />
+      <rect
+         x="411"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,418,292)"
+         id="rect383" />
+      <rect
+         x="411"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,418,306)"
+         id="rect384" />
+      <rect
+         x="411"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,418,334)"
+         id="rect385" />
+      <rect
+         x="411"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,418,348)"
+         id="rect386" />
+      <rect
+         x="411"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,418,362)"
+         id="rect387" />
+      <rect
+         x="411"
+         y="369"
+         width="14"
+         height="14"
+         transform="rotate(0,418,376)"
+         id="rect388" />
+      <rect
+         x="411"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,418,390)"
+         id="rect389" />
+      <rect
+         x="411"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,418,404)"
+         id="rect390" />
+      <rect
+         x="411"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,418,418)"
+         id="rect391" />
+      <rect
+         x="411"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,418,474)"
+         id="rect392" />
+      <rect
+         x="425"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,432,222)"
+         id="rect393" />
+      <rect
+         x="425"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,432,236)"
+         id="rect394" />
+      <rect
+         x="425"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,432,250)"
+         id="rect395" />
+      <rect
+         x="425"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,432,278)"
+         id="rect396" />
+      <rect
+         x="425"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,432,348)"
+         id="rect397" />
+      <rect
+         x="425"
+         y="369"
+         width="14"
+         height="14"
+         transform="rotate(0,432,376)"
+         id="rect398" />
+      <rect
+         x="425"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,432,404)"
+         id="rect399" />
+      <rect
+         x="425"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,432,418)"
+         id="rect400" />
+      <rect
+         x="425"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,432,432)"
+         id="rect401" />
+      <rect
+         x="425"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,432,474)"
+         id="rect402" />
+      <rect
+         x="439"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,446,138)"
+         id="rect403" />
+      <rect
+         x="439"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,446,166)"
+         id="rect404" />
+      <rect
+         x="439"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,446,180)"
+         id="rect405" />
+      <rect
+         x="439"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,446,208)"
+         id="rect406" />
+      <rect
+         x="439"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,446,222)"
+         id="rect407" />
+      <rect
+         x="439"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,446,236)"
+         id="rect408" />
+      <rect
+         x="439"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,446,264)"
+         id="rect409" />
+      <rect
+         x="439"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,446,278)"
+         id="rect410" />
+      <rect
+         x="439"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,446,292)"
+         id="rect411" />
+      <rect
+         x="439"
+         y="327"
+         width="14"
+         height="14"
+         transform="rotate(0,446,334)"
+         id="rect412" />
+      <rect
+         x="439"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,446,362)"
+         id="rect413" />
+      <rect
+         x="439"
+         y="369"
+         width="14"
+         height="14"
+         transform="rotate(0,446,376)"
+         id="rect414" />
+      <rect
+         x="439"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,446,404)"
+         id="rect415" />
+      <rect
+         x="439"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,446,418)"
+         id="rect416" />
+      <rect
+         x="439"
+         y="439"
+         width="14"
+         height="14"
+         transform="rotate(0,446,446)"
+         id="rect417" />
+      <rect
+         x="439"
+         y="453"
+         width="14"
+         height="14"
+         transform="rotate(0,446,460)"
+         id="rect418" />
+      <rect
+         x="439"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,446,474)"
+         id="rect419" />
+      <rect
+         x="453"
+         y="131"
+         width="14"
+         height="14"
+         transform="rotate(0,460,138)"
+         id="rect420" />
+      <rect
+         x="453"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,460,152)"
+         id="rect421" />
+      <rect
+         x="453"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,460,166)"
+         id="rect422" />
+      <rect
+         x="453"
+         y="173"
+         width="14"
+         height="14"
+         transform="rotate(0,460,180)"
+         id="rect423" />
+      <rect
+         x="453"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,460,208)"
+         id="rect424" />
+      <rect
+         x="453"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,460,222)"
+         id="rect425" />
+      <rect
+         x="453"
+         y="229"
+         width="14"
+         height="14"
+         transform="rotate(0,460,236)"
+         id="rect426" />
+      <rect
+         x="453"
+         y="285"
+         width="14"
+         height="14"
+         transform="rotate(0,460,292)"
+         id="rect427" />
+      <rect
+         x="453"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,460,306)"
+         id="rect428" />
+      <rect
+         x="453"
+         y="341"
+         width="14"
+         height="14"
+         transform="rotate(0,460,348)"
+         id="rect429" />
+      <rect
+         x="453"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,460,362)"
+         id="rect430" />
+      <rect
+         x="453"
+         y="369"
+         width="14"
+         height="14"
+         transform="rotate(0,460,376)"
+         id="rect431" />
+      <rect
+         x="453"
+         y="383"
+         width="14"
+         height="14"
+         transform="rotate(0,460,390)"
+         id="rect432" />
+      <rect
+         x="453"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,460,404)"
+         id="rect433" />
+      <rect
+         x="453"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,460,418)"
+         id="rect434" />
+      <rect
+         x="453"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,460,432)"
+         id="rect435" />
+      <rect
+         x="467"
+         y="145"
+         width="14"
+         height="14"
+         transform="rotate(0,474,152)"
+         id="rect436" />
+      <rect
+         x="467"
+         y="159"
+         width="14"
+         height="14"
+         transform="rotate(0,474,166)"
+         id="rect437" />
+      <rect
+         x="467"
+         y="201"
+         width="14"
+         height="14"
+         transform="rotate(0,474,208)"
+         id="rect438" />
+      <rect
+         x="467"
+         y="215"
+         width="14"
+         height="14"
+         transform="rotate(0,474,222)"
+         id="rect439" />
+      <rect
+         x="467"
+         y="243"
+         width="14"
+         height="14"
+         transform="rotate(0,474,250)"
+         id="rect440" />
+      <rect
+         x="467"
+         y="257"
+         width="14"
+         height="14"
+         transform="rotate(0,474,264)"
+         id="rect441" />
+      <rect
+         x="467"
+         y="271"
+         width="14"
+         height="14"
+         transform="rotate(0,474,278)"
+         id="rect442" />
+      <rect
+         x="467"
+         y="299"
+         width="14"
+         height="14"
+         transform="rotate(0,474,306)"
+         id="rect443" />
+      <rect
+         x="467"
+         y="355"
+         width="14"
+         height="14"
+         transform="rotate(0,474,362)"
+         id="rect444" />
+      <rect
+         x="467"
+         y="369"
+         width="14"
+         height="14"
+         transform="rotate(0,474,376)"
+         id="rect445" />
+      <rect
+         x="467"
+         y="397"
+         width="14"
+         height="14"
+         transform="rotate(0,474,404)"
+         id="rect446" />
+      <rect
+         x="467"
+         y="411"
+         width="14"
+         height="14"
+         transform="rotate(0,474,418)"
+         id="rect447" />
+      <rect
+         x="467"
+         y="425"
+         width="14"
+         height="14"
+         transform="rotate(0,474,432)"
+         id="rect448" />
+      <rect
+         x="467"
+         y="467"
+         width="14"
+         height="14"
+         transform="rotate(0,474,474)"
+         id="rect449" />
+    </clipPath>
+    <clipPath
+       id="clip-path-corners-square-color-0-0">
+      <path
+         clip-rule="evenodd"
+         d="M 19 19v 98h 98v -98zM 33 33h 70v 70h -70z"
+         transform="rotate(0,68,68)"
+         id="path449" />
+    </clipPath>
+    <clipPath
+       id="clip-path-corners-dot-color-0-0">
+      <rect
+         x="47"
+         y="47"
+         width="42"
+         height="42"
+         transform="rotate(0,68,68)"
+         id="rect450" />
+    </clipPath>
+    <clipPath
+       id="clip-path-corners-square-color-1-0">
+      <path
+         clip-rule="evenodd"
+         d="M 383 19v 98h 98v -98zM 397 33h 70v 70h -70z"
+         transform="rotate(90,432,68)"
+         id="path450" />
+    </clipPath>
+    <clipPath
+       id="clip-path-corners-dot-color-1-0">
+      <rect
+         x="411"
+         y="47"
+         width="42"
+         height="42"
+         transform="rotate(90,432,68)"
+         id="rect451" />
+    </clipPath>
+    <clipPath
+       id="clip-path-corners-square-color-0-1">
+      <path
+         clip-rule="evenodd"
+         d="M 19 383v 98h 98v -98zM 33 397h 70v 70h -70z"
+         transform="rotate(-90,68,432)"
+         id="path451" />
+    </clipPath>
+    <clipPath
+       id="clip-path-corners-dot-color-0-1">
+      <rect
+         x="47"
+         y="411"
+         width="42"
+         height="42"
+         transform="rotate(-90,68,432)"
+         id="rect452" />
+    </clipPath>
+  </defs>
+  <rect
+     x="0"
+     y="0"
+     height="500"
+     width="500"
+     clip-path="url('#clip-path-dot-color')"
+     fill="#000000"
+     id="rect454" />
+  <rect
+     x="19"
+     y="19"
+     height="98"
+     width="98"
+     clip-path="url('#clip-path-corners-square-color-0-0')"
+     fill="#000000"
+     id="rect455" />
+  <rect
+     x="47"
+     y="47"
+     height="42"
+     width="42"
+     clip-path="url('#clip-path-corners-dot-color-0-0')"
+     fill="#000000"
+     id="rect456" />
+  <rect
+     x="383"
+     y="19"
+     height="98"
+     width="98"
+     clip-path="url('#clip-path-corners-square-color-1-0')"
+     fill="#000000"
+     id="rect457" />
+  <rect
+     x="411"
+     y="47"
+     height="42"
+     width="42"
+     clip-path="url('#clip-path-corners-dot-color-1-0')"
+     fill="#000000"
+     id="rect458" />
+  <rect
+     x="19"
+     y="383"
+     height="98"
+     width="98"
+     clip-path="url('#clip-path-corners-square-color-0-1')"
+     fill="#000000"
+     id="rect459" />
+  <rect
+     x="47"
+     y="411"
+     height="42"
+     width="42"
+     clip-path="url('#clip-path-corners-dot-color-0-1')"
+     fill="#000000"
+     id="rect460" />
+</svg>
