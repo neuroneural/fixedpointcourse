@@ -72,10 +72,19 @@
             Sergey Plis
           </div>
 
-          <p>
-            <img style="border:0; box-shadow: 0px 0px 0px;" height="160"
-                 src="figures/neuroneural_rubiks.svg" alt="Neuroneural">
-          </p>
+          <div style="display: flex; justify-content: center; align-items: flex-end; gap: 34px; margin-top: 8px;">
+            <p style="margin: 0;">
+              <img style="border:0; box-shadow: 0px 0px 0px;" height="160"
+                   src="figures/neuroneural_rubiks.svg" alt="Neuroneural">
+            </p>
+            <a href="https://neuroneural.net/fixedpointcourse/" target="_blank" rel="noopener noreferrer"
+               style="text-decoration: none; color: #586e75; width: 170px; text-align: center;">
+              <img src="figures/fixedpointscourse_QR.svg" alt="QR code for all lecture slides"
+                   style="width: 104px; height: 104px; border:0; box-shadow:none; margin-bottom: 4px;">
+              <div style="font-size: 12px; line-height: 1.2; color: #586e75; margin-bottom: 2px;">All lecture slides</div>
+              <div style="font-size: 11px; line-height: 1.2; color: #657b83; word-break: break-word;">neuroneural.net/fixedpointcourse/</div>
+            </a>
+          </div>
         </section>
       </section>
       <!-- ============================================================ -->
@@ -602,25 +611,26 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
         </section>
 
         <section data-auto-animate>
-          <h2>Back Propagation Through Time</h2>
+          <h2 style="margin-top: -20px;"><span style="color:#2aa198;">B</span>ack <span style="color:#2aa198;">P</span>ropagation <span style="color:#2aa198;">T</span>hrough <span style="color:#2aa198;">T</span>ime</h2>
           <div style="position: relative; width: 92%; margin: 0 auto;">
             <img src="figures/FP_rnn_fp.svg" alt="RNN with backward adjoint flow" style="border:0; box-shadow:none; width:100%;">
             <svg viewBox="0 0 1000 330" style="position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none;">
               <defs>
-                <marker id="adjointArrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-                  <polygon points="0,0 9,4.5 0,9" fill="#d97b00"></polygon>
+                <marker id="adjointArrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                  <polygon points="0,0 8,4 0,8" fill="#2aa198"></polygon>
                 </marker>
               </defs>
-              <line class="fragment" data-fragment-index="0" x1="872" y1="171" x2="808" y2="171" stroke="#d97b00" stroke-width="4" marker-end="url(#adjointArrow)"></line>
-              <line class="fragment" data-fragment-index="0" x1="748" y1="126" x2="748" y2="56" stroke="#d97b00" stroke-width="4" marker-end="url(#adjointArrow)"></line>
-              <line class="fragment" data-fragment-index="1" x1="706" y1="171" x2="612" y2="171" stroke="#d97b00" stroke-width="4" marker-end="url(#adjointArrow)"></line>
-              <line class="fragment" data-fragment-index="1" x1="565" y1="126" x2="565" y2="56" stroke="#d97b00" stroke-width="4" marker-end="url(#adjointArrow)"></line>
+              <line class="fragment" data-fragment-index="0" x1="900" y1="171" x2="840" y2="171" stroke="#2aa198" stroke-width="2" marker-end="url(#adjointArrow)"></line>
+              <line class="fragment" data-fragment-index="0" x1="785" y1="122" x2="785" y2="65" stroke="#2aa198" stroke-width="2" marker-end="url(#adjointArrow)"></line>
+              <line class="fragment" data-fragment-index="1" x1="764" y1="171" x2="640" y2="171" stroke="#2aa198" stroke-width="2" marker-end="url(#adjointArrow)"></line>
+              <line class="fragment" data-fragment-index="1" x1="585" y1="122" x2="585" y2="65" stroke="#2aa198" stroke-width="2" marker-end="url(#adjointArrow)"></line>
             </svg>
-            <div class="fragment" data-fragment-index="0" style="position:absolute; left:77%; top:58%; color:#d97b00; font-size:30px;">\(\frac{\partial L}{\partial \vec{h}^{\,T}}\)</div>
-            <div class="fragment" data-fragment-index="0" style="position:absolute; left:79%; top:24%; color:#d97b00; font-size:28px;">\(\frac{\partial L}{\partial \vec{w}^{\,T}}\)</div>
-            <div class="fragment" data-fragment-index="1" style="position:absolute; left:66%; top:69%; color:#d97b00; font-size:30px;">\(\frac{\partial L}{\partial \vec{h}^{\,T-1}}\)</div>
+            <div class="fragment" data-fragment-index="0" style="position:absolute; left:86%; top:55%; color:#2aa198; font-size:24px;">\(\frac{\partial L}{\partial \vec{h}^{\,T}}\)</div>
+            <div class="fragment" data-fragment-index="0" style="position:absolute; left:72%; top:25%; color:#2aa198; font-size:22px;">\(\frac{\partial \vec{h}^{\,T}}{\partial \vec{w}^{\,T}}\)</div>
+            <div class="fragment" data-fragment-index="1" style="position:absolute; left:65%; top:55%; color:#2aa198; font-size:24px;">\(\frac{\partial \vec{h}^{\,T}}{\partial \vec{h}^{\,T-1}}\)</div>
+            <div class="fragment" data-fragment-index="1" style="position:absolute; left:50%; top:25%; color:#2aa198; font-size:22px;">\(\frac{\partial \vec{h}^{\,T-1}}{\partial \vec{w}^{\,T-1}}\)</div>
           </div>
-          <div style="font-size: 30px; line-height: 1.45; margin-top: 8px; text-align: left;">
+          <div style="font-size: 30px; line-height: 1.45; margin-top: -28px; text-align: left;">
             <div class="fragment roll-in" data-fragment-index="0">
               \[
               \frac{\partial L}{\partial \vec{w}^{\,T}} = \frac{\partial L}{\partial \vec{h}^{\,T}}\frac{\partial \vec{h}^{\,T}}{\partial \vec{w}^{\,T}}
@@ -661,17 +671,264 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
           <ul style="font-size: 25px; line-height: 1.55; margin-top: 10px;">
             <li class="fragment roll-in">Here $\vec{w}^{\,t}$ means the copy of shared parameters at unrolled step $t$.</li>
             <li class="fragment roll-in">This is a sum of all temporal influence paths.</li>
-            <li class="fragment roll-in">RBP emerges by taking the convergent limit and replacing long products with an implicit linear solve.</li>
           </ul>
+          <aside class="notes">
+            <h3>Deriving the Compact BPTT Formula</h3>
+            <p>The RNN recurrence is $\vec{h}^{t} = F(\vec{x}, \vec{w}, \vec{h}^{t-1})$.</p>
+            <p>Every term in the first equation involves chains of two types of partial derivatives:</p>
+            <p><strong>1. The Jacobian $J_{F,\vec{h}}(\vec{x}, \vec{w}, \vec{h}^i)$</strong> comes from hidden-to-hidden derivatives like $\frac{\partial \vec{h}^T}{\partial \vec{h}^{T-1}}$. Since $\vec{h}^{t+1} = F(\vec{x}, \vec{w}, \vec{h}^t)$, we have $\frac{\partial \vec{h}^{t+1}}{\partial \vec{h}^{t}} = \frac{\partial F}{\partial \vec{h}}\big|_{\vec{h}=\vec{h}^t} = J_{F,\vec{h}}(\vec{x}, \vec{w}, \vec{h}^t)$. This captures how a small change in the hidden state at time $t$ affects the hidden state at time $t+1$.</p>
+            <p><strong>2. The term $\frac{\partial F}{\partial \vec{w}}(\vec{x}, \vec{w}, \vec{h}^{T-k})$</strong> comes from terms like $\frac{\partial \vec{h}^{T-k+1}}{\partial \vec{w}}$ at the end of each chain. Since $\vec{h}^{t} = F(\vec{x}, \vec{w}, \vec{h}^{t-1})$, we have $\frac{\partial \vec{h}^{t}}{\partial \vec{w}^{t}} = \frac{\partial F}{\partial \vec{w}}(\vec{x}, \vec{w}, \vec{h}^{t-1})$. This is the direct/immediate effect of the weights on the hidden state at one time step (treating $\vec{h}^{t-1}$ as fixed).</p>
+            <p>Matching to the expanded form:</p>
+            <ul>
+              <li>$k=1$: empty product of Jacobians $\Rightarrow$ identity, direct weight derivative $\frac{\partial F}{\partial \vec{w}}(\vec{x}, \vec{w}, \vec{h}^{T-1})$ matches $\frac{\partial \vec{h}^T}{\partial \vec{w}}$.</li>
+              <li>$k=2$: one Jacobian $J_{F,\vec{h}}(\vec{x}, \vec{w}, \vec{h}^{T-1})$ times $\frac{\partial F}{\partial \vec{w}}(\vec{x}, \vec{w}, \vec{h}^{T-2})$ matches $\frac{\partial \vec{h}^T}{\partial \vec{h}^{T-1}}\frac{\partial \vec{h}^{T-1}}{\partial \vec{w}}$.</li>
+            </ul>
+            <p>Each summand (indexed by $k$) represents one temporal influence path: the weights $\vec{w}$ directly affect $\vec{h}^{T-k+1}$ (captured by $\frac{\partial F}{\partial \vec{w}}$), and then that effect propagates forward through steps $T-k+1 \to \cdots \to T$ via the chain of Jacobians $J_{F,\vec{h}}$.</p>
+            <p>In summary: $J_{F,\vec{h}}$ = how hidden states propagate forward (the "chain" through time); $\frac{\partial F}{\partial \vec{w}}$ = the direct, immediate effect of $\vec{w}$ at one time step (the "entry point" of the gradient into the chain).</p>
+          </aside>
         </section>
 
         <section>
-          <h2>RBP Derivation Arc (Liao 2018 framing)</h2>
-          <ul style="font-size: 27px; line-height: 1.62;">
-            <li class="fragment roll-in">Define $\Psi(\vec{z}, \vec{x}, \vec{\theta})=\vec{z}-f(\vec{x},\vec{z},\vec{\theta})=\vec{0}$.</li>
-            <li class="fragment roll-in">Differentiate implicitly to obtain the inverse Jacobian term.</li>
-            <li class="fragment roll-in">Avoid explicit inverse by solving an adjoint linear system.</li>
-          </ul>
+          <h2>If We Iterate to Convergence</h2>
+          <div style="font-size: 31px; line-height: 1.55; margin-top: 16px; text-align: left;">
+            <div class="fragment roll-in">
+              Fix the input and repeatedly apply the same update map.
+            </div>
+            <div class="fragment roll-in" style="text-align: center; margin-top: 14px;">
+              \[
+              \vec{h}^{\,t+1}=F(\vec{x},\vec{w}_F,\vec{h}^{\,t})
+              \]
+            </div>
+            <div class="fragment roll-in">
+              At convergence, the unrolled RNN is a <strong>fixed-point layer</strong>.
+            </div>
+            <div class="fragment roll-in" style="text-align: center; margin-top: 14px;">
+              \[
+              \vec{h}^{\,*}=F(\vec{x},\vec{w}_F,\vec{h}^{\,*})
+              \]
+            </div>
+            <div class="fragment roll-in">
+              The final activation - the fixed-point of $F$ at $\vec{x}$ - is passed on to the next layer of the model that finally generates the output $\vec{y}$.
+            </div>
+            <div class="fragment roll-in" style="text-align: center; margin-top: 14px;">
+              \[
+              \vec{y}=G(\vec{x},\vec{w}_G,\vec{h}^{\,*})
+              \]
+            </div>
+          </div>
+          <aside class="notes">
+            This is the bridge from BPTT over finite unrolling to equilibrium models.
+            When the input is fixed and the state dynamics settle, time indices disappear and
+            we instead describe the layer by a steady-state equation.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Differentiate the Fixed Point</h2>
+          <div style="font-size: 29px; line-height: 1.5; text-align: left;">
+            <div class="fragment roll-in">Define a residual map at fixed input:</div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 8px;">
+              \[
+              \Psi(\vec{w}_F,\vec{h}) = \vec{h} - F(\vec{x},\vec{w}_F,\vec{h})
+              \]
+            </div>
+            <div class="fragment roll-in">At equilibrium: \(\Psi(\vec{w}_F,\vec{h}^{\,*})=\vec{0}\).</div>
+            <div class="fragment roll-in">Take a <strong>total derivative</strong> w.r.t. \(\vec{w}_F\) (because \(\vec{h}^{\,*}=\vec{h}^{\,*}(\vec{w}_F)\)):</div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 8px;">
+              \[
+              \frac{d}{d\vec{w}_F}\,\Psi\!\left(\vec{w}_F,\vec{h}^{\,*}(\vec{w}_F)\right)=\vec{0}
+              \]
+            </div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 4px;">
+              \[
+              \frac{\partial \Psi\!\left(\vec{w}_F,\vec{h}^{\,*}\right)}{\partial \vec{w}_F}
+              =
+              \frac{\partial \vec{h}^{\,*}}{\partial \vec{w}_F}
+              -
+              \frac{d}{d\vec{w}_F}F\!\left(\vec{x},\vec{w}_F,\vec{h}^{\,*}\right)
+              \]
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Total Derivative Here = Chain Rule</h2>
+          <div style="font-size: 30px; line-height: 1.52; text-align: left;">
+            <div class="fragment roll-in">$\vec{h}^{\,*}$ depends on $\vec{w}_F$.</div>
+            <div class="fragment roll-in">So $F(\vec{x},\vec{w}_F,\vec{h}^{\,*})$ depends on $\vec{w}_F$ in two ways.</div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 10px;">
+              \[
+              \frac{d}{d\vec{w}_F}F\!\left(\vec{x},\vec{w}_F,\vec{h}^{\,*}(\vec{w}_F)\right)
+              =
+              \frac{\partial F}{\partial \vec{w}_F}
+              +
+              \frac{\partial F}{\partial \vec{h}^{\,*}}
+              \frac{\partial \vec{h}^{\,*}}{\partial \vec{w}_F}
+              \]
+            </div>
+            <div class="fragment roll-in">First term: direct effect of $\vec{w}_F$.</div>
+            <div class="fragment roll-in">Second term: indirect effect through $\vec{h}^{\,*}(\vec{w}_F)$.</div>
+          </div>
+          <aside class="notes">
+            Here "total derivative" is exactly multivariable chain rule with implicit dependence.
+            We use it because the equilibrium state is itself a function of the parameters.
+          </aside>
+        </section>
+
+        <section>
+          <h2 style="margin-top: -30px;">Combine the Pieces</h2>
+          <div style="font-size: 30px; line-height: 1.5; text-align: left;">
+            <div class="fragment roll-in">Start from the equilibrium identity: \(\Psi(\vec{w}_F,\vec{h}^{\,*})=\vec{0}\).</div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 10px;">
+              \[
+              \frac{\partial \Psi(\vec{w}_F,\vec{h}^{\,*})}{\partial \vec{w}_F}
+              =
+              \frac{\partial \vec{h}^{\,*}}{\partial \vec{w}_F}
+              -
+              \frac{d}{d\vec{w}_F}F(\vec{x},\vec{w}_F,\vec{h}^{\,*})
+              \]
+            </div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 6px;">
+              \[
+              =
+              \frac{\partial \vec{h}^{\,*}}{\partial \vec{w}_F}
+              -
+              \left(
+              \frac{\partial F(\vec{x},\vec{w}_F,\vec{h}^{\,*})}{\partial \vec{w}_F}
+              +
+              \frac{\partial F(\vec{x},\vec{w}_F,\vec{h}^{\,*})}{\partial \vec{h}^{\,*}}
+              \frac{\partial \vec{h}^{\,*}}{\partial \vec{w}_F}
+              \right)
+              =
+              \vec{0}
+              \]
+            </div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 6px;">
+              \[
+              =
+              \left(I - J_{F,\vec{h}^{\,*}}\right)
+              \frac{\partial \vec{h}^{\,*}}{\partial \vec{w}_F}
+              -
+              \frac{\partial F(\vec{x},\vec{w}_F,\vec{h}^{\,*})}{\partial \vec{w}_F}
+              =
+              \vec{0}
+              \]
+            </div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 6px;">
+              \[
+              \frac{\partial \vec{h}^{\,*}}{\partial \vec{w}_F}
+              =
+              \left(I - J_{F,\vec{h}^{\,*}}\right)^{-1}
+              \frac{\partial F(\vec{x},\vec{w}_F,\vec{h}^{\,*})}{\partial \vec{w}_F}
+              \]
+            </div>
+            <div class="fragment roll-in" style="font-size: 24px; color: #2aa198; margin-top: 8px;">
+              Same pattern as earlier IFT slide: identify \(\vec{z}^{\,*}\leftrightarrow\vec{h}^{\,*}\), \(\vec{\theta}\leftrightarrow\vec{w}_F\), and recover the same \((I-J)^{-1}\) structure.
+            </div>
+          </div>
+          <aside class="notes">
+            Here $J_{F,\vec{h}^{\,*}}$ is shorthand for the Jacobian of $F$ with respect to its hidden-state argument, evaluated at the fixed point.
+            The key transition is explicit: first substitute the total-derivative expansion of $F$, then collect terms multiplying $\partial \vec{h}^{\,*}/\partial \vec{w}_F$ to get $(I-J)$.
+            This is the core implicit sensitivity result we need before introducing the adjoint solve for gradients.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Gradients at Equilibrium</h2>
+          <div style="font-size: 29px; line-height: 1.5; text-align: left;">
+            <div class="fragment roll-in">Readout parameters use standard backprop:</div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 8px;">
+              \[
+              \frac{\partial L}{\partial \vec{w}_G}
+              =
+              \frac{\partial L}{\partial \vec{y}}
+              \frac{\partial G(\vec{x},\vec{w}_G,\vec{h}^{\,*})}{\partial \vec{w}_G}
+              \]
+            </div>
+            <div class="fragment roll-in">Recurrent parameters include implicit sensitivity of the fixed point:</div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 8px;">
+              \[
+              \frac{\partial L}{\partial \vec{w}_F}
+              =
+              \frac{\partial L}{\partial \vec{y}}
+              \frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}
+              \left(I - J_{F,\vec{h}^{\,*}}\right)^{-1}
+              \frac{\partial F(\vec{x},\vec{w}_F,\vec{h}^{\,*})}{\partial \vec{w}_F}
+              \]
+            </div>
+            <div class="fragment roll-in">To avoid forming the inverse, define an adjoint variable:</div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 8px;">
+              \[
+              \vec{z}
+              =
+              \left(I - J_{F,\vec{h}^{\,*}}^{\top}\right)^{-1}
+              \left(
+              \frac{\partial L}{\partial \vec{y}}
+              \frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}
+              \right)^{\!\top}
+              \]
+            </div>
+          </div>
+          <aside class="notes">
+            First line is ordinary gradient flow through the readout map G.
+            Second line is the equilibrium-gradient expression from the previous slide.
+            Third line introduces the adjoint variable z.
+
+            Why the transpose on J?
+            The gradient dL/dw_F = (dL/dy)(dy/dh*)(I - J)^{-1} dF/dw_F is expressed as a row vector times a matrix inverse.
+            To work with column vectors throughout, we define z to satisfy (I - J^T) z = (dL/dy dy/dh*)^T,
+            so that dL/dw_F = z^T dF/dw_F — a clean inner product.
+            The transpose arises because the gradient chain runs left-to-right as row vectors, but the adjoint z is a column vector; transposing J moves between these two conventions.
+          </aside>
+        </section>
+
+        <section>
+          <h2>The RBP Fixed-Point Iteration</h2>
+          <div style="font-size: 28px; line-height: 1.5; text-align: left;">
+            <div class="fragment roll-in">$J_{F,\vec{h}^{\,*}}$ is generally <strong>nonsymmetric</strong> — direct linear solvers are impractical.</div>
+            <div class="fragment roll-in" style="margin-top: 10px;">Multiply $(I - J_{F,\vec{h}^{\,*}}^{\top})$ on both sides of the adjoint definition:</div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 8px;">
+              \[
+              \left(I - J_{F,\vec{h}^{\,*}}^{\top}\right)\vec{z}
+              =
+              \left(
+              \frac{\partial L}{\partial \vec{y}}
+              \frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}
+              \right)^{\!\top}
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 6px;">Expand and rearrange:</div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 8px;">
+              \[
+              \vec{z} - J_{F,\vec{h}^{\,*}}^{\top}\vec{z}
+              =
+              \left(
+              \frac{\partial L}{\partial \vec{y}}
+              \frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}
+              \right)^{\!\top}
+              \]
+            </div>
+            <div class="fragment roll-in" style="text-align:center; margin-top: 6px;">
+              \[
+              \vec{z}
+              =
+              J_{F,\vec{h}^{\,*}}^{\top}\vec{z}
+              +
+              \left(
+              \frac{\partial L}{\partial \vec{y}}
+              \frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}
+              \right)^{\!\top}
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 8px;">Right-hand side is a <strong>fixed-point map in $\vec{z}$</strong> — iterate until convergence.</div>
+            <div class="fragment roll-in" style="margin-top: 6px; color: #2aa198;">Bottleneck: $J_{F,\vec{h}^{\,*}}^{\top}\vec{z}$ — a Jacobian-transpose-vector product, which is exactly <strong>one backprop step</strong>.</div>
+          </div>
+          <aside class="notes">
+            Instead of inverting (I - J^T) directly, iterate z <- J^T z + g until convergence.
+            Each step costs exactly one backward pass (Jacobian-transpose-vector product).
+            Convergence is guaranteed when the spectral radius of J is less than 1 — the same contraction condition as the forward pass.
+            This is the deep connection between RBP and BPTT: the backward pass reuses the same computational graph as the forward pass.
+          </aside>
         </section>
 
         <section>
