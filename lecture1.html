@@ -1706,6 +1706,7 @@
   <script src="plugin/verticator/verticator.js"></script>
   <link rel="stylesheet" href="plugin/verticator/verticator.css">
   <script src="plugin/menu/menu.js"></script>
+  <script src="plugin/remotesync/remotesync.js"></script>
 
   <script>
     Reveal.initialize({
@@ -1750,7 +1751,7 @@
           svg: { fontCache: 'global' }
         }
       },
-      plugins: [Verticator, RevealMath, RevealChalkboard, RevealHighlight, RevealNotes, RevealZoom, RevealMenu],
+      plugins: [Verticator, RevealMath, RevealChalkboard, RevealHighlight, RevealNotes, RevealZoom, RevealMenu, RevealRemoteSync],
     });
     Reveal.configure({ fragments: true });
     Reveal.configure({ slideNumber: 'c / t' });
