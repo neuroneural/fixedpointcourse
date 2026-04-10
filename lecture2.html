@@ -241,7 +241,7 @@
           </blockquote>
           <aside class="notes">
             <p><strong>Talk track (4 beats):</strong></p>
-            <p>(1) Define r = sqrt(a) and the update map. (2) Show x_{n+1} - r >= 0, so after one step we are on/above the root. (3) If x_n > r then x_{n+1} - x_n < 0, so sequence decreases. (4) Decreasing + bounded below implies convergence; limit equation gives L = sqrt(a).</p>
+            <p>(1) Define $r=\sqrt{a}$ and the update map. (2) Show $x_{n+1}-r\ge 0$, so after one step we are on/above the root. (3) If $x_n>r$ then $x_{n+1}-x_n<0$, so sequence decreases. (4) Decreasing + bounded below implies convergence; limit equation gives $L=\sqrt{a}$.</p>
             <p><strong>Emphasize:</strong> this is a global argument for positive initialization; it does not yet quantify local rate.</p>
             <p><strong>Bridge:</strong> "We now know it converges. Next: what controls the speed near the fixed point?"</p>
           </aside>
@@ -260,9 +260,9 @@
           </blockquote>
           <aside class="notes">
             <p><strong>Goal:</strong> explain derivative as local error gain.</p>
-            <p>Define error e_n = x_n - r with g(r)=r. Then e_{n+1} = g(x_n)-g(r). Taylor-expand around r: g(x_n)=g(r)+g'(r)(x_n-r)+o(x_n-r). Therefore e_{n+1}=g'(r)e_n+o(e_n).</p>
-            <p><strong>Interpretation:</strong> near r, each iteration roughly multiplies error by g'(r). Smaller |g'(r)| means faster local convergence.</p>
-            <p>For the sqrt map, g'(r)=0, which explains very rapid local convergence once near the fixed point.</p>
+            <p>Define error $e_n=x_n-r$ with $g(r)=r$. Then $e_{n+1}=g(x_n)-g(r)$. Taylor-expand around $r$: $g(x_n)=g(r)+g'(r)(x_n-r)+o(x_n-r)$. Therefore $e_{n+1}=g'(r)e_n+o(e_n)$.</p>
+            <p><strong>Interpretation:</strong> near $r$, each iteration roughly multiplies error by $g'(r)$. Smaller $|g'(r)|$ means faster local convergence.</p>
+            <p>For the sqrt map, $g'(r)=0$, which explains very rapid local convergence once near the fixed point.</p>
           </aside>
         </section>
 
@@ -277,8 +277,8 @@
           </div>
           <aside class="notes">
             <p><strong>Goal:</strong> connect derivative bounds to contraction mapping language.</p>
-            <p>First statement is intuitive: |g'(r)| &lt; 1 gives local attraction. Stronger sufficient condition is a neighborhood bound |g'(x)| <= q &lt; 1. By the Mean Value Theorem, this implies |g(x)-g(y)| <= q|x-y|, i.e., contraction.</p>
-            <p>Then convergence rate is geometric: |e_{n+1}| <= q|e_n|.</p>
+            <p>First statement is intuitive: $|g'(r)| &lt; 1$ gives local attraction. Stronger sufficient condition is a neighborhood bound $|g'(x)|\le q &lt; 1$. By the Mean Value Theorem, this implies $|g(x)-g(y)|\le q|x-y|$, i.e., contraction.</p>
+            <p>Then convergence rate is geometric: $|e_{n+1}|\le q|e_n|$.</p>
             <p><strong>Bridge forward:</strong> in vector settings, use Jacobian/operator norm; this is the form used for Banach-style guarantees in implicit models.</p>
           </aside>
         </section>
@@ -672,6 +672,10 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
             <li class="fragment roll-in">Here $\vec{w}^{\,t}$ means the copy of shared parameters at unrolled step $t$.</li>
             <li class="fragment roll-in">This is a sum of all temporal influence paths.</li>
           </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 8px; line-height: 1.35;">
+            <a href="https://gwern.net/doc/ai/nn/1974-werbos.pdf" target="_blank">Werbos, P. J. (1974). Beyond Regression: New Tools for Prediction and Analysis in the Behavioral Sciences (PhD thesis, Harvard University).</a><br>
+            <a href="https://www.scribd.com/document/958406610/Werbos-P-J-1990-Backpropagation-Through-Time-What-It-Does-and-How-to-Do-It" target="_blank">Werbos, P. J. (1990). Backpropagation Through Time: What It Does and How to Do It. Proceedings of the IEEE, 78(10). DOI: 10.1109/5.58337.</a>
+          </div>
           <aside class="notes">
             <h3>Deriving the Compact BPTT Formula</h3>
             <p>The RNN recurrence is $\vec{h}^{t} = F(\vec{x}, \vec{w}, \vec{h}^{t-1})$.</p>
@@ -725,9 +729,9 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
 
         <section>
           <h2>Differentiate the Fixed Point</h2>
-          <div style="font-size: 29px; line-height: 1.5; text-align: left;">
+          <div style="font-size: 27px; line-height: 1.45; text-align: left;">
             <div class="fragment roll-in">Define a residual map at fixed input:</div>
-            <div class="fragment roll-in" style="text-align:center; margin-top: 8px;">
+            <div class="fragment roll-in" style="text-align:center; margin-top: 6px; font-size: 0.92em;">
               \[
               \Psi(\vec{w}_F,\vec{h}) = \vec{h} - F(\vec{x},\vec{w}_F,\vec{h})
               \]
@@ -868,17 +872,19 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
               \right)^{\!\top}
               \]
             </div>
+            <div class="slide-footer fragment roll-in" style="text-align: left; font-size: 10px; margin-bottom: -50px; line-height: 1.2; color: #657b83;">
+              <a href="https://scholar.google.com/scholar?q=Generalization+of+back+propagation+to+recurrent+and+higher+order+neural+networks" target="_blank">Pineda, F. (1987). Generalization of Back-Propagation to Recurrent and Higher Order Neural Networks. NIPS.</a><br>
+              <a href="https://scholar.google.com/scholar?q=A+learning+rule+for+asynchronous+perceptrons+with+feedback+in+a+combinatorial+environment" target="_blank">Almeida, L. B. (1990). A Learning Rule for Asynchronous Perceptrons with Feedback in a Combinatorial Environment.</a>
+            </div>
           </div>
           <aside class="notes">
-            First line is ordinary gradient flow through the readout map G.
-            Second line is the equilibrium-gradient expression from the previous slide.
-            Third line introduces the adjoint variable z.
-
-            Why the transpose on J?
-            The gradient dL/dw_F = (dL/dy)(dy/dh*)(I - J)^{-1} dF/dw_F is expressed as a row vector times a matrix inverse.
-            To work with column vectors throughout, we define z to satisfy (I - J^T) z = (dL/dy dy/dh*)^T,
-            so that dL/dw_F = z^T dF/dw_F — a clean inner product.
-            The transpose arises because the gradient chain runs left-to-right as row vectors, but the adjoint z is a column vector; transposing J moves between these two conventions.
+            <p>First line is ordinary gradient flow through the readout map $G$.</p>
+            <p>Second line is the equilibrium-gradient expression from the previous slide.</p>
+            <p>Third line introduces the adjoint variable $\vec{z}$.</p>
+            <p><strong>Why the transpose on $J$?</strong></p>
+            <p>The gradient $\frac{\partial L}{\partial \vec{w}_F}=\left(\frac{\partial L}{\partial \vec{y}}\right)\left(\frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}\right)\left(I-J\right)^{-1}\frac{\partial F}{\partial \vec{w}_F}$ is expressed as a row vector times a matrix inverse.</p>
+            <p>To work with column vectors throughout, we define $\vec{z}$ to satisfy $\left(I-J^{\top}\right)\vec{z}=\left(\frac{\partial L}{\partial \vec{y}}\frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}\right)^{\top}$, so that $\frac{\partial L}{\partial \vec{w}_F}=\vec{z}^{\top}\frac{\partial F}{\partial \vec{w}_F}$.</p>
+            <p>The transpose arises because the gradient chain runs left-to-right as row vectors, but the adjoint $\vec{z}$ is a column vector; transposing $J$ moves between these two conventions.</p>
           </aside>
         </section>
 
@@ -898,27 +904,29 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
               \]
             </div>
             <div class="fragment roll-in" style="margin-top: 6px;">Expand and rearrange:</div>
-            <div class="fragment roll-in" style="text-align:center; margin-top: 8px;">
-              \[
-              \vec{z} - J_{F,\vec{h}^{\,*}}^{\top}\vec{z}
-              =
-              \left(
-              \frac{\partial L}{\partial \vec{y}}
-              \frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}
-              \right)^{\!\top}
-              \]
-            </div>
-            <div class="fragment roll-in" style="text-align:center; margin-top: 6px;">
-              \[
-              \vec{z}
-              =
-              J_{F,\vec{h}^{\,*}}^{\top}\vec{z}
-              +
-              \left(
-              \frac{\partial L}{\partial \vec{y}}
-              \frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}
-              \right)^{\!\top}
-              \]
+            <div style="text-align:center; margin-top: 8px; font-size: 1.2em; white-space: nowrap;">
+              <span class="fragment roll-in">
+                \(
+                \vec{z} - J_{F,\vec{h}^{\,*}}^{\top}\vec{z}
+                =
+                \left(
+                \frac{\partial L}{\partial \vec{y}}
+                \frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}
+                \right)^{\!\top}
+                \)
+              </span>
+              <span class="fragment roll-in" style="margin-left: 26px;">
+                \(
+                \vec{z}
+                =
+                J_{F,\vec{h}^{\,*}}^{\top}\vec{z}
+                +
+                \left(
+                \frac{\partial L}{\partial \vec{y}}
+                \frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}
+                \right)^{\!\top}
+                \)
+              </span>
             </div>
             <div class="fragment roll-in" style="margin-top: 8px;">Right-hand side is a <strong>fixed-point map in $\vec{z}$</strong> — iterate until convergence.</div>
             <div class="fragment roll-in" style="margin-top: 6px; color: #2aa198;">Bottleneck: $J_{F,\vec{h}^{\,*}}^{\top}\vec{z}$ — a Jacobian-transpose-vector product, which is exactly <strong>one backprop step</strong>.</div>
@@ -928,6 +936,28 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
             Each step costs exactly one backward pass (Jacobian-transpose-vector product).
             Convergence is guaranteed when the spectral radius of J is less than 1 — the same contraction condition as the forward pass.
             This is the deep connection between RBP and BPTT: the backward pass reuses the same computational graph as the forward pass.
+          </aside>
+        </section>
+
+        <section>
+          <h2>RBP: Putting It Together</h2>
+          <div style="width: 100%; margin-top: 8px; background: #eee8d5; border: 1px solid #d8cfb5; border-radius: 10px; padding: 14px 20px 16px; box-sizing: border-box; text-align: left;">
+            <div style="font-size: 19px; color: #657b83; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px;">Algorithm 1 · Original RBP</div>
+            <div style="font-size: 28px; line-height: 1.45;">
+              <div class="fragment roll-in"><strong>Input:</strong> $\vec{x}$, $\vec{w}_F$, $\vec{w}_G$, tolerance $\epsilon$, max iterations $K$.</div>
+              <div class="fragment roll-in"><strong>1.</strong> Forward fixed-point solve: iterate $\vec{h}^{t+1}=F(\vec{x},\vec{w}_F,\vec{h}^{t})$ to convergence, get $\vec{h}^{\,*}$.</div>
+              <div class="fragment roll-in"><strong>2.</strong> Compute readout and loss: $\vec{y}=G(\vec{x},\vec{w}_G,\vec{h}^{\,*})$, then $L=L(\vec{y})$.</div>
+              <div class="fragment roll-in"><strong>3.</strong> Set $\vec{g}=\left(\frac{\partial L}{\partial \vec{y}}\frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}\right)^{\!\top}$ and initialize $\vec{z}_0$ (e.g., zeros).</div>
+              <div class="fragment roll-in"><strong>4.</strong> For $i=1,\dots,K$: $\vec{z}_i \leftarrow J_{F,\vec{h}^{\,*}}^{\top}\vec{z}_{i-1}+\vec{g}$.</div>
+              <div class="fragment roll-in"><strong>5.</strong> Stop early if $\|\vec{z}_i-\vec{z}_{i-1}\|&lt;\epsilon$.</div>
+              <div class="fragment roll-in"><strong>6.</strong> Return recurrent gradient: $\frac{\partial L}{\partial \vec{w}_F}=\vec{z}_i^{\top}\frac{\partial F(\vec{x},\vec{w}_F,\vec{h}^{\,*})}{\partial \vec{w}_F}$.</div>
+            </div>
+          </div>
+          <aside class="notes">
+            This slide compresses the full RBP workflow into one algorithmic view.
+            Step 1: find the equilibrium state with the forward dynamics.
+            Steps 3-5: solve the adjoint fixed point with repeated Jacobian-transpose-vector products.
+            Step 6: convert adjoint into the gradient with respect to recurrent parameters.
           </aside>
         </section>
 
@@ -1052,6 +1082,7 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
   <script src="plugin/verticator/verticator.js"></script>
   <link rel="stylesheet" href="plugin/verticator/verticator.css">
   <script src="plugin/menu/menu.js"></script>
+  <script src="plugin/remotesync/remotesync.js"></script>
 
   <script>
     Reveal.initialize({
@@ -1087,7 +1118,7 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
           tex: { packages: { '[+]': ['color'] } }, svg: { fontCache: 'global' }
         }
       },
-      plugins: [Verticator, RevealMath, RevealChalkboard, RevealHighlight, RevealNotes, RevealZoom, RevealMenu],
+      plugins: [Verticator, RevealMath, RevealChalkboard, RevealHighlight, RevealNotes, RevealZoom, RevealMenu, RevealRemoteSync],
     });
     Reveal.configure({ fragments: true });
     Reveal.configure({ slideNumber: 'c / t' });
