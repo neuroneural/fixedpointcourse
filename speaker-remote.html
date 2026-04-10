@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Speaker Remote</title>
+  <script>
+    window.MathJax = {
+      tex2jax: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true
+      },
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/gh/mathjax/mathjax@2.7.8/MathJax.js?config=TeX-AMS_SVG-full"></script>
+
+  <style>
+    html, body, #status-bar, #slide-info, #notes-area, #timer-bar, #nav-bar, #connecting-overlay {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* ── Status bar ── */
+    #status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: #16213e;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    #ws-indicator {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #e74c3c;
+      flex-shrink: 0;
+    }
+    #ws-indicator.connected { background: #2ecc71; }
+    #slide-counter {
+      flex: 1;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    #deck-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 104px;
+      justify-content: flex-end;
+    }
+    #deck-select {
+      background: #1a1a40;
+      color: #ddd;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 6px;
+      font-size: 11px;
+      padding: 3px 6px;
+      max-width: 106px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #deck-select:disabled {
+      opacity: 0.65;
+    }
+    #deck-status {
+      color: #666;
+      font-size: 10px;
+      min-width: 11px;
+      text-align: right;
+    }
+
+    /* ── Slide title area ── */
+    #slide-info {
+      flex-shrink: 0;
+      padding: 10px 14px 8px;
+      background: #1a1a2e;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    #slide-title {
+      font-size: 13px;
+      color: #888;
+      font-style: italic;
+    }
+    #slide-title:empty { display: none; }
+
+    /* ── Notes area ── */
+    #notes-area {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 14px 16px;
+      font-size: 16px;
+      line-height: 1.6;
+      background: #16213e;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    #notes-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    #note-content { color: #ccc; }
+    #note-content p { margin-bottom: 8px; }
+    #note-content ul, #note-content ol { margin: 0 0 10px 24px; }
+    #note-content li { margin-bottom: 4px; }
+    #note-content strong { color: #f1c40f; }
+    #note-content em { color: #5dade2; }
+    #note-content h3 { font-size: 15px; color: #e8e8e8; margin: 12px 0 6px; }
+    #note-content br { display: block; margin-bottom: 4px; content: ""; }
+    #note-content .MathJax_SVG_Display,
+    #note-content mjx-container[display="true"] {
+      margin: 0.5em 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    #no-notes {
+      color: #444;
+      font-style: italic;
+      font-size: 14px;
+      text-align: center;
+      padding-top: 30px;
+    }
+
+    /* ── Timer bar ── */
+    #timer-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 14px;
+      background: #0f3460;
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+    }
+    .timer-clock { color: #888; }
+    .timer-elapsed { color: #ddd; font-weight: 600; font-size: 15px; }
+    #timer-reset {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #888;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #timer-reset:active { background: rgba(255,255,255,0.1); color: #ccc; }
+
+    /* ── Nav bar ── */
+    #nav-bar {
+      display: flex;
+      gap: 5px;
+      flex-shrink: 0;
+      background: #16213e;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 8px 6px;
+      padding-bottom: env(safe-area-inset-bottom, 8px);
+    }
+    #nav-bar button {
+      flex: 1;
+      background: #1a1a40;
+      color: #aaa;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      font-size: 22px;
+      padding: 14px 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #nav-bar button:active { background: #0f3460; color: #fff; }
+    #nav-bar button.ov { flex: 0.5; font-size: 14px; }
+
+    /* ── Connecting overlay ── */
+    #connecting-overlay {
+      position: fixed;
+      inset: 0;
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: opacity 0.4s;
+    }
+    #connecting-overlay.out { opacity: 0; pointer-events: none; }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid rgba(255,255,255,0.12);
+      border-top-color: #3498db;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-bottom: 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #connecting-overlay p { color: #555; font-size: 13px; text-align: center; line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+  <div id="connecting-overlay">
+    <div class="spinner"></div>
+    <p>Waiting for presenter...<br>Open the deck on your laptop first.</p>
+  </div>
+
+  <div id="status-bar">
+    <div id="ws-indicator"></div>
+    <span id="slide-counter">--</span>
+    <div id="deck-controls">
+      <select id="deck-select" aria-label="Lecture selector"></select>
+      <span id="deck-status"></span>
+    </div>
+  </div>
+
+  <div id="notes-area">
+    <div id="notes-label">Speaker Notes</div>
+    <div id="note-content">
+      <div id="no-notes">Navigate a slide to see notes here.</div>
+    </div>
+  </div>
+
+  <div id="timer-bar">
+    <span class="timer-clock" id="clock">--:--</span>
+    <button id="timer-reset" onclick="resetTimer()">reset</button>
+    <span class="timer-elapsed" id="elapsed">00:00</span>
+  </div>
+
+  <div id="nav-bar">
+    <button onclick="sendNav('prev')">&#x23EA;</button>
+    <button onclick="sendNav('left')">&#x25C0;</button>
+    <button onclick="sendNav('right')">&#x25B6;</button>
+    <button onclick="sendNav('next')">&#x23E9;</button>
+    <button class="ov" onclick="sendNav('overview')">&#x25CE;</button>
+  </div>
+
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var deck = params.get('deck') || 'lecture1.html';
+  var ws = null;
+  var startTimestamp = Date.now();
+  var deckSelect = document.getElementById('deck-select');
+  var deckStatus = document.getElementById('deck-status');
+  var switchingDeck = false;
+
+  function setDeckStatus(text) {
+    deckStatus.textContent = text || '';
+  }
+
+  function deckLabel(file) {
+    var base = (file || '').replace('.html', '');
+    var match = /^lecture(\d+)$/i.exec(base);
+    return match ? ('L' + match[1]) : base;
+  }
+
+  function updateDeckInUrl() {
+    params.set('deck', deck);
+    var query = params.toString();
+    window.history.replaceState(null, '', window.location.pathname + (query ? ('?' + query) : ''));
+  }
+
+  function populateDeckSelect(decks) {
+    var list = Array.isArray(decks) && decks.length ? decks : ['lecture1.html'];
+    if (list.indexOf(deck) === -1) list.unshift(deck);
+
+    deckSelect.innerHTML = list.map(function (name) {
+      return '<option value="' + name + '">' + deckLabel(name) + '</option>';
+    }).join('');
+    deckSelect.value = deck;
+  }
+
+  function loadDeckList() {
+    fetch('/decks')
+      .then(function (res) { return res.ok ? res.json() : { decks: ['lecture1.html'] }; })
+      .then(function (data) { populateDeckSelect(data.decks); })
+      .catch(function () { populateDeckSelect(['lecture1.html', 'lecture2.html', 'lecture3.html', 'lecture4.html', 'lecture5.html', 'lecture6.html']); });
+  }
+
+  deckSelect.addEventListener('change', function () {
+    if (!deckSelect.value || deckSelect.value === deck) return;
+
+    deck = deckSelect.value;
+    switchingDeck = true;
+    updateDeckInUrl();
+    setDeckStatus('...');
+    document.getElementById('slide-counter').textContent = '--';
+    document.getElementById('note-content').innerHTML = '<div id="no-notes">Switching lecture...</div>';
+
+    if (ws && (ws.readyState === 0 || ws.readyState === 1)) {
+      ws.close();
+    } else {
+      connect();
+    }
+  });
+
+  function getRoom() { return deck.replace(/^\//, ''); }
+
+  function getWsUrl() {
+    var loc = window.location;
+    var proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+    return proto + '//' + loc.host + '?room=' + encodeURIComponent(getRoom()) + '&role=remote';
+  }
+
+  function handleState(msg) {
+    if (msg.state) {
+      var h = msg.state.indexh + 1;
+      var v = msg.state.indexv;
+      var pos = v > 0 ? h + '.' + v : '' + h;
+      document.getElementById('slide-counter').textContent = pos;
+    }
+
+    var noteContent = document.getElementById('note-content');
+    if (msg.notes) {
+      noteContent.innerHTML = msg.notes;
+      typesetNotes(noteContent);
+    } else {
+      noteContent.innerHTML = '<div id="no-notes">No notes on this slide.</div>';
+    }
+  }
+
+  function typesetNotes(container) {
+    if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Queue) {
+      window.MathJax.Hub.Queue(['Typeset', window.MathJax.Hub, container]);
+    }
+  }
+
+  window.sendNav = function (command) {
+    if (ws && ws.readyState === 1) {
+      ws.send(JSON.stringify({ type: 'navigate', command: command }));
+    }
+  };
+
+  window.resetTimer = function () {
+    startTimestamp = Date.now();
+    updateElapsed();
+  };
+
+  function connect() {
+    try { ws = new WebSocket(getWsUrl()); }
+    catch (e) { setTimeout(connect, 3000); return; }
+
+    ws.onopen = function () {
+      document.getElementById('ws-indicator').classList.add('connected');
+      document.getElementById('connecting-overlay').classList.add('out');
+      deckSelect.value = deck;
+      setDeckStatus('');
+    };
+
+    ws.onclose = function () {
+      document.getElementById('ws-indicator').classList.remove('connected');
+      if (switchingDeck) {
+        switchingDeck = false;
+        connect();
+        return;
+      }
+      setDeckStatus('...');
+      setTimeout(connect, 2000);
+    };
+
+    ws.onerror = function () {};
+
+    ws.onmessage = function (event) {
+      var msg;
+      try { msg = JSON.parse(event.data); } catch { return; }
+      if (msg.type === 'state') handleState(msg);
+    };
+  }
+
+  function updateClock() {
+    document.getElementById('clock').textContent =
+      new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+  function updateElapsed() {
+    var s = Math.floor((Date.now() - startTimestamp) / 1000);
+    var m = Math.floor(s / 60);
+    var sec = s % 60;
+    if (m >= 60) {
+      var h = Math.floor(m / 60);
+      m = m % 60;
+      document.getElementById('elapsed').textContent =
+        h + ':' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+    } else {
+      document.getElementById('elapsed').textContent =
+        String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+    }
+  }
+  setInterval(function () { updateClock(); updateElapsed(); }, 1000);
+  updateClock(); updateElapsed();
+
+  // Swipe gestures
+  var tx = 0, ty = 0, tt = 0;
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+    tx = e.touches[0].clientX; ty = e.touches[0].clientY; tt = Date.now();
+  }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (e.changedTouches.length !== 1) return;
+    var dx = e.changedTouches[0].clientX - tx;
+    var dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - tt < 500) {
+      sendNav(dx < 0 ? 'right' : 'left');
+    }
+  }, { passive: true });
+
+  loadDeckList();
+  connect();
+})();
+</script>
+</body>
+</html>
