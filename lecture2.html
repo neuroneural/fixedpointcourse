@@ -22,7 +22,7 @@
 
   <link rel="stylesheet" href="dist/reset.css">
   <link rel="stylesheet" href="dist/reveal.css">
-  <link rel="stylesheet" href="plugin/highlight/atom-one-light.css" id="highlight-theme">
+  <link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
   <link rel="stylesheet" href="css/custom.css">
   <link rel="stylesheet" href="dist/theme/aml.css" id="theme">
   <style>
@@ -779,7 +779,7 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
           </aside>
         </section>
 
-        <section>
+        <section data-slide-scale="0.9">
           <h2 style="margin-top: -30px;">Combine the Pieces</h2>
           <div style="font-size: 30px; line-height: 1.5; text-align: left;">
             <div class="fragment roll-in">Start from the equilibrium identity: \(\Psi(\vec{w}_F,\vec{h}^{\,*})=\vec{0}\).</div>
@@ -837,7 +837,7 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
           </aside>
         </section>
 
-        <section>
+        <section data-slide-scale="0.74">
           <h2>Gradients at Equilibrium</h2>
           <div style="font-size: 29px; line-height: 1.5; text-align: left;">
             <div class="fragment roll-in">Readout parameters use standard backprop:</div>
@@ -872,9 +872,9 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
               \right)^{\!\top}
               \]
             </div>
-            <div class="slide-footer fragment roll-in" style="text-align: left; font-size: 10px; margin-bottom: -50px; line-height: 1.2; color: #657b83;">
+            <div class="slide-footer fragment roll-in" style="text-align: left; font-size: 12px; margin-bottom: -0px; line-height: 1.2; color: #657b83;">
               <a href="https://scholar.google.com/scholar?q=Generalization+of+back+propagation+to+recurrent+and+higher+order+neural+networks" target="_blank">Pineda, F. (1987). Generalization of Back-Propagation to Recurrent and Higher Order Neural Networks. NIPS.</a><br>
-              <a href="https://scholar.google.com/scholar?q=A+learning+rule+for+asynchronous+perceptrons+with+feedback+in+a+combinatorial+environment" target="_blank">Almeida, L. B. (1990). A Learning Rule for Asynchronous Perceptrons with Feedback in a Combinatorial Environment.</a>
+              <a href="https://scholar.google.com/scholar?q=Almeida+Learning+Rule+for+Asynchronous+Perceptrons+with+Feedback+in+a+Combinatorial+Environment+1987+IEEE+First+Annual+International+Conference+on+Neural+Networks" target="_blank">Almeida, L. B. (1987). A Learning Rule for Asynchronous Perceptrons with Feedback in a Combinatorial Environment. Proceedings of the 1987 IEEE First Annual International Conference on Neural Networks.</a>
             </div>
           </div>
           <aside class="notes">
@@ -940,24 +940,260 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
         </section>
 
         <section>
-          <h2>RBP: Putting It Together</h2>
-          <div style="width: 100%; margin-top: 8px; background: #eee8d5; border: 1px solid #d8cfb5; border-radius: 10px; padding: 14px 20px 16px; box-sizing: border-box; text-align: left;">
-            <div style="font-size: 19px; color: #657b83; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px;">Algorithm 1 · Original RBP</div>
-            <div style="font-size: 28px; line-height: 1.45;">
-              <div class="fragment roll-in"><strong>Input:</strong> $\vec{x}$, $\vec{w}_F$, $\vec{w}_G$, tolerance $\epsilon$, max iterations $K$.</div>
-              <div class="fragment roll-in"><strong>1.</strong> Forward fixed-point solve: iterate $\vec{h}^{t+1}=F(\vec{x},\vec{w}_F,\vec{h}^{t})$ to convergence, get $\vec{h}^{\,*}$.</div>
-              <div class="fragment roll-in"><strong>2.</strong> Compute readout and loss: $\vec{y}=G(\vec{x},\vec{w}_G,\vec{h}^{\,*})$, then $L=L(\vec{y})$.</div>
-              <div class="fragment roll-in"><strong>3.</strong> Set $\vec{g}=\left(\frac{\partial L}{\partial \vec{y}}\frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}\right)^{\!\top}$ and initialize $\vec{z}_0$ (e.g., zeros).</div>
-              <div class="fragment roll-in"><strong>4.</strong> For $i=1,\dots,K$: $\vec{z}_i \leftarrow J_{F,\vec{h}^{\,*}}^{\top}\vec{z}_{i-1}+\vec{g}$.</div>
-              <div class="fragment roll-in"><strong>5.</strong> Stop early if $\|\vec{z}_i-\vec{z}_{i-1}\|&lt;\epsilon$.</div>
-              <div class="fragment roll-in"><strong>6.</strong> Return recurrent gradient: $\frac{\partial L}{\partial \vec{w}_F}=\vec{z}_i^{\top}\frac{\partial F(\vec{x},\vec{w}_F,\vec{h}^{\,*})}{\partial \vec{w}_F}$.</div>
+          <h2 style="margin-top: -20px;">RBP: Putting It Together</h2>
+          <pre class="python" style="width: 100%; font-size: 15pt; margin-top: -20px;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|4-6|8-9|11-16|18-19|20">
+# Algorithm 1: Original RBP
+Input: x, w_F, w_G, ε, K
+
+h* = fixed_point_solve(F, x, w_F)
+y = G(x, w_G, h*)
+L = loss(y)
+
+g = (∂L/∂y · ∂y/∂h*)ᵀ                      # adjoint seed
+z = 0
+
+for i in 1..K:
+    z_next = Jᵀ_F|_{h*} @ z + g              # ← AD: VJP
+    if ‖z_next − z‖ < ε:
+        z = z_next
+        break
+    z = z_next
+
+# z is the converged adjoint: z* = ∂L/∂h*
+∂L/∂w_F = zᵀ @ ∂F/∂w_F(x, w_F, h*)          # ← AD: VJP
+return ∂L/∂w_F
+# optional: return ∂L/∂w_F, z
+          </code></pre>
+          <aside class="notes">
+            <p><strong>Narrative order:</strong> forward equilibrium solve; readout/loss; define adjoint seed $g$; iterate the adjoint fixed-point map; then compute $\partial L/\partial \vec{w}_F$.</p>
+            <p><strong>Do not forget:</strong> the converged $\vec{z}$ is itself the upstream adjoint at equilibrium, i.e., $\vec{z}^{\,*}=\partial L/\partial \vec{h}^{\,*}$ (column-vector convention).</p>
+            <p><strong>Key intuition:</strong> RBP computes "gradient w.r.t. state" first (via fixed-point solve), then maps that adjoint to parameter gradient with one final vector-Jacobian product.</p>
+            <p><strong>Implementation note:</strong> in practice you may return both outputs: $\partial L/\partial \vec{w}_F$ and $\vec{z}^{\,*}$ for upstream chaining/diagnostics.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>When RBP Works (and Fails)</h2>
+          <div style="font-size: 26px; line-height: 1.42; text-align: left; margin-top: -8px; max-width: 100%;">
+            <div class="fragment roll-in"><strong>Assumption 1 (regularity):</strong> $\Psi(\vec{w}_F,\vec{h})=\vec{h}-F(\vec{x},\vec{w}_F,\vec{h})$ is continuously differentiable near $\vec{h}^{\,*}$.</div>
+            <div class="fragment roll-in" style="margin-top: 6px;"><strong>Assumption 2 (invertibility):</strong> $I-J_{F,\vec{h}^{\,*}}$ is invertible at the fixed point.</div>
+            <div class="fragment roll-in" style="margin-top: 8px; text-align: center;">
+              \[
+              \|J_{F,\vec{h}^{\,*}}\|_2 < 1
+              \quad\Rightarrow\quad
+              F \text{ is locally contractive}
+              \Rightarrow\quad
+              I-J_{F,\vec{h}^{\,*}} \text{ is invertible.}
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 6px;"><strong>Tie-back to Babylonian $\sqrt{a}$:</strong> in 1D we used $|g'(r)|&lt;1$ for local attraction; this is the same idea with $|g'|$ replaced by $\|J\|$.</div>
+            <div class="fragment roll-in" style="margin-top: 6px; color: #2aa198;"><strong>Key takeaway:</strong> under the same local-contraction assumptions, if the forward fixed-point iteration converges, the reverse (adjoint) fixed-point iteration converges too.</div>
+            <div class="fragment roll-in" style="margin-top: 6px;"><strong>Practical behavior:</strong> if $\rho(J)\ll 1$, adjoint iteration converges fast; if $\rho(J)\approx 1$, it is slow/ill-conditioned; if $\rho(J)&gt;1$, forward and backward fixed-point iterations can fail.</div>
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -20px; line-height: 1.2;">
+            <a href="https://scholar.google.com/scholar?q=Scarselli+The+Graph+Neural+Network+Model+2009" target="_blank">Scarselli et al. (2009). The Graph Neural Network Model. IEEE Transactions on Neural Networks.</a><br>
+            <a href="https://scholar.google.com/scholar?q=Cho+Bengio+On+the+properties+of+neural+machine+translation+encoder+decoder+approaches+2014" target="_blank">Cho et al. (2014). On the Properties of Neural Machine Translation: Encoder-Decoder Approaches.</a>
+          </div>
+          <aside class="notes">
+            <p>This is the "why assumptions matter" slide: RBP is not magic, it depends on local dynamics around the equilibrium.</p>
+            <p>Connect directly to the earlier sqrt story: scalar condition $|g'(r)|&lt;1$ becomes Jacobian/operator-norm condition in vectors.</p>
+            <p>State the central message explicitly: same stability condition governs both forward state solve and backward adjoint solve.</p>
+            <p>Stress that contraction is sufficient (not necessary), but it gives both existence/uniqueness intuition and stable adjoint solves.</p>
+            <p>Explain failure modes explicitly: near-unit Jacobian gives very slow convergence; greater than one causes divergence/instability.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2 style="margin-top: -50px;">Neumann-RBP</h2>
+          <div style="font-size: 27px; line-height: 1.5; text-align: left; margin-top: 4px;">
+            <div class="fragment roll-in">Start from the same adjoint expression:
+              \[
+              \vec{z}^{\,*}=\left(I-J^\top\right)^{-1}\vec{g},\qquad
+              \vec{g}=\left(\frac{\partial L}{\partial \vec{y}}\frac{\partial \vec{y}}{\partial \vec{h}^{\,*}}\right)^\top
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 6px; text-align: center;">
+              \[
+              (I-A)^{-1}=\sum_{k=0}^{\infty}A^k\quad\Rightarrow\quad
+              \left(I-J^\top\right)^{-1}=\sum_{k=0}^{\infty}(J^\top)^k
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 6px;">Approximate with a truncated series:
+              $\quad
+              \vec{z}_K = \sum_{k=0}^{K}(J^\top)^k\vec{g}
+              $
+            </div>
+            <div class="fragment roll-in" style="margin-top: 6px;"><strong>Computation pattern:</strong> only repeated Jacobian-transpose-vector products $J^\top\vec{v}$.</div>
+            <div class="fragment roll-in" style="margin-top: 6px;"><strong>Practical tradeoff:</strong> choose truncation depth $K$ to set a predictable compute budget; larger $K$ reduces approximation error.</div>
+            <div class="fragment roll-in" style="margin-top: 6px; text-align: center;">
+              \[
+              \left\|\vec{z}^{\,*}-\vec{z}_K\right\|
+              \le
+              \left\|(I-J^\top)^{-1}\right\|\,\left\|J\right\|^{K+1}\,\left\|\vec{g}\right\|
+              \quad (\|J\|<1)
+              \]
             </div>
           </div>
           <aside class="notes">
-            This slide compresses the full RBP workflow into one algorithmic view.
-            Step 1: find the equilibrium state with the forward dynamics.
-            Steps 3-5: solve the adjoint fixed point with repeated Jacobian-transpose-vector products.
-            Step 6: convert adjoint into the gradient with respect to recurrent parameters.
+            Explain Neumann as a geometric series for matrices, not a different objective.
+            Motivation should be practical and precise: we cannot form full Jacobians efficiently, but we can compute J^T v products with reverse-mode AD.
+            Mention memory angle: only the equilibrium state h* is needed here; no need to store a full unrolled state history.
+            Tie-back: same stability story as Babylonian/fixed-point iteration - when local gain is small, truncated corrections decay quickly.
+            If full Neumann series converges, this recovers full RBP/BPTT; K-step truncation connects to TBPTT-style finite-depth approximation.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Neumann-RBP Pseudocode</h2>
+          <pre class="python" style="width: 100%; font-size: 15pt;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|4-6|8-10|12-14|16-17">
+# Algorithm 2: Neumann-RBP (K-term)
+Input: x, w_F, w_G, K
+
+h* = fixed_point_solve(F, x, w_F)
+y = G(x, w_G, h*)
+L = loss(y)
+
+g = (∂L/∂y · ∂y/∂h*)ᵀ                      # adjoint seed
+z = g
+v = g
+
+for k in 1..K:
+    v = Jᵀ_F|_{h*} @ v                       # ← AD: VJP
+    z = z + v
+
+∂L/∂w_F = zᵀ @ ∂F/∂w_F(x, w_F, h*)          # ← AD: VJP
+return ∂L/∂w_F
+          </code></pre>
+          <aside class="notes">
+            Point out that this is just accumulating powers of J^T applied to g.
+            v tracks the current power term, z accumulates the partial sum.
+            K is now the approximation knob: larger K, better approximation, more cost.
+          </aside>
+        </section>
+
+        <section>
+          <h2>RBP vs Neumann-RBP</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 8px; text-align: left;">
+            <div style="background: #eee8d5; border: 1px solid #d8cfb5; border-radius: 8px; padding: 10px 14px;">
+              <div style="font-size: 24px; font-weight: 700; margin-bottom: 6px;">Original RBP</div>
+              <div style="font-size: 23px; line-height: 1.45;">
+                <div class="fragment roll-in">Solve $(I-J^\top)\vec{z}=\vec{g}$ by fixed-point iteration.</div>
+                <div class="fragment roll-in">Stopping is residual-based: $\|\vec{z}_{i}-\vec{z}_{i-1}\|&lt;\epsilon$.</div>
+                <div class="fragment roll-in">Pros: targets exact adjoint as iteration converges.</div>
+                <div class="fragment roll-in">Cons: variable runtime; can stall near $\rho(J)\approx1$.</div>
+              </div>
+            </div>
+            <div style="background: #eee8d5; border: 1px solid #d8cfb5; border-radius: 8px; padding: 10px 14px;">
+              <div style="font-size: 24px; font-weight: 700; margin-bottom: 6px;">Neumann-RBP</div>
+              <div style="font-size: 23px; line-height: 1.45;">
+                <div class="fragment roll-in">Approximate $\vec{z}$ with $\sum_{k=0}^{K}(J^\top)^k\vec{g}$.</div>
+                <div class="fragment roll-in">Stopping is budget-based: choose truncation depth $K$.</div>
+                <div class="fragment roll-in">Pros: simple K-step loop, predictable runtime/memory.</div>
+                <div class="fragment roll-in">Cons: truncation bias if $K$ is too small.</div>
+              </div>
+            </div>
+          </div>
+          <div class="fragment roll-in" style="font-size: 24px; margin-top: 12px; text-align: left; color: #2aa198;">
+            Both use the same equilibrium gradient formula; they differ only in <strong>how we solve/approximate</strong> the adjoint.
+          </div>
+          <aside class="notes">
+            This comparison helps students see solver choices, not method changes.
+            Connect Neumann truncation to TBPTT intuition: finite-depth approximation to an infinite dependency chain.
+            Practical advice: start with Neumann for predictable cost, use original RBP when you need tighter adjoint accuracy.
+          </aside>
+        </section>
+
+        <section data-slide-scale="0.74">
+          <h2>CG-RBP (briefly)</h2>
+          <div style="font-size: 26px; line-height: 1.42; text-align: left; margin-top: 2px;">
+            <div class="fragment roll-in">Start from the same adjoint system:
+              \[
+              (I-J^\top)\vec{z}=\vec{g}
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 6px;">For general RNNs, $J$ is typically nonsymmetric, so plain CG does not apply directly.</div>
+            <div class="fragment roll-in" style="margin-top: 6px;">Use <strong>CG on normal equations (CGNE)</strong>:
+              \[
+              (I-J)(I-J^\top)\vec{z}=(I-J)\vec{g}
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 6px; text-align: center; font-size: 0.94em;">
+              \[
+              \vec{z}_k=\arg\min_{\vec{z}\in \vec{z}_0+\mathcal{K}_k(A,\vec{r}_0)}
+              \frac12\vec{z}^\top A\vec{z}-\vec{b}^\top\vec{z},
+              \quad A=(I-J)(I-J^\top),\;\vec{b}=(I-J)\vec{g}
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 6px; text-align: center; font-size: 0.92em; color: #657b83;">
+              \[
+              \|\vec{e}_k\|_{A}\le 2\left(\frac{\sqrt{\kappa(A)}-1}{\sqrt{\kappa(A)}+1}\right)^k\|\vec{e}_0\|_{A}
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 6px;">Each iteration uses Jacobian-vector products and transpose-Jacobian-vector products (matrix-free AD primitives).</div>
+            <div class="fragment roll-in" style="margin-top: 6px;"><strong>Tradeoff:</strong> often robust in practice, but conditioning can worsen (normal equations square condition number).</div>
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -16px; line-height: 1.2;">
+            <a href="https://scholar.google.com/scholar?q=Methods+of+Conjugate+Gradients+for+Solving+Linear+Systems+Hestenes+Stiefel+1952" target="_blank">Hestenes and Stiefel (1952). Methods of Conjugate Gradients for Solving Linear Systems.</a><br>
+            <a href="https://scholar.google.com/scholar?q=Matrix+Computations+Golub+Van+Loan" target="_blank">Golub and Van Loan. Matrix Computations (CGNE reference).</a>
+          </div>
+          <aside class="notes">
+            Keep this one short: CG-RBP is the third solver option for the same adjoint equation.
+            Main distinction from Neumann: Krylov subspace solve vs truncated power series.
+            Mention why no explicit Jacobian is needed: only Jv and J^T v products.
+            Caveat to remember: normal equations can be slower when conditioning is poor.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Hopfield Associative Memory</h2>
+          <div style="font-size: 24px; line-height: 1.4; text-align: left; margin-top: 2px;">
+            <div class="fragment roll-in">Energy function: $E(\vec{x})=-\frac12\vec{x}^\top W\vec{x}+\sum_i\int_0^{x_i}\sigma^{-1}(s)\,ds-\vec{b}^\top\vec{x}$</div>
+            <div class="fragment roll-in" style="margin-top: 4px;">Dynamics minimize $E$: $\frac{d\vec{x}}{dt}=-\nabla_{\vec{x}}E \;\Longrightarrow\; \vec{x}^{\,*}=\sigma(W\vec{x}^{\,*}+\vec{b})$</div>
+            <div class="fragment roll-in" style="margin-top: 4px;">Stored patterns are <strong>local minima</strong> of $E$; iteration converges to nearest attractor.</div>
+          </div>
+          <img src="figures/loss_Hopfield.svg" alt="Hopfield loss landscape" style="border:0; box-shadow: none; width: 90%; margin-top: 4px;">
+          <aside class="notes">
+            This is a concrete, historical example of a fixed-point computation in neural networks.
+            The energy function defines a landscape; dynamics perform gradient descent on it.
+            Stored patterns become stable fixed points (attractors); convergence = associative recall.
+            The loss curves in the figure show how different initializations flow to different attractors.
+            This is the earliest implicit-layer-like architecture: fixed-depth is replaced by iterate-to-equilibrium.
+            This result comes from the same RBP paper lineage (Almeida-Pineda).
+          </aside>
+        </section>
+
+        <section>
+          <h2>Hopfield Memory</h2>
+          <h4>Pattern Reconstruction</h4>
+          <img src="figures/continuous_Hopfield.svg" alt="Continuous Hopfield reconstruction" style="border:0; box-shadow: none; width: 85%;">
+          <div style="font-size: 24px; color: #657b83; margin-top: 8px; text-align: left;">
+            Corrupted input $\to$ iterate to equilibrium $\to$ nearest stored pattern.
+          </div>
+          <aside class="notes">
+            Walk through the reconstruction visually: noisy/partial input on the left, clean attractor on the right.
+            Emphasize that no backprop through time is needed for inference; only for learning the weight matrix W.
+            This is pattern completion as fixed-point computation.
+          </aside>
+        </section>
+
+        <section data-slide-scale="0.8">
+          <h2>GNN Text Classification with RBP</h2>
+          <div style="font-size: 24px; line-height: 1.4; text-align: left; margin-top: 2px;">
+            <div class="fragment roll-in">Graph Neural Network: each node updates its state by aggregating neighbors until convergence:</div>
+            <div class="fragment roll-in" style="margin-top: 4px; text-align: center;">
+              $\vec{h}_v^{\,t+1}=f\!\left(\vec{x}_v,\,\vec{x}_{\mathcal{N}(v)},\,\vec{h}_v^{\,t},\,\vec{h}_{\mathcal{N}(v)}^{\,t}\right)$
+            </div>
+            <div class="fragment roll-in" style="margin-top: 4px;">Converged node states are classified; gradients via RBP flow through the fixed-point graph.</div>
+          </div>
+          <img src="figures/GNN_RBP.png" alt="GNN RBP loss curves" style="border:0; box-shadow: none; width: 100%; margin-top: 6px;">
+          <div class="slide-footer" style="text-align: left; font-size: 12px; margin-top: 4px; margin-bottom: -14px; line-height: 1.2;">
+            <a href="https://scholar.google.com/scholar?q=The+Graph+Neural+Network+Model+Scarselli+2009" target="_blank">Scarselli et al. (2009). The Graph Neural Network Model. IEEE Trans. Neural Networks.</a>
+          </div>
+          <aside class="notes">
+            GNN is the other classic RBP application: graph-structured data where each node iteratively refines its state by reading neighbor states.
+            Convergence = steady-state node representations; RBP provides gradients without unrolling the graph.
+            The loss curves show training convergence comparing RBP vs BPTT-style unrolling.
+            This is Scarselli et al. (2009) - the same paper cited on the "When RBP Works" slide.
           </aside>
         </section>
 
@@ -967,14 +1203,6 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
             <li class="fragment roll-in">Almeida and Pineda (1987): fixed-point gradients in recurrent nets.</li>
             <li class="fragment roll-in">Feynman (1939): early adjoint-style equilibrium sensitivity idea.</li>
             <li class="fragment roll-in">Liao et al. (2018): clean modern derivation and improvements.</li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>Variants (to Expand)</h2>
-          <ul style="font-size: 27px; line-height: 1.62;">
-            <li class="fragment roll-in"><strong>Neumann RBP:</strong> $(I - J_f^T)^{-1}=\sum_{k=0}^{\infty}(J_f^T)^k$.</li>
-            <li class="fragment roll-in"><strong>Krylov / CG style:</strong> solve linear system with matrix-free Jacobian-vector products.</li>
           </ul>
         </section>
 
@@ -993,34 +1221,757 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
       </section>
 
       <!-- ============================================================ -->
-      <!-- SECTION 4 – MODERN APPLICATIONS                              -->
+      <!-- SECTION 4 – MODERN APPLICATIONS (DEQ)                        -->
       <!-- ============================================================ -->
       <section>
+
+        <!-- Slide 1: Section Title -->
         <section>
           <h1>Modern Applications</h1>
+          <div style="font-size: 28px; font-style: italic; color: #657b83; margin-top: 18px;">
+            "Old math, new clothes."
+          </div>
         </section>
 
+        <!-- Slide 2: DEQ Is RBP — The Core Equation -->
+        <section data-vertical-align-top data-slide-scale="1.1">
+          <h2>DEQ Is RBP</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 8px; text-align: left;">
+            <div style="background: #eee8d5; border: 1px solid #d8cfb5; border-radius: 8px; padding: 10px 14px;">
+              <div style="font-size: 24px; font-weight: 700; margin-bottom: 6px;">RBP Family (1987–present)</div>
+              <div style="font-size: 23px; line-height: 1.45;">
+                <div class="fragment roll-in" data-fragment-index="1">
+                  <strong>Fixed point:</strong> $\vec{h}^{\,*} = F(\vec{x}, \vec{w}, \vec{h}^{\,*})$
+                </div>
+                <div class="fragment roll-in" data-fragment-index="3" style="margin-top: 6px;">
+                  <strong>Forward:</strong> iterate $F$ or any solver to find $\vec{h}^{\,*}$.
+                </div>
+                <div class="fragment roll-in" data-fragment-index="5" style="margin-top: 6px;">
+                  <strong>Backward:</strong> solve $(I - J^\top)\vec{z} = \vec{g}$.
+                </div>
+              </div>
+            </div>
+            <div style="background: #eee8d5; border: 1px solid #d8cfb5; border-radius: 8px; padding: 10px 14px;">
+              <div style="font-size: 24px; font-weight: 700; margin-bottom: 6px;">DEQ (2019)</div>
+              <div style="font-size: 23px; line-height: 1.45;">
+                <div class="fragment roll-in" data-fragment-index="2">
+                  <strong>Fixed point:</strong> $\vec{z}^{\,*} = f_\theta(\vec{z}^{\,*}, \vec{x})$
+                </div>
+                <div class="fragment roll-in" data-fragment-index="4" style="margin-top: 6px;">
+                  <strong>Forward:</strong> root-find $g_\theta(\vec{z}^{\,*}) = f_\theta(\vec{z}^{\,*}, \vec{x}) - \vec{z}^{\,*} = 0$.
+                </div>
+                <div class="fragment roll-in" data-fragment-index="6" style="margin-top: 6px;">
+                  <strong>Backward:</strong> solve $(J_{g_\theta}^\top)\vec{x}^\top + \frac{\partial \ell}{\partial \vec{z}^{\,*}} = 0$.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="fragment roll-in" data-fragment-index="7" style="font-size: 23px; margin-top: 12px; text-align: center; color: #2aa198; font-weight: 700;">
+            Same structure. The variable names differ. The math does not.
+          </div>
+          <div class="fragment roll-in" data-fragment-index="8" style="font-size: 21px; margin-top: 10px; text-align: left; line-height: 1.3;">
+            The adjoint system is the same. We already covered three solvers for it:
+            <ul style="margin-top: 4px; margin-bottom: 0;">
+              <li class="fragment roll-in" data-fragment-index="9">fixed-point iteration (RBP)</li>
+              <li class="fragment roll-in" data-fragment-index="10">truncated Neumann series (Neumann-RBP)</li>
+              <li class="fragment roll-in" data-fragment-index="11">conjugate gradients (CG-RBP)</li>
+            </ul>
+            <div class="fragment roll-in" data-fragment-index="12" style="margin-top: 6px;">
+              DEQ's <strong>Broyden solver</strong> is a fourth option for the same equation.
+            </div>
+          </div>
+          <div class="fragment roll-in" data-fragment-index="13" style="font-size: 18px; color: #93a1a1; margin-top: 8px; text-align: left;">
+            We could have written Theorem 1 of Bai et al. (2019) in 1987. The notation is different. The content is not.
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -16px; line-height: 1.2;">
+            <a href="https://arxiv.org/abs/1909.01377" target="_blank">Bai S, Kolter JZ, Koltun V. Deep equilibrium models. Advances in neural information processing systems. 2019;32.</a>
+          </div>
+          <aside class="notes">
+            Hammer home: DEQ and RBP are the same fixed-point equation and the same adjoint linear system.
+            Broyden is the fourth solver, not the first. Students already know three.
+          </aside>
+        </section>
+
+        <!-- Slide 3: Different Wrapping, Same Gift -->
         <section>
-          <h2>Same Core Idea, New Packaging</h2>
-          <ul style="font-size: 28px; line-height: 1.65;">
-            <li class="fragment roll-in"><strong>DEQ:</strong> prediction as fixed point, gradients by implicit differentiation.</li>
-            <li class="fragment roll-in"><strong>Phantom gradients:</strong> truncated Neumann-style approximation.</li>
-            <li class="fragment roll-in"><strong>NODE:</strong> continuous-depth limit with adjoint-based sensitivity.</li>
-          </ul>
+          <h2>Different Wrapping, Same Gift</h2>
+          <div style="font-size: 26px; line-height: 1.55; text-align: left; margin-top: 4px;">
+            <div class="fragment roll-in">
+              <strong>DEQ's story:</strong> Weight-tied deep feedforward networks. Stack the same layer $L$ times.
+              As $L \to \infty$, hidden states converge to an equilibrium. Find that equilibrium directly.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 10px;">
+              <strong>RBP's story:</strong> Recurrent network runs until its state settles.
+              Differentiate through the settled state, not through the trajectory.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 10px;">
+              <strong>The bridge:</strong> Write the DEQ iteration:
+              $\vec{z}^{[i+1]} = f_\theta(\vec{z}^{[i]}, \vec{x})$.
+              Write the RNN at convergence:
+              $\vec{h}^{t+1} = F(\vec{x}, \vec{w}, \vec{h}^t)$.
+              Replace "layer index" with "time step." The equations are identical.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 14px; color: #2aa198; font-weight: 700; text-align: center;">
+              Depth-as-iteration and time-as-iteration give the same fixed-point problem.<br>
+              The method to solve it and differentiate through it is the same.
+            </div>
+          </div>
+          <aside class="notes">
+            This slide reconciles two narratives that look different but express the same mathematics.
+            Layer index vs. time step is a labeling convention, not a structural difference.
+          </aside>
         </section>
 
+        <!-- Slide 4: What DEQ Chose — Solver Choices -->
+        <section>
+          <h2>DEQ: Black-Box Root Finding</h2>
+          <div style="font-size: 28px; line-height: 1.65; text-align: left; margin-top: 12px;">
+            <div class="fragment roll-in">
+              Solvers we already know: <strong>RBP · Neumann · CG</strong>
+            </div>
+            <div class="fragment roll-in" style="margin-top: 14px;">
+              DEQ adds a fourth: <strong>Broyden's method</strong> — superlinear convergence, no full Jacobian.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 14px;">
+              The solver doesn't change the gradient. Any path to $\vec{z}^{\,*}$ gives the same answer.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 14px;">
+              <strong>Caveat:</strong> Broyden is sequential — it does not parallelize on GPU.
+              For contractive maps, RBP's simple iteration is much faster in practice.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 20px; color: #2aa198; font-weight: 700; font-size: 30px; text-align: center;">
+              Same math. Different solver. Know the tradeoff.
+            </div>
+          </div>
+          <aside class="notes">
+            <p>We have already covered three backward solvers for the adjoint system:
+            fixed-point iteration (RBP), Neumann series truncation (Neumann-RBP),
+            and conjugate gradients on normal equations (CG-RBP).</p>
+            <p>DEQ defaults to Broyden's method (a quasi-Newton root finder) for both
+            forward and backward passes. Broyden is the fourth solver we meet for the
+            same linear system. Its advantage on paper: superlinear convergence without
+            forming the full Jacobian.</p>
+            <p>However, Broyden is inherently sequential — rank-1 updates do not
+            parallelize well on GPU. For contractive maps where the spectral radius
+            is well below 1, plain fixed-point iteration (RBP) converges fast and
+            maps perfectly onto GPU hardware. In practice DEQ's solver is often
+            much slower than RBP despite fewer iterations.</p>
+            <p><strong>Computational reality:</strong> if your hidden state is e.g. 10,000 units,
+            standard Broyden's B matrix is 100 million parameters (N²). Neumann and CG
+            stay O(N) — they only need matrix-vector products. Limited-memory Broyden
+            stores a handful of vectors instead of the full B, bringing cost back toward
+            O(N). For large-scale problems (e.g. neuroimaging), CG or Neumann are the
+            practical choices.</p>
+            <p><strong>Summary:</strong> Neumann is a "dumb" series expansion that works
+            if the Jacobian is well-behaved (spectral radius below 1). Broyden is a
+            "smart" iterative solver that builds a local model of the Jacobian inverse,
+            making it more robust for complex nonlinear dynamics where the Neumann series
+            might diverge. The tradeoff is compute cost and GPU-friendliness.</p>
+            <p>The gradient itself does not depend on which solver found z*.
+            Theorem 1 in the DEQ paper follows from the same implicit function
+            theorem we already derived.</p>
+          </aside>
+        </section>
+
+        <!-- Slide 5: Broyden's Method — Intuition -->
+        <section data-slide-scale="0.8">
+          <h2>Broyden's Method (Intuition)</h2>
+          <div style="font-size: 25px; line-height: 1.5; text-align: left; margin-top: 4px;">
+            <div class="fragment roll-in">
+              <strong>Newton's method</strong> for $g(\vec{z}) = 0$:
+              \[
+              \vec{z}^{[i+1]} = \vec{z}^{[i]} - J_g^{-1}\, g(\vec{z}^{[i]})
+              \]
+              Fast, but the Jacobian $J_g$ is expensive to compute at each step.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 8px;">
+              <strong>Broyden's idea:</strong> start with a rough estimate $B^{[0]} \approx J_g^{-1}$.
+              After each step, update $B$ with a cheap <strong>rank-1 correction</strong> using only the new function value and the new step:
+              \[
+              B^{[i+1]} = B^{[i]} + \frac{(\Delta \vec{z}^{[i]} - B^{[i]}\Delta g^{[i]})(\Delta \vec{z}^{[i]})^\top}{(\Delta \vec{z}^{[i]})^\top \Delta \vec{z}^{[i]}}
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 8px;">
+              <strong>Cost per step:</strong> one function evaluation + one rank-1 update. No full Jacobian needed.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 8px;">
+              <strong>Convergence:</strong> superlinear — faster than plain fixed-point iteration, slower than full Newton per step, but much cheaper per step.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 10px; background: #eee8d5; border-radius: 6px; padding: 8px 12px; font-size: 23px;">
+              <strong>Where does Broyden sit?</strong> Neumann-RBP is a truncated power series. CG-RBP minimizes over a Krylov subspace.
+              Broyden builds a rank-1-updated approximate inverse. All three avoid the full Jacobian. All three solve the same system.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 10px; font-size: 18px; color: #93a1a1; line-height: 1.45;">
+              Scaling: Neumann/CG stay $O(N)$ per step. Standard Broyden maintains an $N\!\times\!N$ inverse approximation — $O(N^2)$.
+              Limited-memory Broyden stores only a few vectors, bringing cost back toward $O(N)$.
+            </div>
+          </div>
+          <aside class="notes">
+            <p>Broyden is the Sherman-Morrison update applied to quasi-Newton root finding.
+            Stitch it into the solver family: Neumann = power series, CG = Krylov, Broyden = rank-1 inverse approx.</p>
+            <p><strong>Computational reality:</strong> if your hidden state is e.g. 10,000 units,
+            standard Broyden's B matrix is 100 million parameters (N²). Neumann and CG
+            stay O(N) — they only need matrix-vector products. Limited-memory Broyden
+            stores a handful of vectors instead of the full B, bringing cost back toward
+            O(N). For large-scale problems (e.g. neuroimaging), CG or Neumann are the
+            practical choices.</p>
+            <p><strong>Summary:</strong> Neumann is a "dumb" series expansion that works
+            if the Jacobian is well-behaved (spectral radius below 1). Broyden is a
+            "smart" iterative solver that builds a local model of the Jacobian inverse,
+            making it more robust for complex nonlinear dynamics where the Neumann series
+            might diverge. The tradeoff is compute cost and GPU-friendliness.</p>
+          </aside>
+        </section>
+
+        <!-- Slide 6: DEQ Algorithm — Pseudocode -->
+        <section>
+          <h2 style="margin-top: -20px;">DEQ Algorithm</h2>
+          <pre class="python" style="width: 100%; font-size: 15pt; margin-top: -20px;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|3-5|7-9|11-13">
+# DEQ Forward + Backward
+Input: x, θ, ε_fwd, ε_bwd
+
+# ─── Forward ───
+z* = RootFind(g_θ, x, ε_fwd)             # g_θ(z) = f_θ(z, x) − z
+y = h(z*)                                 # readout
+L = loss(y, target)
+
+# ─── Backward (implicit) ───
+# Solve: Jᵀ_gθ|_{z*} p + (∂L/∂z*)ᵀ = 0
+p = LinearSolve(Jᵀ_gθ|_{z*}, −∂L/∂z*, ε_bwd)   # e.g., Broyden
+∂L/∂θ = p @ ∂f_θ/∂θ(z*, x)                      # ← AD: VJP
+return ∂L/∂θ
+          </code></pre>
+          <div style="font-size: 20px; color: #657b83; margin-top: 8px; text-align: left; line-height: 1.5;">
+            <strong>RootFind</strong> and <strong>LinearSolve</strong> can be any black-box solver.
+            We already know three that work for the backward pass: fixed-point iteration, Neumann truncation, CG on normal equations.
+            Broyden and Anderson acceleration are two more. The gradient is the same in all cases.
+          </div>
+          <aside class="notes">
+            This pseudocode exactly parallels the RBP Algorithm 1 the students already know.
+            Emphasize: the only structural difference is the solver choice in both passes.
+          </aside>
+        </section>
+
+        <!-- Slide 7: Constant Memory — The Practical Win -->
+        <section>
+          <h2>Constant Memory, Any "Depth"</h2>
+          <div style="font-size: 60px; font-weight: 700; color: #2aa198; text-align: center; margin: 24px 0;">
+            $O(1)$ memory in effective depth
+          </div>
+          <div style="font-size: 22px; color: #93a1a1; text-align: center; margin-bottom: 18px;">
+            a property of implicit differentiation since Almeida-Pineda (1987)
+          </div>
+          <ul style="font-size: 26px; line-height: 1.65; text-align: left;">
+            <li class="fragment roll-in">A network unrolled for $L$ steps stores $L$ hidden states for backprop. Memory grows with depth.</li>
+            <li class="fragment roll-in">Any fixed-point method — RBP, Neumann-RBP, CG-RBP, DEQ — stores only $\vec{z}^{\,*}$ plus input. Memory is <strong>constant</strong> in effective depth.</li>
+            <li class="fragment roll-in">Gradient checkpointing: $O(\sqrt{L})$. Reversible nets: $O(1)$ but constrain architecture. Implicit differentiation: $O(1)$ with no architecture constraint.</li>
+            <li class="fragment roll-in">DEQ's contribution: demonstrating this at modern scale (up to 88% reduction vs. equivalent deep networks, Bai et al. 2019, Table 3).</li>
+          </ul>
+          <aside class="notes">
+            The constant-memory property is NOT a DEQ invention. It is inherent to every method that differentiates through an equilibrium rather than through the trajectory: Almeida (1987), Pineda (1987), Liao et al. (2018), Scarselli et al. (2009), and finally DEQ (2019).
+            DEQ's contribution was packaging this old insight with modern solvers (Broyden) and modern architectures (Transformers, TrellisNets) and showing competitive results at scale.
+          </aside>
+        </section>
+
+        <!-- Slide 8: DEQ Results — WikiText-103 -->
+        <section data-slide-scale="0.8">
+          <h2>DEQ Results: WikiText-103</h2>
+          <div style="font-size: 22px; line-height: 1.4; text-align: left; margin-top: 4px;">
+            <div class="fragment roll-in">
+              <strong>Part A — Perplexity</strong> (from DEQ Tables 1–2):
+              <table style="width: 100%; font-size: 21px; margin-top: 6px; border-collapse: collapse;">
+                <thead>
+                  <tr style="border-bottom: 2px solid #93a1a1;">
+                    <th style="text-align: left; padding: 4px 8px;">Model</th>
+                    <th style="text-align: center; padding: 4px 8px;">Test Perplexity</th>
+                    <th style="text-align: center; padding: 4px 8px;">Memory</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px solid #d8cfb5;">
+                    <td style="padding: 4px 8px;">18-layer Transformer</td>
+                    <td style="text-align: center; padding: 4px 8px;">baseline</td>
+                    <td style="text-align: center; padding: 4px 8px;">baseline</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #d8cfb5; font-weight: 700;">
+                    <td style="padding: 4px 8px;">DEQ-Transformer</td>
+                    <td style="text-align: center; padding: 4px 8px;">matches or beats</td>
+                    <td style="text-align: center; padding: 4px 8px; color: #2aa198;">up to 88% less</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #d8cfb5;">
+                    <td style="padding: 4px 8px;">70-layer TrellisNet</td>
+                    <td style="text-align: center; padding: 4px 8px;">baseline</td>
+                    <td style="text-align: center; padding: 4px 8px;">baseline</td>
+                  </tr>
+                  <tr style="font-weight: 700;">
+                    <td style="padding: 4px 8px;">DEQ-TrellisNet</td>
+                    <td style="text-align: center; padding: 4px 8px;">matches or beats</td>
+                    <td style="text-align: center; padding: 4px 8px; color: #2aa198;">far less</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="fragment roll-in" style="margin-top: 14px;">
+              <strong>Part B — Runtime cost</strong> (from DEQ Table 4): DEQ is 2–3× slower in wall-clock time.
+              <table style="width: 100%; font-size: 21px; margin-top: 6px; border-collapse: collapse;">
+                <thead>
+                  <tr style="border-bottom: 2px solid #93a1a1;">
+                    <th style="text-align: left; padding: 4px 8px;">Comparison</th>
+                    <th style="text-align: center; padding: 4px 8px;">Training</th>
+                    <th style="text-align: center; padding: 4px 8px;">Inference</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px solid #d8cfb5;">
+                    <td style="padding: 4px 8px;">DEQ / 18-layer Transformer</td>
+                    <td style="text-align: center; padding: 4px 8px;">2.82×</td>
+                    <td style="text-align: center; padding: 4px 8px;">1.76×</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 8px;">DEQ / 70-layer TrellisNet</td>
+                    <td style="text-align: center; padding: 4px 8px;">2.40×</td>
+                    <td style="text-align: center; padding: 4px 8px;">1.64×</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="fragment roll-in" style="margin-top: 12px; color: #2aa198; font-weight: 700; text-align: center; font-size: 23px;">
+              DEQ trades time for memory. When memory is the bottleneck, that is a good trade.
+            </div>
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -16px; line-height: 1.2;">
+            <a href="https://scholar.google.com/scholar?q=Bai+Kolter+Koltun+Deep+Equilibrium+Models+NeurIPS+2019" target="_blank">Bai, Kolter, Koltun (2019). Deep Equilibrium Models. NeurIPS 2019.</a>
+          </div>
+          <aside class="notes">
+            Be honest about the runtime cost. DEQ is not free — it trades compute time for memory.
+            The perplexity numbers show the approach is competitive, not just a memory trick.
+          </aside>
+        </section>
+
+        <!-- Slide 9: Convergence Behavior -->
+        <section>
+          <h2>Convergence Dynamics</h2>
+          <img src="figures/DEQ_convergence.svg" alt="DEQ convergence dynamics — iteration count and stability" style="border:0; box-shadow: none; width: 85%; margin-top: 8px;">
+          <div class="fragment roll-in" style="margin-top: 10px; color: #2aa198; text-align: center; font-size: 23px;">
+            Broyden converges in tens of iterations. Plain fixed-point iteration can oscillate even when an equilibrium exists.
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -16px; line-height: 1.2;">
+            <a href="https://scholar.google.com/scholar?q=Bai+Kolter+Koltun+Deep+Equilibrium+Models+NeurIPS+2019" target="_blank">Bai, Kolter, Koltun (2019). Deep Equilibrium Models. NeurIPS 2019, Figure 2.</a>
+          </div>
+          <aside class="notes">
+            Left panel: Number of Broyden iterations per time step grows slowly with training epoch — the model learns representations that are slightly harder to solve over time.
+            Right panel: DEQ-Transformer finds the equilibrium stably (difference norm drops to 1e-4), while the weight-tied transformer oscillates.
+            Key takeaway: Broyden's superlinear convergence matters in practice.
+          </aside>
+        </section>
+
+        <!-- Slide 10: DEQ vs. RBP Family — Strengths and Weaknesses -->
+        <section data-slide-scale="1.0">
+          <h2>DEQ vs. the RBP Family</h2>
+          <table style="width: 100%; font-size: 20px; border-collapse: collapse; margin-top: 4px; text-align: left; line-height: 1.4;">
+            <thead>
+              <tr style="border-bottom: 2px solid #93a1a1;">
+                <th style="padding: 5px 8px; width: 18%;"></th>
+                <th style="padding: 5px 8px; width: 20%;">RBP</th>
+                <th style="padding: 5px 8px; width: 20%;">Neumann-RBP</th>
+                <th style="padding: 5px 8px; width: 20%;">CG-RBP</th>
+                <th style="padding: 5px 8px; width: 22%;">DEQ (Broyden)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
+                <td style="padding: 5px 8px; font-weight: 700;">Backward solver</td>
+                <td style="padding: 5px 8px;">Fixed-point iteration</td>
+                <td style="padding: 5px 8px;">Truncated Neumann series ($K$ terms)</td>
+                <td style="padding: 5px 8px;">CG on normal equations</td>
+                <td style="padding: 5px 8px;">Broyden quasi-Newton</td>
+              </tr>
+              <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
+                <td style="padding: 5px 8px; font-weight: 700;">Convergence</td>
+                <td style="padding: 5px 8px;">Linear (depends on $\rho(J)$)</td>
+                <td style="padding: 5px 8px;">Exact after $K$ terms if $\rho(J)&lt;1$</td>
+                <td style="padding: 5px 8px;">Depends on $\kappa$</td>
+                <td style="padding: 5px 8px;">Superlinear</td>
+              </tr>
+              <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
+                <td style="padding: 5px 8px; font-weight: 700;">Runtime</td>
+                <td style="padding: 5px 8px;">Variable</td>
+                <td style="padding: 5px 8px;">Fixed ($K$ steps)</td>
+                <td style="padding: 5px 8px;">Variable</td>
+                <td style="padding: 5px 8px;">Variable</td>
+              </tr>
+              <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
+                <td style="padding: 5px 8px; font-weight: 700;">Memory</td>
+                <td style="padding: 5px 8px;">$O(1)$</td>
+                <td style="padding: 5px 8px;">$O(1)$</td>
+                <td style="padding: 5px 8px;">$O(1)$</td>
+                <td style="padding: 5px 8px;">$O(1)$ + rank-1 history</td>
+              </tr>
+              <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
+                <td style="padding: 5px 8px; font-weight: 700;">Architecture</td>
+                <td style="padding: 5px 8px;">RNNs</td>
+                <td style="padding: 5px 8px;">RNNs</td>
+                <td style="padding: 5px 8px;">RNNs</td>
+                <td style="padding: 5px 8px;">Weight-tied feedforward (transformers, TCNs)</td>
+              </tr>
+              <tr class="fragment roll-in">
+                <td style="padding: 5px 8px; font-weight: 700;">Risk</td>
+                <td style="padding: 5px 8px;">Stalls near $\rho \approx 1$</td>
+                <td style="padding: 5px 8px;">Truncation bias</td>
+                <td style="padding: 5px 8px;">Condition squaring</td>
+                <td style="padding: 5px 8px;">2–3× wall-clock; growing iter. count</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="fragment roll-in" style="font-size: 22px; margin-top: 10px; text-align: center; color: #2aa198; font-weight: 700;">
+            Same adjoint equation. Four solvers. Pick the one that fits your budget.
+          </div>
+          <aside class="notes">
+            This is the expanded comparison table showing all four solvers side by side.
+            The key message: all four solve the same equation. They differ only in convergence properties and cost.
+          </aside>
+        </section>
+
+        <!-- Slide 11: Expressivity — Fixed-Point Models vs. Finite Networks -->
+        <section data-slide-scale="1.0">
+          <h2>How Powerful Is a Fixed Point?</h2>
+          <div style="font-size: 24px; line-height: 1.55; text-align: left; margin-top: 4px;">
+            <div class="fragment roll-in" style="margin-top: 10px;">
+              How does any model that iterates to a fixed point compare to a finite-depth feedforward network (FNN)?
+            </div>
+            <div class="fragment roll-in" style="margin-top: 10px; font-size: 21px; color: #657b83;">
+              Chen et al.&nbsp;study this question through DEQs, but the expressive advantage comes from the <strong>fixed-point loop itself</strong> — the same mechanism in RBP, Almeida-Pineda, and every implicit-depth model we have seen.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 10px;">
+              <strong>NeurIPS 2024 (Chen et al.) — Two separation results:</strong>
+              <ul style="margin-top: 6px; font-size: 23px; line-height: 1.5;">
+                <li style="margin-bottom: 6px;">There exist 1-D functions that a width-$m$ fixed-point model can represent, but any ReLU FNN of sub-linear depth $O(m^\alpha)$ needs <em>exponential width</em> to approximate.</li>
+                <li>There exist functions defined as solutions of fixed-point or optimization problems that fixed-point models approximate with polynomial width/weights, but any bounded-depth ReLU FNN needs <em>exponentially large weights</em>.</li>
+              </ul>
+            </div>
+            <div class="fragment roll-in" style="margin-top: 12px; background: #eee8d5; border-radius: 6px; padding: 8px 12px; font-size: 23px;">
+              <strong>Plain English:</strong> a fixed-point model can "think longer" on hard inputs. A fixed-depth network must pre-commit its capacity.
+              The iterative loop — whether called DEQ, RBP, or anything else — gives access to representations that finite networks cannot match cheaply.
+            </div>
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -16px; line-height: 1.2;">
+            <a href="https://scholar.google.com/scholar?q=Chen+Separation+Bias+Deep+Equilibrium+Models+Expressivity+Learning+Dynamics+NeurIPS+2024" target="_blank">Chen et al. (2024). Separation and Bias of Deep Equilibrium Models on Expressivity and Learning Dynamics. NeurIPS 2024.</a>
+          </div>
+          <aside class="notes">
+            Chen et al. frame their theorems around DEQs, but the proofs rely on the fixed-point
+            iteration reaching equilibrium — not on any DEQ-specific architecture detail.
+            Concretely: any model of the form z* = f(z*, x) that runs to convergence
+            (DEQ, RBP, Almeida-Pineda, GNN message-passing, etc.) can represent the
+            same class of functions these separation results describe.
+
+            The key mechanism is that the effective depth is not fixed at graph-construction
+            time — the model can iterate more on harder inputs. This is exactly the
+            "adaptive computation" idea that recurs throughout the course.
+
+            The "stacking DEQs" result from the original Bai et al. paper is a narrow
+            negative result and should not be confused with these broader separation theorems.
+          </aside>
+        </section>
+
+        <!-- Slide 12: The DEQ Family — Papers from This Group -->
+        <section data-slide-scale="0.8">
+          <h2>The DEQ Research Line</h2>
+          <div style="font-size: 22px; line-height: 1.5; text-align: left; margin-top: 4px;">
+            <div class="fragment roll-in" style="margin-bottom: 6px;">
+              <strong>1. DEQ</strong> (Bai, Kolter, Koltun, NeurIPS 2019) — The founding paper. Implicit-depth sequence models.
+            </div>
+            <div class="fragment roll-in" style="margin-bottom: 6px;">
+              <strong>2. Monotone Operator DEQ</strong> (Winston &amp; Kolter, ICML 2020) — Guaranteed existence and uniqueness via monotone operator theory.
+            </div>
+            <div class="fragment roll-in" style="margin-bottom: 6px;">
+              <strong>3. Multiscale DEQ (MDEQ)</strong> (Bai et al., NeurIPS 2020) — DEQ for vision tasks with multi-resolution equilibrium.
+            </div>
+            <div class="fragment roll-in" style="margin-bottom: 6px;">
+              <strong>4. Jacobian-Free Backprop for DEQ</strong> (Fung et al., 2022) — Avoid even the adjoint linear solve; use fixed-point iteration in the backward pass directly.
+            </div>
+            <div class="fragment roll-in" style="margin-bottom: 6px;">
+              <strong>5. DEQ-Flow</strong> (Bai et al., NeurIPS 2022) — Continuous normalizing flows as equilibrium models.
+            </div>
+            <div class="fragment roll-in" style="margin-bottom: 6px;">
+              <strong>6. Expressivity Separation</strong> (Chen et al., NeurIPS 2024) — Formal proof that fixed-point models (studied via DEQs) are more expressive than bounded-depth FNNs.
+            </div>
+            <div class="fragment roll-in" style="margin-bottom: 6px;">
+              <strong>7. TorchDEQ</strong> (Geng &amp; Kolter, 2023) — Library for easy DEQ training.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 8px; font-size: 19px; color: #93a1a1; line-height: 1.4;">
+              <em>Also related:</em> Phantom Gradients (Geng et al., NeurIPS 2021) is a truncated Neumann-style approximation — the same idea we covered as Neumann-RBP applied inside the DEQ setting.
+            </div>
+          </div>
+          <div class="fragment roll-in" style="font-size: 22px; margin-top: 8px; text-align: center; color: #2aa198; font-weight: 700;">
+            One idea (RBP / implicit differentiation), many applications.
+          </div>
+          <aside class="notes">
+            Map the DEQ literature for students. Phantom Gradients is demoted to a parenthetical
+            since students already know it as Neumann-RBP.
+          </aside>
+        </section>
+
+        
+        <!-- ============================================================ -->
+        <!-- NODE — Neural Ordinary Differential Equations                -->
+        <!-- ============================================================ -->
+
+        <!-- Slide NODE-1: Bridge from DEQ to NODE -->
+        <section>
+          <h2>One More Variation: Neural ODEs</h2>
+          <div style="font-size: 26px; line-height: 1.55; text-align: left; margin-top: 12px;">
+            <div class="fragment roll-in">
+              <strong>DEQ</strong> asks: what if we run the same layer forever and land on a fixed point?
+            </div>
+            <div class="fragment roll-in" style="margin-top: 14px;">
+              <strong>Neural ODE</strong> (Chen et al., NeurIPS 2018) asks a cousin question:
+              what if we let depth become continuous time?
+            </div>
+            <div class="fragment roll-in" style="margin-top: 14px;">
+              A residual block is one Euler step:
+              $\;\vec{h}_{t+1} = \vec{h}_t + f(\vec{h}_t, \theta_t)$.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 10px;">
+              Take smaller steps. Take more of them. In the limit:
+              $$\frac{d\vec{h}(t)}{dt} = f\!\bigl(\vec{h}(t),\, t,\, \theta\bigr)$$
+            </div>
+            <div class="fragment roll-in" style="margin-top: 14px; color: #2aa198; font-weight: 700; text-align: center;">
+              Depth is no longer a count of layers. It is a stretch of continuous time.
+            </div>
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -16px; line-height: 1.2;">
+            <a href="https://arxiv.org/abs/1806.07366" target="_blank">Chen RTQ, Rubanova Y, Bettencourt J, Duvenaud D. Neural Ordinary Differential Equations. NeurIPS 2018.</a>
+          </div>
+          <aside class="notes">
+            Motivate the slide by recalling Eq. (1) from the NODE paper: h_{t+1} = h_t + f(h_t, theta_t).
+            This is the same residual update the students already know. The NODE paper
+            just follows the limit as step size goes to zero. The hidden state becomes a
+            continuous trajectory governed by an ODE. The ODE solver replaces the for-loop
+            over layers.
+          </aside>
+        </section>
+
+        <!-- Slide NODE-2: Discrete vs Continuous — Figure 1 -->
+        <section>
+          <h2>ResNet vs. ODE-Net</h2>
+          <div style="display: flex; justify-content: center; gap: 2px; margin-top: 8px;">
+            <img src="figures/NODE_fig1.svg"
+                 alt="Left: ResNet as discrete jumps. Right: ODE-Net as a continuous vector field."
+                 style="border:0; box-shadow: none; max-width: 100%; transform: scale(1.8); margin: 40px 0;">
+          </div>
+          <div style="font-size: 22px; line-height: 1.45; text-align: left; margin-top: 12px;">
+            <div class="fragment roll-in">
+              <strong>Left:</strong> A ResNet applies a fixed sequence of discrete jumps.
+              Each black dot is a layer. The number of dots is set at build time.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 8px;">
+              <strong>Right:</strong> An ODE-Net defines a vector field.
+              A solver traces a path through it, placing evaluation points where needed.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 10px; color: #2aa198; font-weight: 700; text-align: center;">
+              The solver picks how many steps to take. Depth becomes adaptive.
+            </div>
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -16px; line-height: 1.2;">
+            Chen et al. (2018), Figure 1.
+          </div>
+          <aside class="notes">
+            Point at the left panel: fixed grid of black dots. The network always does
+            the same amount of work. Point at the right panel: the dots cluster where
+            the dynamics are complex and spread out where they are simple. This is the
+            same adaptive-computation idea that will appear in Lecture 3, just realized
+            through an ODE solver instead of a halting mechanism.
+          </aside>
+        </section>
+
+        <!-- Slide NODE-3: Backward Pass — Adjoint Method, Figures 2 & 3 -->
+        <section data-slide-scale="0.9">
+          <h2>Gradients Without Storing the Trajectory</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 4px;">
+            <div>
+              <img src="figures/NODE_fig2.png"
+                   alt="Adjoint sensitivity method: solve an augmented ODE backwards in time."
+                   style="border:0; box-shadow:none; width:100%;">
+              <div style="font-size: 18px; color: #657b83; margin-top: 4px;">
+                Figure 2: the adjoint state $\vec{a}(t) = \partial L / \partial \vec{z}(t)$
+                obeys its own ODE, solved backwards in time.
+              </div>
+            </div>
+            <div style="font-size: 23px; line-height: 1.5; text-align: left;">
+              <div class="fragment roll-in">
+                <strong>Problem:</strong> backprop through the solver stores every internal step. Memory grows with depth.
+              </div>
+              <div class="fragment roll-in" style="margin-top: 10px;">
+                <strong>Solution:</strong> the <em>adjoint sensitivity method</em> (Pontryagin, 1962).
+                Define an adjoint ODE. Solve it backwards. Memory is $O(1)$ in depth.
+              </div>
+              <div class="fragment roll-in" style="margin-top: 10px;">
+                <strong>Sound familiar?</strong> DEQ stores only $\vec{z}^{\,*}$ and differentiates through it implicitly.
+                NODE stores only $\vec{z}(t_1)$ and runs the adjoint ODE backwards.
+              </div>
+              <div class="fragment roll-in" style="margin-top: 10px; color: #2aa198; font-weight: 700;">
+                Both avoid storing the full forward trajectory. Both get $O(1)$ memory.
+              </div>
+            </div>
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -16px; line-height: 1.2;">
+            Chen et al. (2018), Figure 2.
+          </div>
+          <aside class="notes">
+            The adjoint method is the continuous-time cousin of implicit differentiation.
+            DEQ differentiates through a fixed point. NODE differentiates through a
+            trajectory endpoint. In both cases the gradient does not backprop through
+            the solver's internal steps.
+          </aside>
+        </section>
+
+        <!-- Slide NODE-3a: Adjoint Method Pseudocode -->
+        <section>
+          <h2>Adjoint Method Pseudocode</h2>
+          <pre class="python" style="width: 100%; font-size: 15pt;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|2-3|5-7|9-11|13">
+# Algorithm 1: Reverse-mode derivative of an ODE IVP
+Input: θ, t₀, t₁, z(t₁), ∂L/∂z(t₁)
+s₀ = [z(t₁), ∂L/∂z(t₁), 0_{|θ|}]          # augmented state
+
+def aug_dynamics([z(t), a(t), ·], t, θ):
+    return [f(z(t), t, θ),                   # original dynamics
+            -a(t)ᵀ ∂f/∂z,                    # ← AD: VJP w.r.t. z
+            -a(t)ᵀ ∂f/∂θ]                    # ← AD: VJP w.r.t. θ
+
+# Solve augmented ODE backward in time
+[z(t₀), ∂L/∂z(t₀), ∂L/∂θ] = ODESolve(s₀, aug_dynamics, t₁, t₀, θ)
+
+return ∂L/∂z(t₀), ∂L/∂θ
+          </code></pre>
+          <div style="font-size: 20px; color: #657b83; margin-top: 8px; text-align: left; line-height: 1.5;">
+            <div class="fragment roll-in">The adjoint $\vec{a}(t) = \partial L / \partial \vec{z}(t)$ and the parameter gradient are computed by a <strong>single backward ODE solve</strong>.</div>
+            <div class="fragment roll-in" style="margin-top: 6px;">Lines 7–8 are <strong>vector-Jacobian products</strong> (VJPs) — exactly what reverse-mode AD computes. No explicit Jacobian is ever formed.</div>
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -16px; line-height: 1.2;">
+            Chen et al. (2018), Algorithm 1.
+          </div>
+          <aside class="notes">
+            Walk through the three components of the augmented state:
+            (1) z(t) — the ODE state, reconstructed backward;
+            (2) a(t) — the adjoint / gradient of L w.r.t. z(t);
+            (3) the running integral accumulating ∂L/∂θ.
+
+            The key AD point: lines 7 and 8 compute a(t)^T * ∂f/∂z and a(t)^T * ∂f/∂θ.
+            These are vector-Jacobian products — the exact primitive that reverse-mode AD
+            (e.g. torch.autograd, jax.vjp) provides.  We never form the full Jacobian ∂f/∂z;
+            we only need its action on the adjoint vector a(t).
+
+            Compare with the DEQ backward pass: there we also used a VJP through f to get
+            p @ ∂f/∂θ.  Same idea, different setting (fixed point vs. trajectory endpoint).
+          </aside>
+        </section>
+
+        <!-- Slide NODE-3b: NFE Statistics — Figure 3 -->
+        <section>
+          <h2>NFE Statistics of a Trained ODE-Net</h2>
+          <img src="figures/NODE_fig3.png"
+               alt="NFE statistics of a trained ODE-Net."
+               style="border:0; box-shadow:none; max-width: 90%;">
+          <div style="font-size: 20px; color: #657b83; margin-top: 6px; line-height: 1.45;">
+            (a) Error drops with more function evaluations. (b) Time scales with NFE.
+            (c) Backward NFE is about half forward NFE. (d) NFE grows during training as the model learns harder dynamics.
+          </div>
+          <div class="fragment roll-in" style="margin-top: 12px; color: #2aa198; font-weight: 700; text-align: center; font-size: 23px;">
+            The model asks for more computation as it learns harder dynamics — adaptive depth in action.
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -16px; line-height: 1.2;">
+            Chen et al. (2018), Figure 3.<br>
+              NFE - number of function evaluations
+          </div>
+          <aside class="notes">
+            Figure 3c is the punchline for efficiency: the backward pass needs about
+            half the function evaluations of the forward pass, because the adjoint ODE
+            has smoother dynamics. This makes the adjoint method cheaper than
+            backprop-through-the-solver even in compute, not just memory.
+
+            Figure 3d shows that the model asks for more computation as training
+            progresses. This is adaptive depth in action — the same idea that will
+            be formalized in Lecture 3 with explicit halting mechanisms.
+          </aside>
+        </section>
+
+        <!-- Slide NODE-4: Same Idea, Different Limit -->
+        <section>
+          <h2>Same Idea, Different Limit</h2>
+          <div style="font-size: 24px; line-height: 1.55; text-align: left; margin-top: 8px;">
+            <table style="width: 100%; font-size: 22px; border-collapse: collapse; margin-top: 4px; text-align: left; line-height: 1.45;">
+              <thead>
+                <tr style="border-bottom: 2px solid #93a1a1;">
+                  <th style="padding: 6px 10px; width: 22%;"></th>
+                  <th style="padding: 6px 10px; width: 39%;">DEQ</th>
+                  <th style="padding: 6px 10px; width: 39%;">Neural ODE</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
+                  <td style="padding: 6px 10px; font-weight: 700;">Starting point</td>
+                  <td style="padding: 6px 10px;">Weight-tied layers, repeat forever</td>
+                  <td style="padding: 6px 10px;">Residual blocks, shrink the step to zero</td>
+                </tr>
+                <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
+                  <td style="padding: 6px 10px; font-weight: 700;">Limit object</td>
+                  <td style="padding: 6px 10px;">Fixed point: $\vec{z}^{\,*} = f(\vec{z}^{\,*}, \vec{x})$</td>
+                  <td style="padding: 6px 10px;">ODE endpoint: $\vec{z}(t_1) = \vec{z}(t_0) + \int f\, dt$</td>
+                </tr>
+                <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
+                  <td style="padding: 6px 10px; font-weight: 700;">Forward solver</td>
+                  <td style="padding: 6px 10px;">Root finder (Broyden, Anderson, ...)</td>
+                  <td style="padding: 6px 10px;">ODE solver (Dormand-Prince, Adams, ...)</td>
+                </tr>
+                <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
+                  <td style="padding: 6px 10px; font-weight: 700;">Backward pass</td>
+                  <td style="padding: 6px 10px;">Implicit diff at equilibrium</td>
+                  <td style="padding: 6px 10px;">Adjoint ODE backwards in time</td>
+                </tr>
+                <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
+                  <td style="padding: 6px 10px; font-weight: 700;">Memory</td>
+                  <td style="padding: 6px 10px;">$O(1)$ in effective depth</td>
+                  <td style="padding: 6px 10px;">$O(1)$ in effective depth</td>
+                </tr>
+                <tr class="fragment roll-in">
+                  <td style="padding: 6px 10px; font-weight: 700;">Depth</td>
+                  <td style="padding: 6px 10px;">Infinite (converged)</td>
+                  <td style="padding: 6px 10px;">Continuous (solver-chosen)</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="fragment roll-in" style="margin-top: 16px; color: #2aa198; font-weight: 700; text-align: center; font-size: 26px;">
+              Both replace a fixed layer count with a solver.<br>
+              Both get constant memory by not storing the path.<br>
+              The core move is the same. The limit is different.
+            </div>
+          </div>
+          <aside class="notes">
+            This is the connecting-the-dots slide. DEQ takes the infinite-depth limit
+            (fixed point). NODE takes the continuous-depth limit (ODE). Both treat
+            forward computation as a solver call and backward computation as an
+            implicit or adjoint procedure. Both avoid storing the full forward trajectory.
+            The tools differ (root finders vs. ODE integrators), but the design pattern
+            is shared: replace explicit layers with a black-box solver, differentiate
+            without unrolling.
+          </aside>
+        </section>
+
+        <!-- Slide 13: Modern Applications Wrap-Up -->
         <section>
           <h2>Modern Applications Wrap-Up</h2>
-          <ul style="font-size: 30px; line-height: 1.8;">
-            <li class="fragment roll-in">DEQ and RBP share the same gradient mathematics</li>
-            <li class="fragment roll-in">Approximation quality depends on solver choice and truncation depth</li>
-            <li class="fragment roll-in">Continuous-time and discrete-time views are mathematically aligned</li>
-            <li class="fragment roll-in">Terminology changed faster than the core method</li>
+          <ul style="font-size: 28px; line-height: 1.8;">
+            <li class="fragment roll-in">DEQ and RBP share the same gradient math. DEQ applies it to weight-tied feedforward nets instead of RNNs.</li>
+            <li class="fragment roll-in">Neural ODE is the continuous-time cousin: replace a layer count with an ODE solver, and use the adjoint method for constant-memory gradients.</li>
+            <li class="fragment roll-in">Both DEQ and Neural ODE follow the same pattern: hand the forward pass to a black-box solver, differentiate without unrolling.</li>
+            <li class="fragment roll-in">We now know five solvers for the adjoint system (RBP, Neumann, CG, Broyden, Anderson) plus the ODE adjoint. The gradient is the same. Speed and stability differ.</li>
+            <li class="fragment roll-in">Constant memory for any effective depth is not new. Almeida and Pineda had it in 1987. DEQ and NODE brought it back to modern scale.</li>
           </ul>
           <div class="fragment roll-in" style="font-size: 22px; color: #2aa198; margin-top: 16px; text-align: left;">
             Next: the practical significance of these tradeoffs.
           </div>
         </section>
+        
       </section>
 
       <!-- ============================================================ -->
@@ -1072,7 +2023,7 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
   </div>
 
   <script src="dist/reveal.js"></script>
-  <link rel="stylesheet" href="plugin/highlight/atom-one-light.css">
+  <link rel="stylesheet" href="plugin/highlight/monokai.css">
   <script src="plugin/highlight/highlight.js"></script>
   <script src="plugin/math/math.js"></script>
   <script src="plugin/chalkboard/plugin.js"></script>
@@ -1086,7 +2037,7 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
 
   <script>
     Reveal.initialize({
-      hash: true, margin: 0.01, minScale: 0.01, maxScale: 1.23, center: true,
+      hash: true, margin: 0.01, minScale: 0.01, maxScale: 1.2, center: true,
       controls: false, keyboard: true, overview: true,
       transition: 'slide', transitionSpeed: 'fast',
       menu: { themes: false, openSlideNumber: true, openButton: false },
@@ -1122,6 +2073,24 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
     });
     Reveal.configure({ fragments: true });
     Reveal.configure({ slideNumber: 'c / t' });
+
+    function applyPerSlideScale() {
+      document.querySelectorAll('.reveal .slides section[data-slide-scale]:not(.stack)').forEach(function(slide) {
+        var scale = Number.parseFloat(slide.getAttribute('data-slide-scale'));
+        if (Number.isFinite(scale) && scale > 0) {
+          slide.style.zoom = String(scale);
+          slide.style.transformOrigin = 'top center';
+        } else {
+          slide.style.zoom = '';
+          slide.style.transformOrigin = '';
+        }
+      });
+    }
+
+    Reveal.addEventListener('ready', function() { applyPerSlideScale(); Reveal.layout(); });
+    Reveal.addEventListener('slidechanged', function() { applyPerSlideScale(); Reveal.layout(); });
+    Reveal.addEventListener('resize', applyPerSlideScale);
+
     Reveal.addEventListener('darkside',   function() { document.getElementById('theme').setAttribute('href','dist/theme/aml_dark.css'); }, false);
     Reveal.addEventListener('brightside', function() { document.getElementById('theme').setAttribute('href','dist/theme/aml.css'); },      false);
   </script>

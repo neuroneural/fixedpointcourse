@@ -143,7 +143,7 @@
 
   <script>
     Reveal.initialize({
-      hash: true, margin: 0.01, minScale: 0.01, maxScale: 1.23, center: true,
+      hash: true, margin: 0.01, minScale: 0.01, maxScale: 1.6, center: true,
       controls: false, keyboard: true, overview: true,
       transition: 'slide', transitionSpeed: 'fast',
       menu: { themes: false, openSlideNumber: true, openButton: false },
@@ -179,6 +179,24 @@
     });
     Reveal.configure({ fragments: true });
     Reveal.configure({ slideNumber: 'c / t' });
+
+    function applyPerSlideScale() {
+      document.querySelectorAll('.reveal .slides section[data-slide-scale]:not(.stack)').forEach(function(slide) {
+        var scale = Number.parseFloat(slide.getAttribute('data-slide-scale'));
+        if (Number.isFinite(scale) && scale > 0) {
+          slide.style.zoom = String(scale);
+          slide.style.transformOrigin = 'top center';
+        } else {
+          slide.style.zoom = '';
+          slide.style.transformOrigin = '';
+        }
+      });
+    }
+
+    Reveal.addEventListener('ready', function() { applyPerSlideScale(); Reveal.layout(); });
+    Reveal.addEventListener('slidechanged', function() { applyPerSlideScale(); Reveal.layout(); });
+    Reveal.addEventListener('resize', applyPerSlideScale);
+
     Reveal.addEventListener('darkside',   function() { document.getElementById('theme').setAttribute('href','dist/theme/aml_dark.css'); }, false);
     Reveal.addEventListener('brightside', function() { document.getElementById('theme').setAttribute('href','dist/theme/aml.css'); },      false);
   </script>
