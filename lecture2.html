@@ -947,22 +947,23 @@ Input: x, w_F, w_G, ε, K
 
 h* = fixed_point_solve(F, x, w_F)
 y = G(x, w_G, h*)
-L = loss(y)
+def backward_rbp(x, y, w_F, h_star, K, ε):
+    L = loss(y)
 
-g = (∂L/∂y · ∂y/∂h*)ᵀ                      # adjoint seed
-z = 0
+    g = (∂L/∂y · ∂y/∂h*)ᵀ                      # adjoint seed
+    z = 0
 
-for i in 1..K:
-    z_next = Jᵀ_F|_{h*} @ z + g              # ← AD: VJP
-    if ‖z_next − z‖ < ε:
+    for i in 1..K:
+        z_next = Jᵀ_F|_{h*} @ z + g              # ← AD: VJP
+        if ‖z_next − z‖ < ε:
+            z = z_next
+            break
         z = z_next
-        break
-    z = z_next
 
-# z is the converged adjoint: z* = ∂L/∂h*
-∂L/∂w_F = zᵀ @ ∂F/∂w_F(x, w_F, h*)          # ← AD: VJP
-return ∂L/∂w_F
-# optional: return ∂L/∂w_F, z
+    # z is the converged adjoint: z* = ∂L/∂h*
+    ∂L/∂w_F = zᵀ @ ∂F/∂w_F(x, w_F, h*)          # ← AD: VJP
+    return ∂L/∂w_F
+    # optional: return ∂L/∂w_F, z
           </code></pre>
           <aside class="notes">
             <p><strong>Narrative order:</strong> forward equilibrium solve; readout/loss; define adjoint seed $g$; iterate the adjoint fixed-point map; then compute $\partial L/\partial \vec{w}_F$.</p>
@@ -1047,22 +1048,21 @@ return ∂L/∂w_F
           <h2>Neumann-RBP Pseudocode</h2>
           <pre class="python" style="width: 100%; font-size: 15pt;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|4-6|8-10|12-14|16-17">
 # Algorithm 2: Neumann-RBP (K-term)
-Input: x, w_F, w_G, K
+def train_step_neumann(x, w_F, w_G, K):
+    h* = fixed_point_solve(F, x, w_F)
+    y = G(x, w_G, h*)
+    L = loss(y)
 
-h* = fixed_point_solve(F, x, w_F)
-y = G(x, w_G, h*)
-L = loss(y)
+    g = (∂L/∂y · ∂y/∂h*)ᵀ                      # adjoint seed
+    z = g
+    v = g
 
-g = (∂L/∂y · ∂y/∂h*)ᵀ                      # adjoint seed
-z = g
-v = g
+    for k in 1..K:
+        v = Jᵀ_F|_{h*} @ v                       # ← AD: VJP
+        z = z + v
 
-for k in 1..K:
-    v = Jᵀ_F|_{h*} @ v                       # ← AD: VJP
-    z = z + v
-
-∂L/∂w_F = zᵀ @ ∂F/∂w_F(x, w_F, h*)          # ← AD: VJP
-return ∂L/∂w_F
+    ∂L/∂w_F = zᵀ @ ∂F/∂w_F(x, w_F, h*)          # ← AD: VJP
+    return ∂L/∂w_F
           </code></pre>
           <aside class="notes">
             Point out that this is just accumulating powers of J^T applied to g.
@@ -1428,18 +1428,18 @@ return ∂L/∂w_F
           <h2 style="margin-top: -20px;">DEQ Algorithm</h2>
           <pre class="python" style="width: 100%; font-size: 15pt; margin-top: -20px;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|3-5|7-9|11-13">
 # DEQ Forward + Backward
-Input: x, θ, ε_fwd, ε_bwd
+def deq_train_step(x, target, θ, ε_fwd, ε_bwd):
 
-# ─── Forward ───
-z* = RootFind(g_θ, x, ε_fwd)             # g_θ(z) = f_θ(z, x) − z
-y = h(z*)                                 # readout
-L = loss(y, target)
+    # ─── Forward ───
+    z* = RootFind(g_θ, x, ε_fwd)             # g_θ(z) = f_θ(z, x) − z
+    y = h(z*)                                 # readout
+    L = loss(y, target)
 
-# ─── Backward (implicit) ───
-# Solve: Jᵀ_gθ|_{z*} p + (∂L/∂z*)ᵀ = 0
-p = LinearSolve(Jᵀ_gθ|_{z*}, −∂L/∂z*, ε_bwd)   # e.g., Broyden
-∂L/∂θ = p @ ∂f_θ/∂θ(z*, x)                      # ← AD: VJP
-return ∂L/∂θ
+    # ─── Backward (implicit) ───
+    # Solve: Jᵀ_gθ|_{z*} p + (∂L/∂z*)ᵀ = 0
+    p = LinearSolve(Jᵀ_gθ|_{z*}, −∂L/∂z*, ε_bwd)   # e.g., Broyden
+    ∂L/∂θ = p @ ∂f_θ/∂θ(z*, x)                      # ← AD: VJP
+    return ∂L/∂θ
           </code></pre>
           <div style="font-size: 20px; color: #657b83; margin-top: 8px; text-align: left; line-height: 1.5;">
             <strong>RootFind</strong> and <strong>LinearSolve</strong> can be any black-box solver.
@@ -1562,6 +1562,9 @@ return ∂L/∂θ
             Left panel: Number of Broyden iterations per time step grows slowly with training epoch — the model learns representations that are slightly harder to solve over time.
             Right panel: DEQ-Transformer finds the equilibrium stably (difference norm drops to 1e-4), while the weight-tied transformer oscillates.
             Key takeaway: Broyden's superlinear convergence matters in practice.
+            <br><br>
+            <strong>Why does the backward pass (adjoint) converge faster?</strong><br>
+            The forward pass solves a <em>non-linear</em> root-finding problem: $z^* = f(z^*, x)$. The backward pass solves a <em>linear</em> system: $z = J^T z + g$. Linear systems generally converge much faster (and unconditionally if the forward pass was contractive, i.e., $\rho(J) &lt; 1$) than non-linear ones. Thus, fast linear solvers (like Broyden or CG) exploit this linearity to finish in fewer iterations than the forward pass.
           </aside>
         </section>
 
@@ -1830,18 +1833,18 @@ return ∂L/∂θ
           <h2>Adjoint Method Pseudocode</h2>
           <pre class="python" style="width: 100%; font-size: 15pt;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|2-3|5-7|9-11|13">
 # Algorithm 1: Reverse-mode derivative of an ODE IVP
-Input: θ, t₀, t₁, z(t₁), ∂L/∂z(t₁)
-s₀ = [z(t₁), ∂L/∂z(t₁), 0_{|θ|}]          # augmented state
+def ode_adjoint(θ, t₀, t₁, z_t1, dL_dz_t1):
+    s₀ = [z_t1, dL_dz_t1, 0_{|θ|}]          # augmented state
 
-def aug_dynamics([z(t), a(t), ·], t, θ):
-    return [f(z(t), t, θ),                   # original dynamics
-            -a(t)ᵀ ∂f/∂z,                    # ← AD: VJP w.r.t. z
-            -a(t)ᵀ ∂f/∂θ]                    # ← AD: VJP w.r.t. θ
+    def aug_dynamics([z(t), a(t), ·], t, θ):
+        return [f(z(t), t, θ),                   # original dynamics
+                -a(t)ᵀ ∂f/∂z,                    # ← AD: VJP w.r.t. z
+                -a(t)ᵀ ∂f/∂θ]                    # ← AD: VJP w.r.t. θ
 
-# Solve augmented ODE backward in time
-[z(t₀), ∂L/∂z(t₀), ∂L/∂θ] = ODESolve(s₀, aug_dynamics, t₁, t₀, θ)
+    # Solve augmented ODE backward in time
+    [z(t₀), ∂L/∂z(t₀), ∂L/∂θ] = ODESolve(s₀, aug_dynamics, t₁, t₀, θ)
 
-return ∂L/∂z(t₀), ∂L/∂θ
+    return ∂L/∂z(t₀), ∂L/∂θ
           </code></pre>
           <div style="font-size: 20px; color: #657b83; margin-top: 8px; text-align: left; line-height: 1.5;">
             <div class="fragment roll-in">The adjoint $\vec{a}(t) = \partial L / \partial \vec{z}(t)$ and the parameter gradient are computed by a <strong>single backward ODE solve</strong>.</div>
@@ -1903,14 +1906,14 @@ return ∂L/∂z(t₀), ∂L/∂θ
               <thead>
                 <tr style="border-bottom: 2px solid #93a1a1;">
                   <th style="padding: 6px 10px; width: 22%;"></th>
-                  <th style="padding: 6px 10px; width: 39%;">DEQ</th>
+                  <th style="padding: 6px 10px; width: 39%;">Implicit Models (RBP/DEQ)</th>
                   <th style="padding: 6px 10px; width: 39%;">Neural ODE</th>
                 </tr>
               </thead>
               <tbody>
                 <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
                   <td style="padding: 6px 10px; font-weight: 700;">Starting point</td>
-                  <td style="padding: 6px 10px;">Weight-tied layers, repeat forever</td>
+                  <td style="padding: 6px 10px;">Repeat a layer/cell until equilibrium</td>
                   <td style="padding: 6px 10px;">Residual blocks, shrink the step to zero</td>
                 </tr>
                 <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
@@ -1920,7 +1923,7 @@ return ∂L/∂z(t₀), ∂L/∂θ
                 </tr>
                 <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
                   <td style="padding: 6px 10px; font-weight: 700;">Forward solver</td>
-                  <td style="padding: 6px 10px;">Root finder (Broyden, Anderson, ...)</td>
+                  <td style="padding: 6px 10px;">Fixed-point iter., Root finder</td>
                   <td style="padding: 6px 10px;">ODE solver (Dormand-Prince, Adams, ...)</td>
                 </tr>
                 <tr class="fragment roll-in" style="border-bottom: 1px solid #d8cfb5;">
