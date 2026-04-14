@@ -235,7 +235,7 @@
                 The same neurons engage in <strong>different circuits at different times</strong> — forming task-specific functional networks dynamically
               </li>
               <li class="fragment roll-in">
-                This is remarkably similar to <strong>weight-shared architectures</strong> (Universal Transformer, DEQ) where the same parameters are reused across "depth"
+                This is remarkably similar to <strong>weight-shared architectures</strong> (Universal Transformer, RBP) where the same parameters are reused across "depth"
               </li>
               <li class="fragment roll-in">
                 Unlike fixed feed-forward nets, the brain does not dedicate separate hardware to each processing stage — it <strong>recycles</strong>
@@ -273,12 +273,12 @@
             </div>
           </div>
           <div class="fragment roll-in" style="font-size: 22px; color: #657b83; margin-top: 24px; text-align: center;">
-            L2's DEQs answered "when to stop" <em>implicitly</em> — iterate until convergence.<br>
+            L2's RBPs answered "when to stop" <em>implicitly</em> — iterate until convergence.<br>
             This lecture makes the decision <em>explicit and learnable</em>.
           </div>
           <aside class="notes">
             <p>This is the structural backbone of the lecture. The first half (§2–§3) covers halting-based methods. The second half (§4) covers routing-based methods. §5 unifies them.</p>
-            <p>The connection to L2 is important: DEQs iterate to convergence (the solver decides when to stop). ACT and UT learn a halting distribution (the network decides). DAT and MoD learn a routing policy (the network decides where, not when).</p>
+            <p>The connection to L2 is important: RBPs iterate to convergence (the solver decides when to stop). ACT and UT learn a halting distribution (the network decides). DAT and MoD learn a routing policy (the network decides where, not when).</p>
           </aside>
         </section>
 
@@ -659,7 +659,7 @@ def ACT_step(x_t, s_prev, W_h, b_h, τ_max):
         </section>
 
         <section>
-          <h2>UT ↔ DEQ: The Same Idea?</h2>
+          <h2>UT ↔ RBP: The Same Idea?</h2>
           <div style="font-size: 27px; line-height: 1.55; text-align: left;">
             <div class="fragment roll-in">
               UT with infinite shared steps → weight-tied infinite depth → converge to a fixed point:
@@ -673,7 +673,7 @@ def ACT_step(x_t, s_prev, W_h, b_h, τ_max):
           </div>
           <div style="display: flex; gap: 30px; margin-top: 18px;">
             <div class="fragment roll-in" style="flex: 1; background: #fdf6e3; border-radius: 10px; padding: 16px; border-left: 4px solid #2aa198;">
-              <div style="font-size: 22px; font-weight: bold; color: #2aa198;">DEQ (L2)</div>
+              <div style="font-size: 22px; font-weight: bold; color: #2aa198;">RBP (L2)</div>
               <div style="font-size: 21px; color: #586e75; margin-top: 6px;">Implicit depth: solver decides convergence</div>
               <div style="font-size: 21px; color: #586e75;">Constant memory via implicit differentiation</div>
             </div>
@@ -684,7 +684,7 @@ def ACT_step(x_t, s_prev, W_h, b_h, τ_max):
             </div>
           </div>
           <blockquote class="fragment roll-in" style="background-color: #eee8d5; width: 100%; font-size: 23px; margin-top: 14px;" class="left">
-            Same spirit, different mechanism. Both break fixed-depth — DEQ via convergence, UT via learned halting.
+            Same spirit, different mechanism. Both break fixed-depth — RBP via convergence, UT via learned halting.
           </blockquote>
           <aside class="notes">
             <p>Important bridge slide. The UT, if you remove the halting mechanism and let it run to convergence, IS a DEQ. The difference is entirely in how depth is controlled: DEQ uses a numerical solver with convergence tolerance; UT uses a learned halting mechanism with a ponder penalty. DEQ gets constant memory (implicit differentiation at the fixed point); UT pays O(depth) memory for the full computation graph but gets more direct control over the compute-accuracy tradeoff.</p>
@@ -912,7 +912,7 @@ def ACT_step(x_t, s_prev, W_h, b_h, τ_max):
             <div style="position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%); font-size: 20px; color: #586e75;">Implicit ← <strong>depth decision</strong> → Explicit</div>
             <div style="position: absolute; left: -190px; top: 80%; transform: rotate(-90deg) translateX(50%); font-size: 20px; color: #586e75;">Fixed ← <strong>compute budget</strong> → Variable</div>
             <!-- points -->
-            <div class="fragment roll-in" style="position: absolute; left: 60px; top: 60px; background: #2aa198; color: white; padding: 8px 14px; border-radius: 8px; font-size: 18px; font-weight: bold;">DEQ</div>
+            <div class="fragment roll-in" style="position: absolute; left: 60px; top: 60px; background: #2aa198; color: white; padding: 8px 14px; border-radius: 8px; font-size: 18px; font-weight: bold;">RBP</div>
             <div class="fragment roll-in" style="position: absolute; left: 300px; top: 50px; background: #859900; color: white; padding: 8px 14px; border-radius: 8px; font-size: 18px; font-weight: bold;">ACT / UT</div>
             <div class="fragment roll-in" style="position: absolute; left: 480px; top: 50px; background: #6c71c4; color: white; padding: 8px 14px; border-radius: 8px; font-size: 18px; font-weight: bold;">PonderNet</div>
             <div class="fragment roll-in" style="position: absolute; left: 400px; top: 260px; background: #cb4b16; color: white; padding: 8px 14px; border-radius: 8px; font-size: 18px; font-weight: bold;">DAT</div>
@@ -955,10 +955,10 @@ def ACT_step(x_t, s_prev, W_h, b_h, τ_max):
         </section>
 
         <section>
-          <h2>The DEQ Connection (Revisited)</h2>
+          <h2>The RBP Connection (Revisited)</h2>
           <ul style="font-size: 27px; line-height: 1.65;">
             <li class="fragment roll-in">
-              <strong>DEQ (L2):</strong> implicit adaptive depth — iterate until convergence to $\vec{z}^* = f(\vec{z}^*, \vec{x})$
+              <strong>RBP (L2):</strong> implicit adaptive depth — iterate until convergence to $\vec{z}^* = f(\vec{z}^*, \vec{x})$
               <div style="font-size: 22px; color: #657b83; margin-top: 2px;">✓ Constant memory &nbsp; ✓ No halting hyperparameter &nbsp; ✗ Needs convergence guarantees</div>
             </li>
             <li class="fragment roll-in">
@@ -1013,7 +1013,7 @@ def ACT_step(x_t, s_prev, W_h, b_h, τ_max):
           <ul style="font-size: 30px; line-height: 1.9; max-width: 92%; margin: 0 auto;">
             <li class="fragment roll-in"><strong>Adaptive depth replaces fixed compute</strong> — ACT/UT learn per-input halting; the network decides when to stop.</li>
             <li class="fragment roll-in"><strong>Routing flips the question</strong> — DAT and MoD ask which tokens need which layers under a fixed FLOP budget.</li>
-            <li class="fragment roll-in"><strong>Implicit vs explicit depth control</strong> — DEQs (L2) converge to equilibrium; ACT/UT learn a halting signal.</li>
+            <li class="fragment roll-in"><strong>Implicit vs explicit depth control</strong> — RBP (L2) converges to equilibrium; ACT/UT learn a halting signal.</li>
             <li class="fragment roll-in"><strong>Depth and width are orthogonal axes</strong> — adaptive depth composes with adaptive width (MoE), and L4 adds introspection.</li>
           </ul>
           <aside class="notes">
