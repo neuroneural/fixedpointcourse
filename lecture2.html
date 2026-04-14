@@ -478,10 +478,10 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
             </li>
             <li class="fragment roll-in">
               <blockquote style="background-color: #eee8d5; width: 100%; font-size: 26px;">
-                Practical check (local): in 1D, $|g'(r)|&lt;1$; in higher dimensions,
+                Practical check (local): in 1D, $|T'(r)|&lt;1$; in higher dimensions,
                 $\left\|J_f(\vec{z}^{\,*})\right\|_2&lt;1$ (or a uniform bound
                 $\left\|J_f(\vec{z})\right\|_2\le q&lt;1$ nearby) gives contraction.
-                For the square-root map, $g'(\sqrt{a})=0$, matching the fast local convergence we observed.
+                For the square-root map, $T'(\sqrt{a})=0$, matching the fast local convergence we observed.
               </blockquote>
             </li>
           </ul>
@@ -716,7 +716,7 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
             </div>
             <div class="fragment roll-in" style="text-align: center; margin-top: 14px;">
               \[
-              \vec{y}=G(\vec{x},\vec{w}_G,\vec{h}^{\,*})
+              \vec{y}=G(\vec{w}_G,\vec{h}^{\,*})
               \]
             </div>
           </div>
@@ -846,7 +846,7 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
               \frac{\partial L}{\partial \vec{w}_G}
               =
               \frac{\partial L}{\partial \vec{y}}
-              \frac{\partial G(\vec{x},\vec{w}_G,\vec{h}^{\,*})}{\partial \vec{w}_G}
+              \frac{\partial G(\vec{w}_G,\vec{h}^{\,*})}{\partial \vec{w}_G}
               \]
             </div>
             <div class="fragment roll-in">Recurrent parameters include implicit sensitivity of the fixed point:</div>
@@ -941,18 +941,18 @@ def sqrt_babylonian(x, u0, tol=1e-10, max_iter=20):
 
         <section>
           <h2 style="margin-top: -20px;">RBP: Putting It Together</h2>
-          <pre class="python" style="width: 100%; font-size: 15pt; margin-top: -20px;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|4-6|8-9|11-16|18-19|20">
+          <pre class="python" style="width: 100%; font-size: 15pt; margin-top: -20px;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|3-7|9|11-17|19-22">
 # Algorithm 1: Original RBP
-Input: x, w_F, w_G, ε, K
 
 h* = fixed_point_solve(F, x, w_F)
-y = G(x, w_G, h*)
-def backward_rbp(x, y, w_F, h_star, K, ε):
-    L = loss(y)
+y = G(w_G, h*)
+L = loss(y)
+g = (∂L/∂y · ∂y/∂h*)ᵀ                          # ← AD: VJP (seed)
+∂L/∂w_F, ∂L/∂x = backward_rbp(g, x, w_F, h*, K, ε)
 
-    g = (∂L/∂y · ∂y/∂h*)ᵀ                      # adjoint seed
+def backward_rbp(g, x, w_F, h_star, K, ε):
+
     z = 0
-
     for i in 1..K:
         z_next = Jᵀ_F|_{h*} @ z + g              # ← AD: VJP
         if ‖z_next − z‖ < ε:
@@ -962,14 +962,14 @@ def backward_rbp(x, y, w_F, h_star, K, ε):
 
     # z is the converged adjoint: z* = ∂L/∂h*
     ∂L/∂w_F = zᵀ @ ∂F/∂w_F(x, w_F, h*)          # ← AD: VJP
-    return ∂L/∂w_F
-    # optional: return ∂L/∂w_F, z
+    ∂L/∂x   = zᵀ @ ∂F/∂x(x, w_F, h*)            # ← AD: VJP (upstream)
+    return ∂L/∂w_F, ∂L/∂x
           </code></pre>
           <aside class="notes">
-            <p><strong>Narrative order:</strong> forward equilibrium solve; readout/loss; define adjoint seed $g$; iterate the adjoint fixed-point map; then compute $\partial L/\partial \vec{w}_F$.</p>
+            <p><strong>Narrative order:</strong> forward equilibrium solve; readout/loss; define adjoint seed $g$; iterate the adjoint fixed-point map; then compute $\partial L/\partial \vec{w}_F$ and $\partial L/\partial \vec{x}$.</p>
             <p><strong>Do not forget:</strong> the converged $\vec{z}$ is itself the upstream adjoint at equilibrium, i.e., $\vec{z}^{\,*}=\partial L/\partial \vec{h}^{\,*}$ (column-vector convention).</p>
             <p><strong>Key intuition:</strong> RBP computes "gradient w.r.t. state" first (via fixed-point solve), then maps that adjoint to parameter gradient with one final vector-Jacobian product.</p>
-            <p><strong>Implementation note:</strong> in practice you may return both outputs: $\partial L/\partial \vec{w}_F$ and $\vec{z}^{\,*}$ for upstream chaining/diagnostics.</p>
+            <p><strong>Mid-network usage:</strong> if the $\Psi$ layer sits inside a larger network, reverse-mode AD needs $\partial L/\partial \vec{x}$ to continue upstream. This is one more VJP with the same converged $\vec{z}^{\,*}$, contracted against $\partial F/\partial \vec{x}$ instead of $\partial F/\partial \vec{w}_F$. The fixed-point solve is done once; you project onto every input you need gradients for.</p>
           </aside>
         </section>
 
@@ -1046,28 +1046,32 @@ def backward_rbp(x, y, w_F, h_star, K, ε):
 
         <section>
           <h2>Neumann-RBP Pseudocode</h2>
-          <pre class="python" style="width: 100%; font-size: 15pt;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|4-6|8-10|12-14|16-17">
+          <pre class="python" style="width: 100%; font-size: 15pt;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|3-7|9|11-15|17-19">
 # Algorithm 2: Neumann-RBP (K-term)
-def train_step_neumann(x, w_F, w_G, K):
-    h* = fixed_point_solve(F, x, w_F)
-    y = G(x, w_G, h*)
-    L = loss(y)
 
-    g = (∂L/∂y · ∂y/∂h*)ᵀ                      # adjoint seed
+h* = fixed_point_solve(F, x, w_F)
+y = G(w_G, h*)
+L = loss(y)
+g = (∂L/∂y · ∂y/∂h*)ᵀ                          # ← AD: VJP (seed)
+∂L/∂w_F, ∂L/∂x = backward_neumann(g, x, w_F, h*, K)
+
+def backward_neumann(g, x, w_F, h_star, K):
+
     z = g
     v = g
-
     for k in 1..K:
         v = Jᵀ_F|_{h*} @ v                       # ← AD: VJP
         z = z + v
 
     ∂L/∂w_F = zᵀ @ ∂F/∂w_F(x, w_F, h*)          # ← AD: VJP
-    return ∂L/∂w_F
+    ∂L/∂x   = zᵀ @ ∂F/∂x(x, w_F, h*)            # ← AD: VJP (upstream)
+    return ∂L/∂w_F, ∂L/∂x
           </code></pre>
           <aside class="notes">
             Point out that this is just accumulating powers of J^T applied to g.
             v tracks the current power term, z accumulates the partial sum.
             K is now the approximation knob: larger K, better approximation, more cost.
+            Same backward API as Algorithm 1: receives the adjoint seed g, returns both $\partial L/\partial \vec{w}_F$ and $\partial L/\partial \vec{x}$ for upstream chaining.
           </aside>
         </section>
 
@@ -1426,20 +1430,22 @@ def train_step_neumann(x, w_F, w_G, K):
         <!-- Slide 6: DEQ Algorithm — Pseudocode -->
         <section>
           <h2 style="margin-top: -20px;">DEQ Algorithm</h2>
-          <pre class="python" style="width: 100%; font-size: 15pt; margin-top: -20px;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|3-5|7-9|11-13">
+          <pre class="python" style="width: 100%; font-size: 15pt; margin-top: -20px;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|3-8|10|12-15">
 # DEQ Forward + Backward
-def deq_train_step(x, target, θ, ε_fwd, ε_bwd):
 
-    # ─── Forward ───
-    z* = RootFind(g_θ, x, ε_fwd)             # g_θ(z) = f_θ(z, x) − z
-    y = h(z*)                                 # readout
-    L = loss(y, target)
+# ─── Forward ───
+z* = RootFind(g_θ, x, ε_fwd)                 # g_θ(z) = f_θ(z, x) − z
+y = h(z*)                                     # readout
+L = loss(y, target)
+g = (∂L/∂z*)ᵀ                                 # ← AD: VJP (seed)
+∂L/∂θ, ∂L/∂x = backward_deq(g, x, z*, θ, ε_bwd)
 
-    # ─── Backward (implicit) ───
-    # Solve: Jᵀ_gθ|_{z*} p + (∂L/∂z*)ᵀ = 0
-    p = LinearSolve(Jᵀ_gθ|_{z*}, −∂L/∂z*, ε_bwd)   # e.g., Broyden
+def backward_deq(g, x, z_star, θ, ε_bwd):
+
+    p = LinearSolve(Jᵀ_gθ|_{z*}, −g, ε_bwd)         # e.g., Broyden
     ∂L/∂θ = p @ ∂f_θ/∂θ(z*, x)                      # ← AD: VJP
-    return ∂L/∂θ
+    ∂L/∂x = p @ ∂f_θ/∂x(z*, x)                      # ← AD: VJP (upstream)
+    return ∂L/∂θ, ∂L/∂x
           </code></pre>
           <div style="font-size: 20px; color: #657b83; margin-top: 8px; text-align: left; line-height: 1.5;">
             <strong>RootFind</strong> and <strong>LinearSolve</strong> can be any black-box solver.
@@ -1449,6 +1455,7 @@ def deq_train_step(x, target, θ, ε_fwd, ε_bwd):
           <aside class="notes">
             This pseudocode exactly parallels the RBP Algorithm 1 the students already know.
             Emphasize: the only structural difference is the solver choice in both passes.
+            Same backward API: receives adjoint seed g, returns both $\partial L/\partial \vec{\theta}$ and $\partial L/\partial \vec{x}$ for upstream chaining.
           </aside>
         </section>
 
@@ -1831,7 +1838,7 @@ def deq_train_step(x, target, θ, ε_fwd, ε_bwd):
         <!-- Slide NODE-3a: Adjoint Method Pseudocode -->
         <section>
           <h2>Adjoint Method Pseudocode</h2>
-          <pre class="python" style="width: 100%; font-size: 15pt;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|2-3|5-7|9-11|13">
+          <pre class="python" style="width: 100%; font-size: 15pt;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|2-3|5-8|9-11|13">
 # Algorithm 1: Reverse-mode derivative of an ODE IVP
 def ode_adjoint(θ, t₀, t₁, z_t1, dL_dz_t1):
     s₀ = [z_t1, dL_dz_t1, 0_{|θ|}]          # augmented state
