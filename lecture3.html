@@ -22,7 +22,7 @@
 
   <link rel="stylesheet" href="dist/reset.css">
   <link rel="stylesheet" href="dist/reveal.css">
-  <link rel="stylesheet" href="plugin/highlight/atom-one-light.css" id="highlight-theme">
+  <link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
   <link rel="stylesheet" href="css/custom.css">
   <link rel="stylesheet" href="dist/theme/aml.css" id="theme">
   <style>
@@ -124,12 +124,938 @@
         </section>
       </section>
 
+      <!-- ============================================================ -->
+      <!-- LECTURE ROADMAP                                               -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>Roadmap</h2>
+          <ul style="font-size: 30px; line-height: 1.7; max-width: 92%; margin: 0 auto;">
+            <li class="fragment roll-in">
+              <strong>Motivation</strong>
+              <div style="font-size: 24px; color: #657b83; margin-top: 2px;">Why fixed-depth computation is a problem — and what brains do instead</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>Adaptive Computation Time</strong>
+              <div style="font-size: 24px; color: #657b83; margin-top: 2px;">Learning when to stop: the halting mechanism (Graves, 2016)</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>Universal Transformer</strong>
+              <div style="font-size: 24px; color: #657b83; margin-top: 2px;">Shared weights + per-token halting in attention (Dehghani et al., 2019)</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>From Halting to Routing</strong>
+              <div style="font-size: 24px; color: #657b83; margin-top: 2px;">Depth-Adaptive Transformer, Mixture-of-Depths, and fixed-budget compute</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>Connections &amp; Open Problems</strong>
+              <div style="font-size: 24px; color: #657b83; margin-top: 2px;">DEQs, MoE, calibration, and the bridge to introspection (L4)</div>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 1 – MOTIVATION                                       -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>Motivation</h2>
+          <h1>Why Should Computation Be Adaptive?</h1>
+        </section>
+
+        <section>
+          <h2>The Fixed-Depth Problem</h2>
+          <!-- inline schematic: easy vs hard input through same N layers -->
+          <div style="display: flex; justify-content: center; gap: 60px; margin-top: 20px;">
+            <div style="text-align: center;">
+              <div style="font-size: 22px; color: #859900; font-weight: bold; margin-bottom: 10px;">Easy input</div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                <div style="background: #eee8d5; padding: 6px 24px; border-radius: 6px; font-size: 20px;">Layer 1</div>
+                <div style="color: #93a1a1;">↓</div>
+                <div style="background: #eee8d5; padding: 6px 24px; border-radius: 6px; font-size: 20px;">Layer 2</div>
+                <div style="color: #93a1a1;">↓</div>
+                <div style="background: #eee8d5; padding: 6px 24px; border-radius: 6px; font-size: 20px;">⋮</div>
+                <div style="color: #93a1a1;">↓</div>
+                <div style="background: #eee8d5; padding: 6px 24px; border-radius: 6px; font-size: 20px;">Layer N</div>
+              </div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 22px; color: #dc322f; font-weight: bold; margin-bottom: 10px;">Hard input</div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                <div style="background: #eee8d5; padding: 6px 24px; border-radius: 6px; font-size: 20px;">Layer 1</div>
+                <div style="color: #93a1a1;">↓</div>
+                <div style="background: #eee8d5; padding: 6px 24px; border-radius: 6px; font-size: 20px;">Layer 2</div>
+                <div style="color: #93a1a1;">↓</div>
+                <div style="background: #eee8d5; padding: 6px 24px; border-radius: 6px; font-size: 20px;">⋮</div>
+                <div style="color: #93a1a1;">↓</div>
+                <div style="background: #eee8d5; padding: 6px 24px; border-radius: 6px; font-size: 20px;">Layer N</div>
+              </div>
+            </div>
+          </div>
+          <blockquote class="fragment roll-in" style="background-color: #eee8d5; width: 100%; font-size: 26px; margin-top: 20px;" class="left">
+            A 96-layer Transformer spends the same compute predicting "the" as it does predicting a rare technical term.
+          </blockquote>
+          <aside class="notes">
+            <p>This is the core tension: feed-forward networks are "ballistic" — once the input enters, it passes through every layer regardless of difficulty. RNNs at least have variable-length sequences, but each step uses the same computation. What if we could vary the amount of computation per input?</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Human Brains Are Not Fixed-Depth</h2>
+          <ul style="font-size: 27px; line-height: 1.62; margin-top: 14px;">
+            <li class="fragment roll-in">
+              <strong>Multi-circuit neurons:</strong> the same cortical neurons participate in multiple distinct functional circuits and intrinsic networks — neural "weight sharing" across tasks
+              <div style="font-size: 20px; color: #93a1a1; margin-top: 2px;">Sporns (2011); Bassett &amp; Sporns (2017)</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>Bypass mechanisms:</strong> some stimuli trigger rapid responses through shortcut pathways (amygdala fast pathway for threat), while complex stimuli require multi-stage cortical processing
+              <div style="font-size: 20px; color: #93a1a1; margin-top: 2px;">LeDoux (1996); Pessoa &amp; Adolphs (2010)</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>Effort scales with difficulty:</strong> fMRI shows that harder reasoning tasks recruit more widespread cortical activation and sustain it longer
+              <div style="font-size: 20px; color: #93a1a1; margin-top: 2px;">Duncan (2010); Fedorenko et al. (2013)</div>
+            </li>
+          </ul>
+          <aside class="notes">
+            <p><strong>Multi-circuit neurons:</strong> A single neuron in prefrontal cortex may participate in working memory circuits, decision-making circuits, and attention circuits — depending on the current task demand. This is the biological analogue of weight sharing in Universal Transformers.</p>
+            <p><strong>Bypass:</strong> The classic example is LeDoux's "low road" — the thalamus-to-amygdala shortcut that enables fast fear responses. The "high road" goes through cortex for full processing. The brain adaptively routes information through different-depth pathways.</p>
+            <p><strong>Effort:</strong> The multiple demand network (Duncan 2010) activates more strongly and broadly for harder cognitive tasks. This is the neural correlate of adaptive computation — the brain allocates more neural "compute" to harder problems.</p>
+          </aside>
+        </section>
+
+        <section data-background-video="figures/brain.mp4" data-background-video-loop data-background-video-muted data-background-size="cover">
+        </section>
+
+        <section data-background-video="figures/brain.mp4" data-background-video-loop data-background-video-muted data-background-size="cover">
+          <div style="background-color: rgba(253, 246, 227, 0.9); padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <h2>Neural Multiplexing</h2>
+            <ul style="font-size: 28px; line-height: 1.65; margin-top: 14px;">
+              <li class="fragment roll-in">
+                The same neurons engage in <strong>different circuits at different times</strong> — forming task-specific functional networks dynamically
+              </li>
+              <li class="fragment roll-in">
+                This is remarkably similar to <strong>weight-shared architectures</strong> (Universal Transformer, DEQ) where the same parameters are reused across "depth"
+              </li>
+              <li class="fragment roll-in">
+                Unlike fixed feed-forward nets, the brain does not dedicate separate hardware to each processing stage — it <strong>recycles</strong>
+              </li>
+            </ul>
+            <blockquote class="fragment roll-in" style="background-color: #eee8d5; width: 100%; font-size: 24px; margin-top: 16px; box-sizing: border-box;" class="left">
+              "The brain's 'layers' are not a pipeline — they are a recurrent, adaptive, depth-varying computation."
+            </blockquote>
+            <div class="fragment roll-in" style="font-size: 22px; color: #859900; margin-top: 14px; text-align: left;">
+              This lecture: architectures that bring this flexibility to neural networks.
+            </div>
+          </div>
+          <aside class="notes">
+            <p>Bridge from neuroscience to the lecture content. The key analogy: the brain reuses the same neural populations across multiple processing stages and adjusts how many stages to run. We're now going to see exactly this in neural network architectures.</p>
+            <p>The weight-sharing connection is literal: Universal Transformers reuse the same layer parameters, just as cortical columns reuse the same neural populations across different functional networks.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Two Questions for This Lecture</h2>
+          <div style="display: flex; justify-content: center; gap: 40px; margin-top: 30px;">
+            <div class="fragment roll-in" style="background: #fdf6e3; border-radius: 12px; padding: 24px 30px; width: 340px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); border-top: 4px solid #859900;">
+              <div style="font-size: 26px; font-weight: bold; color: #859900; margin-bottom: 12px;">When to stop?</div>
+              <div style="font-size: 22px; color: #586e75; line-height: 1.5;">
+                Learn a <strong>halting signal</strong> that decides how many computation steps each input needs.
+              </div>
+              <div style="font-size: 19px; color: #93a1a1; margin-top: 10px;">ACT · UT · PonderNet</div>
+            </div>
+            <div class="fragment roll-in" style="background: #fdf6e3; border-radius: 12px; padding: 24px 30px; width: 340px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); border-top: 4px solid #b58900;">
+              <div style="font-size: 26px; font-weight: bold; color: #b58900; margin-bottom: 12px;">Where to route?</div>
+              <div style="font-size: 22px; color: #586e75; line-height: 1.5;">
+                Learn <strong>which tokens</strong> pass through which layers, under a fixed FLOP budget.
+              </div>
+              <div style="font-size: 19px; color: #93a1a1; margin-top: 10px;">DAT · Mixture-of-Depths</div>
+            </div>
+          </div>
+          <div class="fragment roll-in" style="font-size: 22px; color: #657b83; margin-top: 24px; text-align: center;">
+            L2's DEQs answered "when to stop" <em>implicitly</em> — iterate until convergence.<br>
+            This lecture makes the decision <em>explicit and learnable</em>.
+          </div>
+          <aside class="notes">
+            <p>This is the structural backbone of the lecture. The first half (§2–§3) covers halting-based methods. The second half (§4) covers routing-based methods. §5 unifies them.</p>
+            <p>The connection to L2 is important: DEQs iterate to convergence (the solver decides when to stop). ACT and UT learn a halting distribution (the network decides). DAT and MoD learn a routing policy (the network decides where, not when).</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Motivation Wrap-Up</h2>
+          <ul style="font-size: 28px; line-height: 1.75;">
+            <li class="fragment roll-in">Fixed-depth networks waste compute on easy inputs and undercompute on hard ones</li>
+            <li class="fragment roll-in">Brains multiplex neurons, route adaptively, and scale effort with difficulty</li>
+            <li class="fragment roll-in">Two axes: <strong>adaptive depth</strong> (how many layers) and <strong>adaptive width</strong> (which sub-networks)</li>
+            <li class="fragment roll-in">This lecture focuses on depth — from halting to routing</li>
+          </ul>
+          <div class="fragment roll-in" style="font-size: 22px; color: #859900; margin-top: 16px; text-align: left;">
+            Next: the mechanism that started it all — Adaptive Computation Time.
+          </div>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 2 – ACT + PONDERNET                                  -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>Adaptive Computation Time</h2>
+          <h1>Learning When to Stop <i class="fa-solid fa-hand"></i></h1>
+          <div style="font-size: 20px; color: #93a1a1; margin-top: 10px;">
+            <a href="https://arxiv.org/abs/1603.08983" target="_blank" style="color: inherit;">Graves, "Adaptive Computation Time for Recurrent Neural Networks" (2016)</a>
+          </div>
+        </section>
+
+        <section data-slide-scale="1.05">
+          <h2 style="margin-top: -20px;">The Core Idea</h2>
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 28px; text-align: left;" class="left">
+            An RNN that applies the <strong>same</strong> transition function multiple times per input, with a learned halting probability at each "ponder" step.
+          </blockquote>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px; gap: 20px;">
+            <div style="flex: 0 0 65%; text-align: center;">
+              <img src="figures/ACT_architecture.png" alt="ACT architecture — variable ponder steps per time step" style="border:0; box-shadow:none; margin: 0; width: 100%;">
+            </div>
+            <div style="flex: 1; text-align: left;">
+              <ul style="font-size: 25px; line-height: 1.55; margin: 0; padding-left: 10px;">
+                <li class="fragment roll-in" style="margin-bottom: 16px;">At each time step $t$, the network iterates <strong>internally</strong> for $N(t)$ sub-steps</li>
+                <li class="fragment roll-in" style="margin-bottom: 16px;">$N(t)$ is not fixed — it is determined by a <strong>learned halting unit</strong></li>
+                <li class="fragment roll-in">The network is <em>unrolled in depth</em>, not just in time</li>
+              </ul>
+            </div>
+          </div>
+          <aside class="notes">
+            <p>This is the fundamental diagram — show how the RNN processes each input token with a variable number of internal computation steps. Easy tokens might take 1–2 steps, hard tokens might take 5–7. The key insight is that the number of steps is learned, not hand-set.</p>
+            <p>Point out the two axes in the diagram: horizontal = time steps (sequence), vertical = ponder steps (depth). Standard RNNs have depth 1 at each time step. ACT makes depth variable and learnable.</p>
+          </aside>
+        </section>
+
+        <section data-background-image="figures/ACT_architecture.png" data-background-size="contain" data-background-opacity="0.1">
+          <h2>The Halting Mechanism</h2>
+          <div style="font-size: 28px; line-height: 1.55; text-align: left; margin-top: 8px;">
+            <div class="fragment roll-in">
+              At ponder step $n$ of time step $t$, compute a <strong>halting probability</strong>:
+            </div>
+            <div class="fragment roll-in" style="text-align: center; margin-top: 12px;">
+              $$h_t^n = \sigma\!\left(W_h \, s_t^n + b_h\right)$$
+            </div>
+            <div class="fragment roll-in" style="margin-top: 12px;">
+              Accumulate into a running sum:
+            </div>
+            <div class="fragment roll-in" style="text-align: center; margin-top: 12px;">
+              $$H_t^n = \sum_{k=1}^{n} h_t^k$$
+            </div>
+            <div class="fragment roll-in" style="margin-top: 12px;">
+              Define the <strong>total steps</strong> $N(t)$ as the first step $n$ where $H_t^{n} \geq 1 - \epsilon$, and <strong>halt</strong>.
+            </div>
+            <div class="fragment roll-in" style="margin-top: 12px;">
+              Compute the <strong>remainder</strong>:
+              $\quad R_t = 1 - \sum_{k=1}^{N(t)-1} h_t^k$
+            </div>
+          </div>
+          <blockquote class="fragment roll-in" style="background-color: #eee8d5; width: 100%; font-size: 24px; margin-top: 12px;" class="left">
+            Deterministic + differentiable: no sampling, no REINFORCE — just a sigmoid and an accumulator.
+          </blockquote>
+          <aside class="notes">
+            <p>Walk through the mechanism step by step. Key points:</p>
+            <p>1. h is a sigmoid — bounded in (0,1). Each ponder step contributes a "probability mass."</p>
+            <p>2. The halting probabilities accumulate. Once they sum to ~1, the network stops.</p>
+            <p>3. The remainder R handles the edge: the last step gets whatever probability mass is left.</p>
+            <p>4. This is fully differentiable — gradients flow through the sigmoid. No need for REINFORCE or Gumbel tricks.</p>
+          </aside>
+        </section>
+
+        <section data-background-image="figures/ACT_architecture.png" data-background-size="contain" data-background-opacity="0.1">
+          <h2>Weighted Output</h2>
+          <div style="font-size: 29px; line-height: 1.55; text-align: left;">
+            <div class="fragment roll-in">
+              The final state is a <strong>weighted combination</strong> of all ponder states:
+            </div>
+            <div class="fragment roll-in" style="text-align: center; margin-top: 14px;">
+              $$\bar{s}_t = \sum_{n=1}^{N(t)} p_t^n \cdot s_t^n$$
+            </div>
+            <div class="fragment roll-in" style="margin-top: 14px;">
+              where the weights are:
+            </div>
+            <div class="fragment roll-in" style="text-align: center; margin-top: 10px;">
+              $$p_t^n = \begin{cases} h_t^n & \text{if } n \lt N(t) \\ R_t & \text{if } n = N(t) \end{cases}$$
+            </div>
+          </div>
+          <blockquote class="fragment roll-in" style="background-color: #eee8d5; width: 100%; font-size: 24px; margin-top: 16px;" class="left">
+            The network doesn't just decide <em>when</em> to stop — it <strong>interpolates</strong> over its intermediate states.<br>
+            The halting weights $p_t^n$ sum to 1 by construction.
+          </blockquote>
+          <aside class="notes">
+            <p>This is a subtle but important point. The output isn't just the last ponder state — it's a weighted average. Early ponder states contribute if they had high halting probability. This means the network can "hedge" — partially committing to early answers while continuing to refine.</p>
+            <p>The weights sum to 1 by construction: the first N-1 terms are the raw halting probabilities, and the last term R is defined as the remainder 1 - sum.</p>
+          </aside>
+        </section>
+
+        <section data-background-image="figures/ACT_architecture.png" data-background-size="contain" data-background-opacity="0.1">
+          <h2>The Ponder Cost</h2>
+          <div style="font-size: 29px; line-height: 1.55; text-align: left;">
+            <div class="fragment roll-in">
+              Without a penalty, the network would <strong>always ponder maximally</strong>.
+            </div>
+            <div class="fragment roll-in" style="text-align: center; margin-top: 16px;">
+              $$\mathcal{L} = \mathcal{L}_{\text{task}} + \tau \cdot \rho(t)$$
+            </div>
+            <div class="fragment roll-in" style="margin-top: 14px;">
+              where the ponder cost is:
+              $$\rho(t) = N(t) + R_t$$
+            </div>
+          </div>
+          <ul style="font-size: 25px; line-height: 1.55; margin-top: 12px;">
+            <li class="fragment roll-in">$\tau$ is a <strong>hyperparameter</strong> trading accuracy for compute</li>
+            <li class="fragment roll-in">Small $\tau$ → more pondering, higher accuracy</li>
+            <li class="fragment roll-in">Large $\tau$ → fewer steps, faster but less accurate</li>
+            <li class="fragment roll-in">This is a <strong>surrogate</strong> for a computational budget — not a hard constraint</li>
+          </ul>
+          <aside class="notes">
+            <p>The ponder cost is key to making ACT practical. Without it, the network would always use the maximum number of steps — more computation never hurts task loss. The penalty encourages the network to stop early when it can.</p>
+            <p>Note that ρ(t) = N(t) + R is essentially "number of steps plus fractional remainder." The remainder R makes this differentiable w.r.t. the halting probabilities.</p>
+            <p>The τ hyperparameter is both ACT's strength and weakness: it gives direct control over the compute-accuracy tradeoff, but it requires tuning and may not generalize across tasks or data distributions.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2 style="margin-bottom: -20px;">ACT Pseudocode</h2>
+          <pre class="python" style="width: 100%; font-size: 15pt;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|3-6|8-11|13-16|17-19|21-22">
+def ACT_step(x_t, s_prev, W_h, b_h, τ_max):
+    """One time step of an ACT-augmented RNN."""
+    H = 0.0              <span style="color:#859900;"># cumulative halting probability</span>
+    s_bar = 0             <span style="color:#859900;"># weighted output state</span>
+    n = 0
+
+    while H &lt; 1 - ε:
+        n += 1
+        s_n = RNN_cell(x_t, s_prev if n == 1 else s_n)
+        h_n = σ(W_h @ s_n + b_h)     <span style="color:#859900;"># halting probability</span>
+
+        if H + h_n &ge; 1 - ε or n == τ_max:   <span style="color:#859900;"># halt</span>
+            R = 1 - H                 <span style="color:#859900;"># remainder</span>
+            s_bar += R * s_n
+            break
+        else:
+            H += h_n
+            s_bar += h_n * s_n
+
+    ponder_cost = n + R   <span style="color:#859900;"># for the loss penalty</span>
+    return s_bar, ponder_cost
+          </code></pre>
+          <aside class="notes">
+            <p>Walk through the pseudocode step by step. Emphasize that the while loop IS the "pondering" — the network iterates internally before moving to the next input token. The halting probability h_n is computed fresh at each ponder step from the current state s_n.</p>
+            <p>Note that s_prev is the hidden state from the previous time step (carried across time), while s_n is the state within the current ponder loop (carried across depth).</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Synthetic Tasks: Ponder Time Adapts</h2>
+          <img src="figures/ACT_synthetic_results.png" alt="ACT results on parity, logic, addition, sorting — ponder time scales with difficulty" style="border:0; box-shadow:none;" width="80%">
+          <ul style="font-size: 25px; line-height: 1.55; margin-top: 12px;">
+            <li class="fragment roll-in">Parity, logic, integer addition, sorting — ACT dramatically outperforms fixed-depth</li>
+            <li class="fragment roll-in">Key observation: <strong>ponder time scales with input difficulty</strong></li>
+            <li class="fragment roll-in">Longer bit strings → more ponder steps; harder sorting instances → more steps</li>
+          </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 8px;">
+            <a href="https://arxiv.org/abs/1603.08983" target="_blank">Graves, "Adaptive Computation Time for Recurrent Neural Networks" (2016)</a>
+          </div>
+          <aside class="notes">
+            <p>These are the "clean" results. On synthetic algorithmic tasks, ACT learns to use more computation for harder instances. This is exactly the behavior we wanted: adaptive compute allocation.</p>
+            <p>Point out specific examples: for parity, longer inputs need more steps because the parity computation requires visiting all bits. For sorting, the number of steps correlates with the number of inversions.</p>
+          </aside>
+        </section>
+
+        <section data-slide-scale="0.95">
+          <h2>Language Model: Where Compute Goes</h2>
+          <img src="figures/ACT_wikitext_ponder.png" alt="Per-character ponder time, prediction loss, and entropy on Wikipedia text" style="border:0; box-shadow:none;" width="100%">
+          <ul style="font-size: 24px; line-height: 1.55; margin-top: 10px;">
+            <li class="fragment roll-in"><strong>Ponder time spikes</strong> at spaces, punctuation, and rare transitions</li>
+            <li class="fragment roll-in">Correlates with prediction loss and entropy — <em>the network thinks harder when it's uncertain</em></li>
+            <li class="fragment roll-in">Suggests ACT learns a form of <strong>implicit difficulty estimation</strong></li>
+          </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 8px;">
+            <a href="https://arxiv.org/abs/1603.08983" target="_blank">Graves (2016), Figure 23</a>
+          </div>
+          <aside class="notes">
+            <p>This is the "wow" figure of the paper. The three-panel layout shows that ponder time, prediction loss, and prediction entropy are highly correlated — the network spends more computation on characters that are genuinely harder to predict.</p>
+            <p>Specific observations: spaces between words are prediction boundaries (next word could be anything), so ponder time spikes. Common words like "the" get low ponder time. Rare or surprising transitions get high ponder time.</p>
+            <p>This also suggests ACT as a tool for data analysis — the ponder map reveals the difficulty structure of the data, potentially useful for segment boundary detection.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>ACT: Strengths and Limitations</h2>
+          <div style="display: flex; gap: 30px; margin-top: 16px;">
+            <div style="flex: 1;">
+              <h3 style="font-size: 24px; color: #859900;">Strengths</h3>
+              <ul style="font-size: 23px; line-height: 1.55;">
+                <li class="fragment roll-in">Simple, deterministic, differentiable</li>
+                <li class="fragment roll-in">Interpretable ponder maps</li>
+                <li class="fragment roll-in">Minimal architectural changes to the base RNN</li>
+                <li class="fragment roll-in">Direct compute–accuracy tradeoff via $\tau$</li>
+              </ul>
+            </div>
+            <div style="flex: 1;">
+              <h3 style="font-size: 24px; color: #dc322f;">Limitations</h3>
+              <ul style="font-size: 23px; line-height: 1.55;">
+                <li class="fragment roll-in">$\tau$ is sensitive and requires tuning</li>
+                <li class="fragment roll-in">Halting distribution can <strong>collapse</strong> — always using ~same steps</li>
+                <li class="fragment roll-in">No probabilistic model of halting — just a threshold</li>
+                <li class="fragment roll-in">Ponder penalty is a crude surrogate for computational budget</li>
+              </ul>
+            </div>
+          </div>
+          <div class="fragment roll-in" style="font-size: 22px; color: #859900; margin-top: 16px; text-align: center;">
+            Can we do better? PonderNet offers a probabilistic fix…
+          </div>
+        </section>
+
+        <section>
+          <h2>PonderNet: A Probabilistic Twist</h2>
+          <div style="font-size: 27px; line-height: 1.55; text-align: left;">
+            <div class="fragment roll-in">
+              <strong>Key change:</strong> model halting as a <strong>geometric-like distribution</strong> over ponder steps.
+            </div>
+            <div class="fragment roll-in" style="text-align: center; margin-top: 14px;">
+              $$p(\text{halt at step } n) = \lambda_n \prod_{k=1}^{n-1}(1 - \lambda_k)$$
+            </div>
+            <div class="fragment roll-in" style="margin-top: 12px;">
+              where $\lambda_n = \sigma(W_h s_n + b_h)$ — same halting unit as ACT.
+            </div>
+          </div>
+          <ul style="font-size: 24px; line-height: 1.55; margin-top: 14px;">
+            <li class="fragment roll-in">Training: KL divergence between the learned halting distribution and a geometric prior</li>
+            <li class="fragment roll-in">Replaces $\tau$ with a <strong>prior distribution</strong> — more principled regularization</li>
+            <li class="fragment roll-in">At inference: sample or take the mode of the halting distribution</li>
+          </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 8px;">
+            <a href="https://arxiv.org/abs/2107.05407" target="_blank">Banino et al., "PonderNet: Learning to Ponder" (2021)</a>
+          </div>
+          <aside class="notes">
+            <p>PonderNet recasts ACT's halting mechanism as a proper probability distribution. Instead of accumulated probability hitting a threshold, each step has a conditional halting probability λ_n, and the probability of halting at exactly step n follows a geometric-like distribution.</p>
+            <p>The KL regularization replaces τ with a prior — typically a geometric distribution with a chosen expected number of steps. This is more principled than the raw ponder penalty.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>The Thread</h2>
+          <ul style="font-size: 27px; line-height: 1.65;">
+            <li class="fragment roll-in"><strong>ACT (2016):</strong> deterministic threshold — "halt when accumulated probability hits 1"</li>
+            <li class="fragment roll-in"><strong>PonderNet (2021):</strong> probabilistic model — "sample from a learned halting distribution"</li>
+            <li class="fragment roll-in"><strong>Both:</strong> the network decides <em>when to stop</em> — variable compute, no hard budget</li>
+            <li class="fragment roll-in"><strong>Coming next:</strong> what if we flip the question? Instead of "when to stop," ask "which tokens need which layers" — under a <em>fixed budget</em></li>
+          </ul>
+          <blockquote class="fragment roll-in" style="background-color: #eee8d5; width: 100%; font-size: 24px; margin-top: 16px;" class="left">
+            But first: what happens when we transplant ACT into the Transformer?
+          </blockquote>
+          <aside class="notes">
+            <p>This slide connects PonderNet back to ACT and forward to routing. The key conceptual progression: ACT = threshold-based halting → PonderNet = probabilistic halting → routing methods (§4) = skip/route instead of halt. But before routing, we need to see what happens when ACT moves from RNNs to Transformers — that's the Universal Transformer.</p>
+          </aside>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 3 – UNIVERSAL TRANSFORMER                            -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>Universal Transformer</h2>
+          <h1>Weight-Sharing + Halting in Attention</h1>
+          <div style="font-size: 20px; color: #93a1a1; margin-top: 10px;">
+            Dehghani et al., "Universal Transformers" (2019)
+          </div>
+        </section>
+
+        <section>
+          <h2>From Stacked to Shared Layers</h2>
+          <div style="display: flex; justify-content: center; gap: 60px; margin-top: 20px;">
+            <div style="text-align: center;">
+              <div style="font-size: 22px; font-weight: bold; color: #657b83; margin-bottom: 14px;">Standard Transformer</div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <div style="background: #268bd2; color: white; padding: 8px 28px; border-radius: 6px; font-size: 20px;">Layer 1 <span style="font-size:16px;">(θ₁)</span></div>
+                <div style="color: #93a1a1;">↓</div>
+                <div style="background: #2aa198; color: white; padding: 8px 28px; border-radius: 6px; font-size: 20px;">Layer 2 <span style="font-size:16px;">(θ₂)</span></div>
+                <div style="color: #93a1a1;">↓</div>
+                <div style="background: #859900; color: white; padding: 8px 28px; border-radius: 6px; font-size: 20px;">Layer 3 <span style="font-size:16px;">(θ₃)</span></div>
+                <div style="color: #93a1a1;">↓</div>
+                <div style="background: #b58900; color: white; padding: 8px 28px; border-radius: 6px; font-size: 20px;">Layer L <span style="font-size:16px;">(θ_L)</span></div>
+              </div>
+              <div style="font-size: 18px; color: #93a1a1; margin-top: 8px;">L distinct parameter sets</div>
+            </div>
+            <div class="fragment roll-in" style="text-align: center;">
+              <div style="font-size: 22px; font-weight: bold; color: #859900; margin-bottom: 14px;">Universal Transformer</div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <div style="background: #859900; color: white; padding: 8px 28px; border-radius: 6px; font-size: 20px;">Step 1 <span style="font-size:16px;">(θ)</span></div>
+                <div style="color: #859900;">↓</div>
+                <div style="background: #859900; color: white; padding: 8px 28px; border-radius: 6px; font-size: 20px;">Step 2 <span style="font-size:16px;">(θ)</span></div>
+                <div style="color: #859900;">↓</div>
+                <div style="background: #859900; color: white; padding: 8px 28px; border-radius: 6px; font-size: 20px;">Step 3 <span style="font-size:16px;">(θ)</span></div>
+                <div style="color: #859900;">↓</div>
+                <div style="background: #859900; color: white; padding: 8px 28px; border-radius: 6px; font-size: 20px;">Step T <span style="font-size:16px;">(θ)</span></div>
+              </div>
+              <div style="font-size: 18px; color: #859900; margin-top: 8px;">1 shared parameter set, T applications</div>
+            </div>
+          </div>
+          <ul style="font-size: 24px; line-height: 1.55; margin-top: 14px;">
+            <li class="fragment roll-in">UT = Transformer body applied <strong>recurrently</strong> over depth (+ step embeddings)</li>
+            <li class="fragment roll-in">This is literally a <strong>weight-tied deep network</strong> — an RNN over depth</li>
+          </ul>
+          <aside class="notes">
+            <p>The key architectural difference: a standard Transformer has L different layers, each with its own parameters. The UT has ONE set of layer parameters that is applied T times. This is weight sharing across depth — the same idea as an RNN unrolled in time, but here "time" is "depth."</p>
+            <p>The UT adds coordinate/step embeddings (similar to positional embeddings) so the shared layer knows which step it's on. Without these, the shared layer would apply the same function identically at each step — with them, it can condition on the current depth.</p>
+          </aside>
+        </section>
+
+        <section data-background="figures/UT_per_position_halting.png" data-background-size="contain">
+          <h2>Per-Position Adaptive Halting</h2>
+          <img src="figures/UT_per_position_halting.png" alt="Per-position halting depths in Universal Transformer" style="border:0; box-shadow:none; opacity: 0;" width="100%">
+          <ul style="font-size: 25px; line-height: 1.55; margin-top: 12px;">
+            <li class="fragment roll-in">ACT halting applied <strong>independently at each position</strong> in the sequence</li>
+            <li class="fragment roll-in">Different tokens halt at different depths — function words early, content words later</li>
+            <li class="fragment roll-in">The result: a <strong>ragged depth profile</strong> across the sequence</li>
+          </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 8px;">
+            <a href="https://arxiv.org/abs/1807.03819" target="_blank">Dehghani et al., "Universal Transformers" (2019)</a>
+          </div>
+          <aside class="notes">
+            <p>This is the key figure from the UT paper. Each column represents a token, each row a depth step. Darker = more computation at that step. Function words ("the," "a," "is") halt after 1–2 steps. Content words and syntactically complex positions get more steps.</p>
+            <p>Note: tokens that have halted still participate in attention with tokens that haven't — their representations are frozen but visible. This means late-halting tokens can still attend to early-halting tokens.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Turing Completeness</h2>
+          <ul style="font-size: 28px; line-height: 1.65;">
+            <li class="fragment roll-in">Standard Transformers are <strong>not</strong> Turing-complete — they are bounded-depth circuits</li>
+            <li class="fragment roll-in">UT with ACT = Transformer + recurrence + conditional halting</li>
+            <li class="fragment roll-in" style="color: #859900;">Under standard computability assumptions, UTs <strong>are</strong> Turing-complete</li>
+            <li class="fragment roll-in">Intuitively: unbounded depth + halting condition = ability to simulate any computation</li>
+          </ul>
+          <blockquote class="fragment roll-in" style="background-color: #eee8d5; width: 100%; font-size: 24px; margin-top: 14px;" class="left">
+            A theoretical advantage, not always a practical one — but it means UTs can in principle generalize to arbitrary-length inputs, while standard Transformers cannot.
+          </blockquote>
+          <aside class="notes">
+            <p>This is a theoretical result. The argument is essentially: a UT with ACT can simulate a Turing machine by using its shared layer as the transition function and ACT's halting mechanism as the halt state. A standard Transformer with fixed depth L is a bounded-depth circuit — it cannot compute functions that require more than L "steps" of reasoning.</p>
+            <p>In practice, this matters for length generalization: UTs can sometimes generalize to longer inputs than seen in training (because they can ponder longer), while standard Transformers often fail catastrophically on out-of-distribution lengths.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>UT Results Highlights</h2>
+          <ul style="font-size: 27px; line-height: 1.65;">
+            <li class="fragment roll-in"><strong>LAMBADA</strong> (word prediction): new SOTA at publication — UT outperforms standard Transformers and LSTMs</li>
+            <li class="fragment roll-in"><strong>Algorithmic tasks</strong> (copying, reversing): standard Transformers fail on OOD lengths, UTs generalize</li>
+            <li class="fragment roll-in"><strong>WMT14 En-De translation:</strong> +0.9 BLEU over vanilla Transformer</li>
+            <li class="fragment roll-in"><strong>Subject–verb agreement:</strong> UT matches or beats Transformer across all attraction distances</li>
+          </ul>
+          <blockquote class="fragment roll-in" style="background-color: #eee8d5; width: 100%; font-size: 24px; margin-top: 14px;" class="left">
+            The win is primarily on <strong>generalization beyond training distribution</strong> — exactly what adaptive depth promises.
+          </blockquote>
+          <aside class="notes">
+            <p>Key takeaway: UT's gains are most dramatic on tasks requiring length generalization or compositional reasoning — exactly where adaptive depth matters. On standard benchmarks with fixed-length inputs, the gains are more modest.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>UT ↔ DEQ: The Same Idea?</h2>
+          <div style="font-size: 27px; line-height: 1.55; text-align: left;">
+            <div class="fragment roll-in">
+              UT with infinite shared steps → weight-tied infinite depth → converge to a fixed point:
+            </div>
+            <div class="fragment roll-in" style="text-align: center; margin-top: 12px;">
+              $$\vec{z}^* = f_\theta(\vec{z}^*, \vec{x})$$
+            </div>
+            <div class="fragment roll-in" style="margin-top: 12px;">
+              This <em>is</em> a Deep Equilibrium Model (L2)!
+            </div>
+          </div>
+          <div style="display: flex; gap: 30px; margin-top: 18px;">
+            <div class="fragment roll-in" style="flex: 1; background: #fdf6e3; border-radius: 10px; padding: 16px; border-left: 4px solid #2aa198;">
+              <div style="font-size: 22px; font-weight: bold; color: #2aa198;">DEQ (L2)</div>
+              <div style="font-size: 21px; color: #586e75; margin-top: 6px;">Implicit depth: solver decides convergence</div>
+              <div style="font-size: 21px; color: #586e75;">Constant memory via implicit differentiation</div>
+            </div>
+            <div class="fragment roll-in" style="flex: 1; background: #fdf6e3; border-radius: 10px; padding: 16px; border-left: 4px solid #859900;">
+              <div style="font-size: 22px; font-weight: bold; color: #859900;">UT + ACT (L3)</div>
+              <div style="font-size: 21px; color: #586e75; margin-top: 6px;">Explicit depth: halting network decides</div>
+              <div style="font-size: 21px; color: #586e75;">O(depth) memory — stores all ponder states</div>
+            </div>
+          </div>
+          <blockquote class="fragment roll-in" style="background-color: #eee8d5; width: 100%; font-size: 23px; margin-top: 14px;" class="left">
+            Same spirit, different mechanism. Both break fixed-depth — DEQ via convergence, UT via learned halting.
+          </blockquote>
+          <aside class="notes">
+            <p>Important bridge slide. The UT, if you remove the halting mechanism and let it run to convergence, IS a DEQ. The difference is entirely in how depth is controlled: DEQ uses a numerical solver with convergence tolerance; UT uses a learned halting mechanism with a ponder penalty. DEQ gets constant memory (implicit differentiation at the fixed point); UT pays O(depth) memory for the full computation graph but gets more direct control over the compute-accuracy tradeoff.</p>
+          </aside>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 4 – HALTING TO ROUTING                               -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>From Halting to Routing</h2>
+          <h1>Adaptive Compute Under Fixed Budgets</h1>
+        </section>
+
+        <section>
+          <h2>The Pivot</h2>
+          <ul style="font-size: 28px; line-height: 1.65;">
+            <li class="fragment roll-in">ACT / UT: <strong>variable total compute</strong> — the network decides how long to run</li>
+            <li class="fragment roll-in">Problem: total FLOPs are unpredictable → hard to deploy with latency guarantees</li>
+            <li class="fragment roll-in" style="color: #859900;"><strong>New question:</strong> what if we <em>fix</em> the total FLOP budget but let the network choose <em>where</em> to spend it?</li>
+            <li class="fragment roll-in">This reframes adaptive computation from <strong>halting</strong> to <strong>routing</strong></li>
+          </ul>
+          <aside class="notes">
+            <p>This is the conceptual pivot of the lecture. ACT/UT give the network freedom to choose how much compute to use, but this makes total FLOPs unpredictable — a problem for deployment. The routing approach says: you get a fixed budget, but you decide how to allocate it across tokens and layers.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Depth-Adaptive Transformer</h2>
+          <div style="font-size: 27px; line-height: 1.55; text-align: left;">
+            <div class="fragment roll-in">
+              Each layer $\ell$ has an <strong>exit classifier</strong> that can emit a prediction:
+            </div>
+            <div class="fragment roll-in" style="text-align: center; margin-top: 12px;">
+              $$\hat{y}_\ell = \text{Classifier}_\ell(h_\ell)$$
+            </div>
+          </div>
+          <ul style="font-size: 25px; line-height: 1.55; margin-top: 10px;">
+            <li class="fragment roll-in">Unlike UT: layers are <strong>not shared</strong> — each layer is a different function</li>
+            <li class="fragment roll-in">The model learns both <em>different representations</em> and <em>when to exit</em></li>
+            <li class="fragment roll-in">Exit policy options: per-sequence confidence threshold, per-token decisions, or aligned training where all classifiers produce good predictions</li>
+            <li class="fragment roll-in">At inference: exit early when confidence is high enough</li>
+          </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 8px;">
+            <a href="https://arxiv.org/abs/1910.10073" target="_blank">Elbayad et al., "Depth-Adaptive Transformer" (2020)</a>
+          </div>
+          <aside class="notes">
+            <p>Key differences from UT: (1) layers are NOT shared — different parameters at every layer, so each layer can learn different things. (2) The "halting" mechanism is different — it's an exit classifier at each layer, not an accumulated halting probability. (3) Training requires aligning all intermediate classifiers to produce good predictions — otherwise early exit gives garbage.</p>
+            <p>This is closer to "early exit" than "adaptive computation time" — the network doesn't iterate the same function, it exits a pipeline early.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>DAT: Results</h2>
+          <img src="figures/DAT_layer_usage.svg" alt="Layer usage distribution for Depth-Adaptive Transformer" style="border:0; box-shadow:none; margin-top: -30px;" width="75%">
+          <ul style="font-size: 25px; line-height: 1.55; margin-top: -20px;">
+            <li class="fragment roll-in"><strong>IWSLT German–English:</strong> matches baseline Transformer accuracy</li>
+            <li class="fragment roll-in">Uses <strong>less than 25%</strong> of decoder layers on average</li>
+            <li class="fragment roll-in">Most tokens exit very early — only a few need full depth</li>
+          </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 8px;">
+            <a href="https://arxiv.org/abs/1910.10073" target="_blank">Elbayad et al. (2020)</a>
+          </div>
+          <aside class="notes">
+            <p>The striking result: you can get the same accuracy with a fraction of the computation. Most decoder tokens are "easy" — they can be predicted after just 1–2 layers. Only a small fraction of tokens need the full depth of the network.</p>
+            <p>This motivates the next question: if most tokens don't need full computation, why not explicitly route them around the expensive layers?</p>
+          </aside>
+        </section>
+
+        <section data-background-image="figures/MoD_arch.png"
+                 data-background-size="55% auto"
+                 data-background-position="1% center">
+
+          <!-- Title pushed to right side -->
+          <h3 style="margin-top: -10px; margin-bottom: 8px; margin-left: 55%;">Mixture-of-Depths</h3>
+
+          <!-- Right panel: text only, floated to right half -->
+          <div style="margin-left: 57%; display: flex; flex-direction: column; gap: 12px;">
+            <blockquote style="background-color: rgba(238,232,213,0.95); font-size: 21px; padding: 10px; margin: 0; width: 100%;" class="left">
+              Fix the total compute budget. Let the network learn <strong>which tokens</strong> pass through each layer.
+            </blockquote>
+
+            <div style="font-size: 19px; line-height: 1.6; text-align: left;">
+              <div class="fragment roll-in" style="margin-bottom: 10px;">
+                <span style="color: #859900;">●</span> Each layer has capacity of <strong>$k$</strong> tokens (set a priori)
+              </div>
+              <div class="fragment roll-in" style="margin-bottom: 10px;">
+                <span style="color: #2aa198;">●</span> A lightweight <strong>router</strong> scores all tokens: $r_i = W_r \cdot h_i$
+              </div>
+              <div class="fragment roll-in" style="margin-bottom: 10px;">
+                <span style="color: #268bd2;">●</span> Only <strong>top-$k$</strong> tokens pass through self-attention + MLP
+              </div>
+              <div class="fragment roll-in">
+                <span style="color: #dc322f;">●</span> Rest <strong>skip</strong> via residual: $h_i^{\ell+1} = h_i^{\ell}$
+              </div>
+            </div>
+          </div>
+
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 10px;">
+            <a href="https://arxiv.org/abs/2404.02258" target="_blank">Raposo et al., "Mixture-of-Depths" (2024)</a>
+          </div>
+
+          <aside class="notes">
+            <p>The MoD mechanism is elegant in its simplicity: at each layer, a router produces a scalar score for each token. The top-k tokens go through the full attention + MLP computation. The rest just pass through unchanged via the residual connection.</p>
+            <p>Key subtleties: k is set before training — the compute budget is hard-coded. But WHICH tokens get the budget is entirely learned. Tokens that skip a layer still contribute their representation to later layers via the residual. The compute graph has fixed tensor sizes (important for hardware efficiency).</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>MoD: The Key Insight</h2>
+          <blockquote style="background-color: #eee8d5; width: 100%; font-size: 28px;" class="left">
+            "The compute budget is <strong>fixed</strong>, but its <strong>allocation</strong> is learned."
+          </blockquote>
+          <ul style="font-size: 25px; line-height: 1.55; margin-top: 16px;">
+            <li class="fragment roll-in">Unlike ACT: <strong>no halting penalty</strong> — the budget constraint is architectural</li>
+            <li class="fragment roll-in">Unlike DAT: the decision is <strong>per-layer, per-token</strong>, not just early exit</li>
+            <li class="fragment roll-in">Tokens that skip a layer still contribute their <strong>residual</strong> — they aren't dropped</li>
+            <li class="fragment roll-in">Static compute graph + known tensor sizes → <strong>hardware-friendly</strong></li>
+          </ul>
+          <div class="fragment roll-in" style="font-size: 24px; color: #657b83; margin-top: 14px; text-align: left;">
+            Think of it as: <em>"Mixture-of-Experts applied to <strong>layers</strong> rather than sub-networks."</em>
+          </div>
+          <aside class="notes">
+            <p>The MoE analogy is precise: in MoE, a router selects which expert sub-network processes a token (adaptive width). In MoD, a router selects which LAYERS process a token (adaptive depth). Both are forms of conditional computation with learned routing.</p>
+            <p>The hardware-friendliness is a practical advantage: because k is fixed, all tensor sizes are known at compile time, enabling efficient batching and parallelization. ACT and UT have variable compute per token, which creates load-balancing issues on GPUs.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>MoD: Results</h2>
+          <img src="figures/MoD_pattern.png" alt="MoD routing pattern — which tokens go through which layers" style="border:0; box-shadow:none;" width="75%">
+          <ul style="font-size: 25px; line-height: 1.55; margin-top: 12px;">
+            <li class="fragment roll-in">Matches baseline performance with a <strong>fraction of FLOPs</strong> per forward pass</li>
+            <li class="fragment roll-in">Up to <strong>50% faster</strong> at inference (post-training sampling)</li>
+            <li class="fragment roll-in">Later layers are more selective — "easy" tokens are consistently routed around</li>
+            <li class="fragment roll-in">Learns sensible routing without explicit difficulty labels</li>
+          </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 8px;">
+            <a href="https://arxiv.org/abs/2404.02258" target="_blank">Raposo et al. (2024)</a>
+          </div>
+          <aside class="notes">
+            <p>Key results: (1) MoD models match isoFLOP baselines in terms of training performance. (2) At inference, they're much faster because many tokens skip layers. (3) The routing patterns are interpretable — later layers tend to be more selective, and certain token types are consistently routed around at many layers.</p>
+          </aside>
+        </section>
+
+        <section data-slide-scale="0.92">
+          <h2 style="margin-top: -20px;">Halting vs. Routing: Comparison</h2>
+          <table style="font-size: 20px; border-collapse: collapse; width: 100%; margin-top: 10px;">
+            <thead>
+              <tr style="background: #eee8d5;">
+                <th style="padding: 8px 10px; text-align: left;"></th>
+                <th style="padding: 8px 10px; text-align: center;">ACT</th>
+                <th style="padding: 8px 10px; text-align: center;">Universal Transformer</th>
+                <th style="padding: 8px 10px; text-align: center;">Depth-Adaptive</th>
+                <th style="padding: 8px 10px; text-align: center;">Mixture-of-Depths</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 8px 10px; font-weight:bold;">Base arch.</td>
+                <td style="padding: 8px 10px; text-align: center;">RNN</td>
+                <td style="padding: 8px 10px; text-align: center;">Transformer</td>
+                <td style="padding: 8px 10px; text-align: center;">Transformer</td>
+                <td style="padding: 8px 10px; text-align: center;">Transformer</td>
+              </tr>
+              <tr style="background: #fdf6e3;">
+                <td style="padding: 8px 10px; font-weight:bold;">Shared layers?</td>
+                <td style="padding: 8px 10px; text-align: center;">Yes (RNN cell)</td>
+                <td style="padding: 8px 10px; text-align: center;">Yes</td>
+                <td style="padding: 8px 10px; text-align: center;">No</td>
+                <td style="padding: 8px 10px; text-align: center;">No</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 10px; font-weight:bold;">Compute budget</td>
+                <td style="padding: 8px 10px; text-align: center;">Variable (+ τ)</td>
+                <td style="padding: 8px 10px; text-align: center;">Variable (+ τ)</td>
+                <td style="padding: 8px 10px; text-align: center;">Variable (exit)</td>
+                <td style="padding: 8px 10px; text-align: center;"><strong>Fixed</strong> (top-k)</td>
+              </tr>
+              <tr style="background: #fdf6e3;">
+                <td style="padding: 8px 10px; font-weight:bold;">Decision type</td>
+                <td style="padding: 8px 10px; text-align: center;">Halting prob.</td>
+                <td style="padding: 8px 10px; text-align: center;">Halting prob.</td>
+                <td style="padding: 8px 10px; text-align: center;">Exit classifier</td>
+                <td style="padding: 8px 10px; text-align: center;">Router score</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 10px; font-weight:bold;">Granularity</td>
+                <td style="padding: 8px 10px; text-align: center;">Per time step</td>
+                <td style="padding: 8px 10px; text-align: center;">Per position</td>
+                <td style="padding: 8px 10px; text-align: center;">Per token/seq</td>
+                <td style="padding: 8px 10px; text-align: center;">Per layer × token</td>
+              </tr>
+              <tr style="background: #fdf6e3;">
+                <td style="padding: 8px 10px; font-weight:bold;">Differentiable?</td>
+                <td style="padding: 8px 10px; text-align: center;">Yes</td>
+                <td style="padding: 8px 10px; text-align: center;">Yes</td>
+                <td style="padding: 8px 10px; text-align: center;">Yes</td>
+                <td style="padding: 8px 10px; text-align: center;">Yes (STE)</td>
+              </tr>
+            </tbody>
+          </table>
+          <aside class="notes">
+            <p>This comparison table is the "cheat sheet" for the lecture. Key contrasts to highlight: (1) shared vs non-shared layers, (2) variable vs fixed budget, (3) the progression from halting → exit → routing as the decision mechanism.</p>
+          </aside>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 5 – TAXONOMY AND CONNECTIONS                         -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>The Adaptive Computation Landscape</h2>
+          <h1>Connections &amp; Open Questions</h1>
+        </section>
+
+        <section>
+          <h2 style="margin-top: -10px; margin-bottom: 50px;">A Taxonomy of Adaptive Depth</h2>
+          <!-- Inline 2D landscape diagram -->
+          <div style="position: relative; width: 700px; height: 400px; margin: 20px auto 0; border-left: 3px solid #586e75; border-bottom: 3px solid #586e75;">
+            <!-- axis labels -->
+            <div style="position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%); font-size: 20px; color: #586e75;">Implicit ← <strong>depth decision</strong> → Explicit</div>
+            <div style="position: absolute; left: -190px; top: 80%; transform: rotate(-90deg) translateX(50%); font-size: 20px; color: #586e75;">Fixed ← <strong>compute budget</strong> → Variable</div>
+            <!-- points -->
+            <div class="fragment roll-in" style="position: absolute; left: 60px; top: 60px; background: #2aa198; color: white; padding: 8px 14px; border-radius: 8px; font-size: 18px; font-weight: bold;">DEQ</div>
+            <div class="fragment roll-in" style="position: absolute; left: 300px; top: 50px; background: #859900; color: white; padding: 8px 14px; border-radius: 8px; font-size: 18px; font-weight: bold;">ACT / UT</div>
+            <div class="fragment roll-in" style="position: absolute; left: 480px; top: 50px; background: #6c71c4; color: white; padding: 8px 14px; border-radius: 8px; font-size: 18px; font-weight: bold;">PonderNet</div>
+            <div class="fragment roll-in" style="position: absolute; left: 400px; top: 260px; background: #cb4b16; color: white; padding: 8px 14px; border-radius: 8px; font-size: 18px; font-weight: bold;">DAT</div>
+            <div class="fragment roll-in" style="position: absolute; left: 530px; top: 300px; background: #b58900; color: white; padding: 8px 14px; border-radius: 8px; font-size: 18px; font-weight: bold;">MoD</div>
+          </div>
+          <aside class="notes">
+            <p>This diagram organizes all the methods we've seen along two axes. DEQs are implicit and variable (solver decides). ACT/UT are explicit and variable (halting network decides, compute varies). PonderNet is explicitly probabilistic and variable. DAT is explicit but somewhat fixed (early exit reduces compute, but it's not capped a priori). MoD is explicit and fixed (top-k is hard-coded).</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Adaptive Depth vs. Adaptive Width</h2>
+          <div style="display: flex; justify-content: center; gap: 40px; margin-top: 20px;">
+            <div class="fragment roll-in" style="background: #fdf6e3; border-radius: 12px; padding: 20px 24px; width: 320px; border-top: 4px solid #859900;">
+              <div style="font-size: 24px; font-weight: bold; color: #859900; margin-bottom: 10px;">Adaptive Depth</div>
+              <div style="font-size: 21px; color: #586e75; line-height: 1.5;">
+                Choose <strong>how many layers</strong> each token passes through.
+              </div>
+              <div style="font-size: 19px; color: #93a1a1; margin-top: 8px;">ACT · UT · DAT · MoD</div>
+            </div>
+            <div class="fragment roll-in" style="background: #fdf6e3; border-radius: 12px; padding: 20px 24px; width: 320px; border-top: 4px solid #268bd2;">
+              <div style="font-size: 24px; font-weight: bold; color: #268bd2; margin-bottom: 10px;">Adaptive Width</div>
+              <div style="font-size: 21px; color: #586e75; line-height: 1.5;">
+                Choose <strong>which sub-network</strong> (expert) processes each token.
+              </div>
+              <div style="font-size: 19px; color: #93a1a1; margin-top: 8px;">Mixture-of-Experts (MoE)</div>
+            </div>
+          </div>
+          <ul style="font-size: 25px; line-height: 1.55; margin-top: 18px;">
+            <li class="fragment roll-in">These are <strong>complementary axes</strong> of the same idea: allocate compute where needed</li>
+            <li class="fragment roll-in">MoD ≈ "MoE applied to <strong>layers</strong> rather than sub-networks"</li>
+            <li class="fragment roll-in">They can be <strong>composed</strong> — adaptive depth <em>and</em> width simultaneously</li>
+          </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 8px;">
+            <a href="https://arxiv.org/abs/1701.06538" target="_blank">Shazeer et al., "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer" (2017)</a>
+          </div>
+          <aside class="notes">
+            <p>The MoE reference is optional reading, but the conceptual connection is important. MoE routes tokens to different expert sub-networks (adaptive width). MoD routes tokens to different layers (adaptive depth). Both use learned routers. You can combine them: some layers use MoE experts AND some tokens skip those layers entirely.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>The DEQ Connection (Revisited)</h2>
+          <ul style="font-size: 27px; line-height: 1.65;">
+            <li class="fragment roll-in">
+              <strong>DEQ (L2):</strong> implicit adaptive depth — iterate until convergence to $\vec{z}^* = f(\vec{z}^*, \vec{x})$
+              <div style="font-size: 22px; color: #657b83; margin-top: 2px;">✓ Constant memory &nbsp; ✓ No halting hyperparameter &nbsp; ✗ Needs convergence guarantees</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>ACT / UT:</strong> explicit adaptive depth — learn a halting distribution
+              <div style="font-size: 22px; color: #657b83; margin-top: 2px;">✗ O(depth) memory &nbsp; ✗ Tunable τ &nbsp; ✓ Direct compute–accuracy control</div>
+            </li>
+            <li class="fragment roll-in">
+              <strong>MoD:</strong> explicit routing — fixed budget, dynamic allocation
+              <div style="font-size: 22px; color: #657b83; margin-top: 2px;">✓ Predictable FLOPs &nbsp; ✓ Hardware-friendly &nbsp; ✗ No convergence guarantees</div>
+            </li>
+          </ul>
+          <blockquote class="fragment roll-in" style="background-color: #eee8d5; width: 100%; font-size: 23px; margin-top: 14px;" class="left">
+            All three break the fixed-depth paradigm — each with a different tradeoff between guarantees, control, and efficiency.
+          </blockquote>
+          <aside class="notes">
+            <p>This is the synthesis slide. Emphasize that all these methods are attacking the same problem (fixed-depth computation) from different angles. DEQs are the most mathematically principled (convergence guarantees from contraction theory in L2). ACT/UT give the most direct control. MoD is the most practical for deployment.</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Bridge to L4: Confidence and Introspection</h2>
+          <ul style="font-size: 27px; line-height: 1.65;">
+            <li class="fragment roll-in">
+              <strong>CALM</strong> (Schuster et al., 2022): early-exit inference for LLMs
+              <div style="font-size: 22px; color: #657b83; margin-top: 2px;">The network estimates its own confidence to decide whether to exit early</div>
+            </li>
+            <li class="fragment roll-in">
+              But confidence estimation requires the network to <strong>introspect</strong> — to model its own uncertainty
+            </li>
+            <li class="fragment roll-in">
+              This is exactly L4's theme: networks that <strong>look at their own internal states</strong> to decide what to compute next
+            </li>
+            <li class="fragment roll-in">
+              L4 goes further: MIND and SELF-Transformer don't just decide <em>whether</em> to keep computing — they decide <em>what</em> to compute
+            </li>
+          </ul>
+          <div class="slide-footer" style="text-align: left; font-size: 13px; margin-top: 8px;">
+            <a href="https://arxiv.org/abs/2207.07061" target="_blank">Schuster et al., "Confident Adaptive Language Modeling" (CALM, 2022)</a>
+          </div>
+          <aside class="notes">
+            <p>CALM is the optional reading that bridges L3 and L4 most directly. The key insight: early exit requires the network to know when it's "confident enough." But calibrating confidence is itself a hard problem — networks are often overconfident. L4 formalizes this introspective capability as an architectural principle.</p>
+          </aside>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SECTION 6 – WRAP-UP                                          -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>Takeaways</h2>
+          <ul style="font-size: 30px; line-height: 1.9; max-width: 92%; margin: 0 auto;">
+            <li class="fragment roll-in"><strong>Adaptive depth replaces fixed compute</strong> — ACT/UT learn per-input halting; the network decides when to stop.</li>
+            <li class="fragment roll-in"><strong>Routing flips the question</strong> — DAT and MoD ask which tokens need which layers under a fixed FLOP budget.</li>
+            <li class="fragment roll-in"><strong>Implicit vs explicit depth control</strong> — DEQs (L2) converge to equilibrium; ACT/UT learn a halting signal.</li>
+            <li class="fragment roll-in"><strong>Depth and width are orthogonal axes</strong> — adaptive depth composes with adaptive width (MoE), and L4 adds introspection.</li>
+          </ul>
+          <aside class="notes">
+            <p><strong>Open problems to discuss if time permits:</strong></p>
+            <ul>
+              <li><strong>Calibration:</strong> learned halting/routing can collapse to near-fixed step counts.</li>
+              <li><strong>OOD robustness:</strong> halting signals trained on easy data can halt too early out of distribution.</li>
+              <li><strong>Training stability:</strong> ponder penalties and routing objectives are brittle.</li>
+              <li><strong>Compositional adaptivity:</strong> jointly adaptive depth and width is still underexplored.</li>
+            </ul>
+            <p><strong>Bridge to Lecture 4:</strong> introspection-driven compute allocation (Slot Attention, MIND, SELF-Transformer, CTM).</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Readings</h2>
+          <div style="font-size: 22px; text-align: left; line-height: 1.6;">
+            <div style="font-weight: bold; color: #859900; margin-bottom: 8px;">Core</div>
+            <ul style="margin-bottom: 16px;">
+              <li><a href="https://arxiv.org/abs/1603.08983" target="_blank">Graves (2016)</a> — ACT: learnable halting for RNNs</li>
+              <li><a href="https://arxiv.org/abs/1807.03819" target="_blank">Dehghani et al. (2019)</a> — Universal Transformer: shared layers + ACT halting</li>
+              <li><a href="https://arxiv.org/abs/1910.10073" target="_blank">Elbayad et al. (2020)</a> — Depth-Adaptive Transformer: early-exit classifiers</li>
+              <li><a href="https://arxiv.org/abs/2404.02258" target="_blank">Raposo et al. (2024)</a> — Mixture-of-Depths: top-k routing per layer</li>
+            </ul>
+            <div style="font-weight: bold; color: #657b83; margin-bottom: 8px;">Optional</div>
+            <ul>
+              <li><a href="https://arxiv.org/abs/1701.06538" target="_blank">Shazeer et al. (2017)</a> — MoE: adaptive width via routing</li>
+              <li><a href="https://arxiv.org/abs/2107.05407" target="_blank">Banino et al. (2021)</a> — PonderNet: probabilistic halting</li>
+              <li><a href="https://arxiv.org/abs/1612.02297" target="_blank">Figurnov et al. (2017)</a> — Spatially Adaptive Computation Time</li>
+              <li><a href="https://arxiv.org/abs/2207.07061" target="_blank">Schuster et al. (2022)</a> — CALM: confidence-based early exit</li>
+            </ul>
+          </div>
+        </section>
+
+      </section>
+
 
     </div>
   </div>
 
   <script src="dist/reveal.js"></script>
-  <link rel="stylesheet" href="plugin/highlight/atom-one-light.css">
+  <link rel="stylesheet" href="plugin/highlight/monokai.css">
   <script src="plugin/highlight/highlight.js"></script>
   <script src="plugin/math/math.js"></script>
   <script src="plugin/chalkboard/plugin.js"></script>
