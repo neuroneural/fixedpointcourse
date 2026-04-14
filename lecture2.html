@@ -1340,8 +1340,12 @@ def backward_neumann(g, x, w_F, h_star, K):
               The solver doesn't change the gradient. Any path to $\vec{z}^{\,*}$ gives the same answer.
             </div>
             <div class="fragment roll-in" style="margin-top: 14px;">
-              <strong>Caveat:</strong> Broyden is sequential — it does not parallelize on GPU.
-              For contractive maps, RBP's simple iteration is much faster in practice.
+              <strong>Solver tradeoffs:</strong>
+              <ul style="font-size: 26px; margin-top: 6px; line-height: 1.5;">
+                <li class="fragment roll-in">Broyden: fewer steps (superlinear), higher per-step overhead (rank-1 bookkeeping)</li>
+                <li class="fragment roll-in">Fixed-point iteration: cheapest per step, but may need more iterations</li>
+                <li class="fragment roll-in">Anderson acceleration: optimal mix of past iterates — often the best GPU-efficiency balance</li>
+              </ul>
             </div>
             <div class="fragment roll-in" style="margin-top: 20px; color: #2aa198; font-weight: 700; font-size: 30px; text-align: center;">
               Same math. Different solver. Know the tradeoff.
@@ -1353,13 +1357,20 @@ def backward_neumann(g, x, w_F, h_star, K):
             and conjugate gradients on normal equations (CG-RBP).</p>
             <p>DEQ defaults to Broyden's method (a quasi-Newton root finder) for both
             forward and backward passes. Broyden is the fourth solver we meet for the
-            same linear system. Its advantage on paper: superlinear convergence without
+            same linear system. Its advantage: superlinear convergence without
             forming the full Jacobian.</p>
-            <p>However, Broyden is inherently sequential — rank-1 updates do not
-            parallelize well on GPU. For contractive maps where the spectral radius
-            is well below 1, plain fixed-point iteration (RBP) converges fast and
-            maps perfectly onto GPU hardware. In practice DEQ's solver is often
-            much slower than RBP despite fewer iterations.</p>
+            <p><strong>Per-step vs. total cost:</strong> all iterative solvers (FPI, Broyden, Anderson, CG)
+            are sequential across iterations — step $k$ depends on step $k{-}1$.
+            Broyden has slightly higher per-step overhead (rank-1 bookkeeping on top of the
+            function evaluation), but converges in fewer steps. FPI has minimal per-step cost
+            but linear convergence rate $\rho(J)$; when $\rho(J) \ll 1$ FPI is fast and the
+            difference is small, but when $\rho(J) \approx 1$ FPI can stall while Broyden
+            still makes progress.</p>
+            <p><strong>Anderson Acceleration:</strong> uses a window of past iterates and solves a
+            small least-squares problem to find the optimal linear combination — essentially
+            a Krylov-like method. Often the best GPU-efficiency balance: matrix-friendly
+            operations, superlinear convergence, moderate memory. This is the practical
+            default in modern DEQ implementations.</p>
             <p><strong>Computational reality:</strong> if your hidden state is e.g. 10,000 units,
             standard Broyden's B matrix is 100 million parameters (N²). Neumann and CG
             stay O(N) — they only need matrix-vector products. Limited-memory Broyden
@@ -1430,13 +1441,14 @@ def backward_neumann(g, x, w_F, h_star, K):
         <!-- Slide 6: DEQ Algorithm — Pseudocode -->
         <section>
           <h2 style="margin-top: -20px;">DEQ Algorithm</h2>
-          <pre class="python" style="width: 100%; font-size: 15pt; margin-top: -20px;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|3-8|10|12-15">
+          <pre class="python" style="width: 100%; font-size: 15pt; margin-top: -20px;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape data-line-numbers="|3-6|7-9|11|13|14-15|16|">
 # DEQ Forward + Backward
 
 # ─── Forward ───
 z* = RootFind(g_θ, x, ε_fwd)                 # g_θ(z) = f_θ(z, x) − z
 y = h(z*)                                     # readout
 L = loss(y, target)
+# ─── Backward ───
 g = (∂L/∂z*)ᵀ                                 # ← AD: VJP (seed)
 ∂L/∂θ, ∂L/∂x = backward_deq(g, x, z*, θ, ε_bwd)
 
@@ -1477,6 +1489,91 @@ def backward_deq(g, x, z_star, θ, ε_bwd):
           <aside class="notes">
             The constant-memory property is NOT a DEQ invention. It is inherent to every method that differentiates through an equilibrium rather than through the trajectory: Almeida (1987), Pineda (1987), Liao et al. (2018), Scarselli et al. (2009), and finally DEQ (2019).
             DEQ's contribution was packaging this old insight with modern solvers (Broyden) and modern architectures (Transformers, TrellisNets) and showing competitive results at scale.
+          </aside>
+        </section>
+
+        <!-- Slide 7b: Anderson Acceleration — Intuition -->
+        <section data-slide-scale="0.82">
+          <h2>Anderson Acceleration (Intuition)</h2>
+          <div style="font-size: 25px; line-height: 1.5; text-align: left; margin-top: 4px;">
+            <div class="fragment roll-in">
+              <strong>Fixed-point iteration</strong> uses only the last iterate:
+              \[
+              \vec{z}^{[k+1]} = F(\vec{z}^{[k]})
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 8px;">
+              <strong>Anderson's idea:</strong> use a window of the last $m$ iterates and their residuals
+              $\vec{r}^{[i]}=F(\vec{z}^{[i]})-\vec{z}^{[i]}$.
+              Find mixing coefficients $\alpha_i$ that <strong>minimize the residual</strong>:
+              \[
+              \min_{\alpha}\left\|\sum_{i=0}^{m}\alpha_i\,\vec{r}^{[k-m+i]}\right\|^2,\qquad
+              \sum_i\alpha_i=1
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 8px;">
+              Then take the next step from the <strong>optimal combination</strong>:
+              \[
+              \vec{z}^{[k+1]}=\sum_{i=0}^{m}\alpha_i\,F(\vec{z}^{[k-m+i]})
+              \]
+            </div>
+            <div class="fragment roll-in" style="margin-top: 8px;">
+              <strong>Cost per step:</strong> one function evaluation + one small least-squares solve ($m\!\times\!m$, typically $m\le 10$).
+            </div>
+            <div class="fragment roll-in" style="margin-top: 8px; color: #2aa198;">
+              Convergence is superlinear. Operations are matrix-friendly — maps well onto GPU.
+            </div>
+          </div>
+          <div class="slide-footer" style="text-align: left; font-size: 11px; margin-top: 4px; margin-bottom: -16px; line-height: 1.2;">
+            <a href="https://scholar.google.com/scholar?q=Anderson+1965+Iterative+Procedures+for+Nonlinear+Integral+Equations" target="_blank">Anderson, D. G. (1965). Iterative Procedures for Nonlinear Integral Equations. J. ACM, 12(4).</a><br>
+            <a href="https://scholar.google.com/scholar?q=Walker+Ni+Anderson+Acceleration+for+Fixed+Point+Iterations" target="_blank">Walker, H. F. and Ni, P. (2011). Anderson Acceleration for Fixed-Point Iterations. SIAM J. Num. Analysis.</a>
+          </div>
+          <aside class="notes">
+            <p>Anderson Acceleration (AA) is the key practical solver to understand. It predates Broyden (1965 vs 1965, actually the same year!) but became the default in modern DEQ work.</p>
+            <p><strong>Relation to other methods:</strong> AA with $m=0$ reduces to plain fixed-point iteration. AA with $m=1$ is closely related to Broyden's method. AA with general $m$ is equivalent to GMRES applied to the linearized residual — it's a Krylov method in disguise.</p>
+            <p><strong>GPU advantage over Broyden:</strong> the least-squares solve is a small dense problem ($m \times m$), and the mixing step is a simple matrix-vector product over stored iterates. No rank-1 sequential updates needed.</p>
+          </aside>
+        </section>
+
+        <!-- Slide 7c: Anderson Acceleration — Pseudocode -->
+        <section>
+          <h2 style="margin-top: -60px; margin-bottom: -50px;">Anderson Acceleration Pseudocode</h2>
+          <pre class="python" style="width: 100%; font-size: 15pt;"><code style="max-height: none; overflow: visible; line-height: 1.3; margin-top: 0px;" data-trim data-noescape data-line-numbers="|2-4|6-9|11-16|18|">
+# Algorithm: Anderson Acceleration (window m)
+def anderson(F, z_init, m, K, ε):
+    z = z_init
+    Z = []; R = []                             # history buffers
+
+    for k in 0..K:
+        r = F(z) − z                           # residual
+        if ‖r‖ < ε: break
+        Z.append(z); R.append(r)               # store history
+
+        if len(R) > 1:
+            # solve min_α ‖Σ αᵢ rᵢ‖²  s.t. Σ αᵢ = 1
+            α = least_squares(R[-m:])          # small m×m problem
+            z = Σ αᵢ F(Z[-m:][i])              # optimal combination
+        else:
+            z = F(z)                            # plain FPI step
+
+    return z
+          </code></pre>
+          <div class="fragment roll-in" style="font-size: 24px; margin-top: -12px; text-align: left; line-height: 1.5;">
+            <strong>The entire least-squares solve</strong> has a closed form via KKT:
+            $ \quad
+            \vec{\alpha}=\frac{G^{-1}\mathbf{1}}{\mathbf{1}^{\top}G^{-1}\mathbf{1}},\qquad G=R^{\top}R
+            $
+          </div>
+          <pre class="python fragment roll-in" style="width: 100%; font-size: 15pt; margin-top: 6px;"><code style="max-height: none; overflow: visible; line-height: 1.3;" data-trim data-noescape>
+def least_squares(R):                          # R: (N, m) on GPU
+    v = torch.inverse(R.T @ R) @ ones(m)       # (m,) — tiny
+    return v / v.sum()
+          </code></pre>
+          <aside class="notes">
+            Walk through the algorithm: it falls back to plain FPI on the first step, then progressively uses more history.
+            The least-squares solve is tiny ($m \times m$, typically $m = 5{-}10$) and negligible relative to evaluating $F$.
+            The stored history (Z and R buffers) requires $O(m \cdot N)$ memory — modest compared to $O(N^2)$ for full Broyden.
+            In practice, Anderson often converges in a comparable number of steps to Broyden with better GPU throughput.
           </aside>
         </section>
 
