@@ -142,6 +142,350 @@
       </section>
 
 
+      <!-- ============================================================ -->
+      <!-- PART 0 — FRAMING                                             -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>The Question L4 Asks</h2>
+          <blockquote class="left" style="font-size:26px;background-color:#eee8d5;width:100%;border-radius:8px;padding:18px;line-height:1.45;box-sizing:border-box;">
+            L3 asked: <strong>how much</strong> computation should we spend per input (halting, routing, adaptive depth)?
+          </blockquote>
+          <div style="margin-top:24px;font-size:44px;line-height:1.25;color:#cb4b16;font-weight:700;">
+            What should that computation be doing — and who decides?
+          </div>
+          <ul style="font-size:28px; margin-top:24px; line-height:1.4;">
+            <li class="fragment">What is refined? hidden states, layer masks (MIND), attention operators (SELF), continuous dynamics (CTM)</li>
+            <li class="fragment">Who decides when to stop? fixed count, introspection network, operator convergence, certainty threshold</li>
+            <li class="fragment">Where does reasoning happen? token space (CoT) vs latent space (this lecture)</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Token-Space vs Latent-Space Reasoning</h2>
+          <row>
+            <col50>
+              <h3 style="font-size:34px;">Token Space (Chain-of-Thought)</h3>
+              <ul style="font-size:28px; line-height:1.45;">
+                <li class="fragment">Decode intermediate thoughts as language</li>
+                <li class="fragment">Re-encode generated tokens into hidden states</li>
+                <li class="fragment">Decode again, repeatedly</li>
+                <li class="fragment">Reasoning is externalized</li>
+              </ul>
+            </col50>
+            <col50>
+              <h3 style="font-size:34px;">Latent Space (Iterative Refinement)</h3>
+              <ul style="font-size:28px; line-height:1.45;">
+                <li class="fragment">Refine internal state in place</li>
+                <li class="fragment">No intermediate decoding required</li>
+                <li class="fragment">Reasoning is internal and continuous</li>
+                <li class="fragment">Often cheaper at test time</li>
+              </ul>
+            </col50>
+          </row>
+          <div class="fragment" style="margin-top:20px;font-size:26px;color:#586e75;">
+            Biological brains iterate without externalizing intermediate states as language.
+          </div>
+        </section>
+
+        <section data-slide-scale="0.95">
+          <h2>Three Instances of Introspection</h2>
+          <table style="width:100%;font-size:22px;border-collapse:collapse;">
+            <thead>
+              <tr style="background:#eee8d5;">
+                <th style="padding:10px;border:1px solid #93a1a1;"></th>
+                <th style="padding:10px;border:1px solid #93a1a1;">MIND (ICLR 2025)</th>
+                <th style="padding:10px;border:1px solid #93a1a1;">SELF-Transformer (2025)</th>
+                <th style="padding:10px;border:1px solid #93a1a1;">CTM (2025)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:10px;border:1px solid #93a1a1;font-weight:700;">What iterates</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Hidden activations of chosen layers</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Attention matrix \(\mathcal{T}\) itself</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Neuron pre/post-activation trajectories</td>
+              </tr>
+              <tr>
+                <td style="padding:10px;border:1px solid #93a1a1;font-weight:700;">Who decides</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Auxiliary introspection net</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Fixed-point convergence criterion</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Emergent certainty over internal ticks</td>
+              </tr>
+              <tr>
+                <td style="padding:10px;border:1px solid #93a1a1;font-weight:700;">Extra params</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Small introspection MLP</td>
+                <td style="padding:10px;border:1px solid #93a1a1;"><strong>Zero</strong></td>
+                <td style="padding:10px;border:1px solid #93a1a1;">NLMs + synapse model</td>
+              </tr>
+              <tr>
+                <td style="padding:10px;border:1px solid #93a1a1;font-weight:700;">Bridge from L2/L3</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">FPI + Neumann-RBP on chosen layers</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Implicit differentiation at \(\mathcal{T}^*\)</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">RNN as richer dynamical system</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Roadmap for Today</h2>
+          <ol style="font-size:34px; line-height:1.5; margin-top:20px;">
+            <li class="fragment"><strong>MIND</strong> — introspection decides the computation graph</li>
+            <li class="fragment"><strong>SELF-Transformer</strong> — attention refines itself to a fixed point</li>
+            <li class="fragment"><strong>Continuous Thought Machines</strong> — internal neural dynamics</li>
+            <li class="fragment">Synthesis and open problems</li>
+          </ol>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- PART 1 — MIND                                                -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h1>MIND</h1>
+          <div style="font-size:30px;color:#586e75;margin-top:14px;">Masking Inference with Neural Dynamics</div>
+          <blockquote style="font-size:26px;background-color:#eee8d5;width:100%;border-radius:8px;padding:18px;line-height:1.45;box-sizing:border-box;">
+            The human brain efficiently handles various computations with a limited number of neurons.
+          </blockquote>
+          <ul style="font-size:30px; margin-top:18px;">
+            <li class="fragment">Fixed-depth nets spend the same compute on every input</li>
+            <li class="fragment">MIND learns to reuse parameters adaptively</li>
+            <li class="fragment">Easy inputs: little refinement, hard inputs: more refinement</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>The MIND Architecture</h3>
+          <row>
+            <col50>
+              <ul style="font-size:26px; line-height:1.45;">
+                <li class="fragment"><strong>Prediction network \(P\)</strong>: performs task computation</li>
+                <li class="fragment">Selected layers run as fixed-point iteration blocks</li>
+                <li class="fragment"><strong>Introspection network \(I\)</strong>: reads intermediate activations of \(P\)</li>
+                <li class="fragment">Outputs a per-layer binary mask</li>
+              </ul>
+            </col50>
+            <col50>
+              <img width="110%" src="figures/MIND_model.svg" alt="MIND two-network architecture">
+            </col50>
+          </row>
+          <p class="fragment" style="font-size:24px;color:#586e75;">Key point: \(I\) conditions on what \(P\) has already computed, not only raw input.</p>
+        </section>
+
+        <section>
+          <h3>Introspection as a Switch</h3>
+          <div style="font-size:36px; margin-top:10px;">For each layer \(\ell\), \(m_\ell \in \{0,1\}\)</div>
+          <ul style="font-size:30px; margin-top:22px; line-height:1.45;">
+            <li class="fragment">\(m_\ell = 0\): no-op or pass-through (skip heavy refinement)</li>
+            <li class="fragment">\(m_\ell = 1\): run fixed-point iteration for that layer</li>
+            <li class="fragment">Mask comes from argmax (or sample) over introspection probabilities</li>
+            <li class="fragment">Jointly adapts <strong>which layers</strong> engage and <strong>how long</strong> they iterate</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>The FPI Block</h3>
+          <div style="font-size:42px; margin-top:14px;">
+            \[ z^* = f_\theta(z^*, x) \]
+          </div>
+          <div style="font-size:34px; margin-top:6px;">
+            \[ z_{k+1} = f_\theta(z_k, x),\quad \|z_{k+1} - z_k\| < \varepsilon \]
+          </div>
+          <ul style="font-size:30px; margin-top:16px; line-height:1.45;">
+            <li class="fragment">Same L2 equilibrium idea, now layer-by-layer</li>
+            <li class="fragment">Weight tying keeps parameter count independent of iteration count</li>
+            <li class="fragment">Compute scales with difficulty, not fixed depth alone</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Training MIND: Composite Loss</h3>
+          <div style="font-size:44px; margin-top:10px;">
+            \[ \mathcal{L} = \mathcal{L}_{\text{pred}} + \lambda\,\mathcal{L}_{\text{intro}} \]
+          </div>
+          <ul style="font-size:30px; margin-top:20px; line-height:1.45;">
+            <li class="fragment">\(\mathcal{L}_{\text{pred}}\): task loss on prediction network output</li>
+            <li class="fragment">\(\mathcal{L}_{\text{intro}}\): compute-cost penalty (engaged layers × iterations)</li>
+            <li class="fragment">\(\lambda\): accuracy/compute trade-off set during training</li>
+            <li class="fragment">Backprop through FPI uses <strong>phantom gradients</strong></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Toy Demo: Ising Complexity</h3>
+          <row>
+            <col50>
+              <img width="100%" src="figures/MIND_toy_example.svg" alt="MIND toy Ising complexity example">
+            </col50>
+            <col50>
+              <ul style="font-size:28px; line-height:1.45;">
+                <li class="fragment">Low temperature: structured samples, usually easier</li>
+                <li class="fragment">High temperature: noisy samples, usually harder</li>
+                <li class="fragment">Number of engaged FPI layers tracks input difficulty</li>
+                <li class="fragment">No direct supervision on "difficulty" required</li>
+              </ul>
+            </col50>
+          </row>
+        </section>
+
+        <section>
+          <h3>Results: Big Gains, Tiny Networks</h3>
+          <ul style="font-size:30px; line-height:1.5; margin-top:18px;">
+            <li class="fragment"><strong>ImageNet:</strong> 96.62% with a 3-layer prediction network</li>
+            <li class="fragment">Outperforms much larger baselines (e.g., ResNet-50 / EfficientNet-B7)</li>
+            <li class="fragment"><strong>SQuAD v1/v2:</strong> 95.8 / 88.7 F1 with negligible parameter overhead</li>
+            <li class="fragment"><strong>WikiText:</strong> better perplexity at lower parameter count</li>
+            <li class="fragment">Message: parameter reuse can beat brute-force scaling</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>MIND: Takeaway</h3>
+          <ul style="font-size:30px; line-height:1.5; margin-top:16px;">
+            <li class="fragment"><strong>Introspection as primitive:</strong> a second network shapes the first network's compute graph</li>
+            <li class="fragment">Unifies L2 (FPI + implicit ideas) and L3 (adaptive routing/depth)</li>
+            <li class="fragment">Caveats: convergence can fail, masks can miscalibrate OOD, \(\lambda\) tuning is delicate</li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- PART 2 — SELF-TRANSFORMER                                    -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h1>SELF-Transformer</h1>
+          <h3>A Zero-Parameter Route to Latent Iteration</h3>
+          <div style="font-size:36px; margin-top:14px;">
+            \[ \mathcal{T} = \text{softmax}(QK^\top / \sqrt{d}),\qquad \text{output} = \mathcal{T}V \]
+          </div>
+          <ul style="font-size:30px; margin-top:20px; line-height:1.45;">
+            <li class="fragment">In standard attention, \(\mathcal{T}\) is input-dependent but one-shot</li>
+            <li class="fragment">Question: what if \(\mathcal{T}\) itself needs iterative refinement?</li>
+          </ul>
+        </section>
+
+        <section data-slide-scale="0.92">
+          <h3>The Core Idea in One Picture</h3>
+          <img width="100%" src="figures/fpsa.svg" alt="SELF-Transformer FPSA overview" style="max-height:60vh; object-fit:contain;">
+          <ul style="font-size:26px; margin-top:8px; line-height:1.35;">
+            <li class="fragment">FPSA iterates the alignment operator, not only final outputs</li>
+            <li class="fragment">This keeps the mechanism local to attention and parameter-efficient</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Fixed-Point Self-Attention (FPSA)</h3>
+          <div style="font-size:32px; margin-top:8px;">
+            \[ \mathcal{T}_{k+1} = \text{softmax}\!\left(\frac{Q_k K_k^\top}{\sqrt{d}}\right), \quad Q_k, K_k \text{ from } \mathcal{T}_k V \]
+          </div>
+          <div style="font-size:30px; margin-top:14px;">
+            Stop when \(\|\mathcal{T}_{k+1} - \mathcal{T}_k\| < \varepsilon\) or \(k = K_{\max}\)
+          </div>
+          <ul style="font-size:30px; margin-top:18px; line-height:1.45;">
+            <li class="fragment">Initialize with vanilla one-shot attention \(\mathcal{T}_0\)</li>
+            <li class="fragment"><strong>Zero additional parameters</strong> (reuse Q/K/V projections)</li>
+            <li class="fragment">Turn attention into a dynamical process over operators</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Why Iterate the Operator?</h3>
+          <row>
+            <col50>
+              <h3 style="font-size:30px;">Output Iteration</h3>
+              <ul style="font-size:26px; line-height:1.45;">
+                <li class="fragment">Whole hidden state keeps changing</li>
+                <li class="fragment">No token is "done" until all are done</li>
+                <li class="fragment">Compute remains globally coupled</li>
+              </ul>
+            </col50>
+            <col50>
+              <h3 style="font-size:30px;">Operator Iteration (FPSA)</h3>
+              <ul style="font-size:26px; line-height:1.45;">
+                <li class="fragment">Each token's alignment can stabilize separately</li>
+                <li class="fragment">Converged tokens can be frozen</li>
+                <li class="fragment">Compute focuses on unresolved tokens</li>
+              </ul>
+            </col50>
+          </row>
+          <div class="fragment" style="margin-top:16px;font-size:28px;color:#cb4b16;">Per-token adaptive compute with no new parameters.</div>
+        </section>
+
+        <section data-slide-scale="0.92">
+          <h3>Training: Implicit Differentiation at \(\mathcal{T}^*\)</h3>
+          <div style="font-size:30px; margin-top:8px;">
+            \[ \frac{\partial \mathcal{L}}{\partial \theta} = \frac{\partial \mathcal{L}}{\partial \mathcal{T}^*}
+            \left(I - J_{\mathcal{T}^*}\right)^{-1}
+            \frac{\partial f}{\partial \theta}\Big|_{\mathcal{T}^*} \]
+          </div>
+          <ul style="font-size:27px; margin-top:16px; line-height:1.45;">
+            <li class="fragment">No full unrolling through all refinement steps</li>
+            <li class="fragment">Memory remains constant in iteration count (L2 callback)</li>
+            <li class="fragment">Non-converged tokens are handled conservatively in backward</li>
+            <li class="fragment">Contraction condition gives convergence guarantees with safeguards</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Inference Cost: Modest</h3>
+          <ul style="font-size:32px; margin-top:16px; line-height:1.5;">
+            <li class="fragment">Typical refinement depth: <strong>3-6 steps</strong> per layer</li>
+            <li class="fragment">About <strong>1.6x GFLOPs</strong>, <strong>1.3-1.4x latency</strong> vs BERT-Base</li>
+            <li class="fragment">Training and inference memory close to standard layer</li>
+            <li class="fragment"><strong>Zero parameter increase</strong></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Language Results</h3>
+          <ul style="font-size:29px; margin-top:16px; line-height:1.5;">
+            <li class="fragment"><strong>BERT-Base + FPSA:</strong> GLUE 85.7, SQuAD 91.8 F1</li>
+            <li class="fragment"><strong>ELECTRA-Base + FPSA:</strong> GLUE 88.4, SQuAD v1/v2 95.2 / 88.7 F1</li>
+            <li class="fragment">Reasoning benchmarks (GSM8K, BBH, LogiQA) improve as well</li>
+            <li class="fragment">Latent test-time refinement helps even without explicit CoT output</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Vision and Vision-Language Results</h3>
+          <ul style="font-size:29px; margin-top:16px; line-height:1.5;">
+            <li class="fragment"><strong>SELF-ViT (ViT-B/16):</strong> ImageNet-1K top-1 86.3%</li>
+            <li class="fragment"><strong>COCO:</strong> mAP@50 86.7%</li>
+            <li class="fragment">Up to +20% on harder encoder-style tasks</li>
+            <li class="fragment">Patch-token ambiguity also benefits from operator refinement</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>SELF-Transformer: Takeaway</h3>
+          <ul style="font-size:30px; margin-top:16px; line-height:1.5;">
+            <li class="fragment"><strong>Attention is a program</strong>: refine the operator, not just the state</li>
+            <li class="fragment"><strong>Zero-parameter drop-in</strong> for extra test-time reasoning</li>
+            <li class="fragment">Latent-space refinement is private, compact, and device-friendly</li>
+            <li class="fragment">Caveats: convergence assumptions and non-converged token handling matter</li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- PART 3 — TRANSITION TO CTM                                   -->
+      <!-- ============================================================ -->
+      <section>
+        <section>
+          <h2>From Layer Iteration to Internal Neural Dynamics</h2>
+          <ul style="font-size:34px; margin-top:24px; line-height:1.5;">
+            <li class="fragment">MIND iterates <strong>layers</strong>; SELF iterates an <strong>operator</strong></li>
+            <li class="fragment">CTM still uses discrete neural layers, but adds a recurrent internal tick dimension</li>
+            <li class="fragment">Thinking unfolds over ticks: local update windows are used while full trajectories are retained</li>
+            <li class="fragment">CTM story: recurrence + synchronization + adaptive stopping by certainty</li>
+          </ul>
+        </section>
+      </section>
+
+
       <section>
         <section>
           <h1>Motivation</h1>
@@ -590,15 +934,64 @@
       </section>
 
       <section>
-        <h2>Takeaways</h2>
-        <ul style="font-size:34px; line-height:1.6;">
-          <li class="fragment roll-in"><strong>Neurons have history</strong> — each neuron sees its own pre-activation trajectory, not just the current state</li>
-          <li class="fragment roll-in"><strong>Synchronization is the representation</strong> — the model's "thought" lives in how neurons correlate over time, not in a fixed hidden vector</li>
-          <li class="fragment roll-in"><strong>More thinking = better answers</strong> — accuracy improves with internal ticks; compute is a knob at inference time</li>
-          <li class="fragment roll-in"><strong>Adaptive compute emerges naturally</strong> — harder inputs get more ticks without any explicit pressure to do so</li>
-          <li class="fragment roll-in"><strong>Generalizes beyond training</strong> — maze-solving transfers from 39×39 to 99×99 without retraining, no positional encodings</li>
-          <li class="fragment roll-in"><strong>Alignment with biology</strong> — CTM reaction times track human psychophysics; LSTM does not</li>
-        </ul>
+        <section data-slide-scale="0.95">
+          <h2>The Design Space of Iterative Refinement</h2>
+          <table style="width:100%;font-size:22px;border-collapse:collapse;">
+            <thead>
+              <tr style="background:#eee8d5;">
+                <th style="padding:10px;border:1px solid #93a1a1;"></th>
+                <th style="padding:10px;border:1px solid #93a1a1;">MIND</th>
+                <th style="padding:10px;border:1px solid #93a1a1;">SELF-Transformer</th>
+                <th style="padding:10px;border:1px solid #93a1a1;">CTM</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:10px;border:1px solid #93a1a1;font-weight:700;">What iterates</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Selected layer activations</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Attention operator \(\mathcal{T}\)</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Neural activity trajectories</td>
+              </tr>
+              <tr>
+                <td style="padding:10px;border:1px solid #93a1a1;font-weight:700;">Who decides</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Introspection mask network</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Convergence criterion</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Certainty threshold over ticks</td>
+              </tr>
+              <tr>
+                <td style="padding:10px;border:1px solid #93a1a1;font-weight:700;">Memory profile</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Phantom gradient approximation</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Implicit differentiation</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Trajectory histories + synchrony</td>
+              </tr>
+              <tr>
+                <td style="padding:10px;border:1px solid #93a1a1;font-weight:700;">Parameter overhead</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Small auxiliary net</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Zero</td>
+                <td style="padding:10px;border:1px solid #93a1a1;">Dedicated recurrent machinery</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Unified L4 Takeaways</h2>
+          <ul style="font-size:31px; line-height:1.5; margin-top:18px;">
+            <li class="fragment"><strong>Iterative refinement is a design space:</strong> what iterates × who decides</li>
+            <li class="fragment"><strong>Introspection is broader than halting:</strong> not just "stop?", also "what should update?"</li>
+            <li class="fragment"><strong>Latent-space reasoning</strong> keeps intermediate thought internal</li>
+            <li class="fragment"><strong>L2 tools stay central:</strong> implicit differentiation and phantom gradients enable depth without full unrolling</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Where This Breaks, and What Is Next</h2>
+          <ul style="font-size:29px; line-height:1.5; margin-top:18px;">
+            <li class="fragment"><strong>Breakage modes:</strong> non-convergence, OOD miscalibration, sensitive \(\lambda, \varepsilon, K_{\max}\), and initialization</li>
+            <li class="fragment"><strong>Bridge to L5:</strong> these methods refine state, but do not explicitly remember across episodes</li>
+            <li class="fragment"><strong>Bridge to L6:</strong> MIND already learns to decide computation; next step is learning the update rule itself</li>
+          </ul>
+        </section>
       </section>
 
       <section>
